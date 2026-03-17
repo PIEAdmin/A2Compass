@@ -1,0 +1,7 @@
+export type TierSlug = 'explorers-camp' | 'scholars-guild' | 'the-collegium'
+export type UserRole = 'admin' | 'teacher' | 'parent' | 'student'
+export type EnrollmentType = 'full-time' | 'tutoring' | 'summer-program' | 'a-la-carte'
+export type LearningFormat = 'live-seminar' | 'discussion-board' | 'choice-board' | 'independent-project' | 'partner-quest' | 'one-on-one-coaching' | 'practice-arena'
+export type SubjectDomain = 'math' | 'reading-ela' | 'science' | 'social-studies' | 'foreign-language' | 'creative-arts'
+export type FlightPlanStatus = 'pending' | 'in-progress' | 'completed' | 'skipped'
+export type MasteryStatus = 'not-started' | 'developing' | 'approaching' | 'mastered'
