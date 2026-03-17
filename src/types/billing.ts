@@ -1,52 +1,111 @@
-export interface StripeProduct {
-  id: string
-  enrollment_type_id: string
-  stripe_product_id: string
-  stripe_price_id_monthly: string | null
-  stripe_price_id_yearly: string | null
-  stripe_price_id_one_time: string | null
-  price_monthly: number | null
-  price_yearly: number | null
-  price_one_time: number | null
-  currency: string
-  is_active: boolean
-  created_at: string
-  updated_at: string
+// ============================================================
+// A² Compass — Billing & Pricing Types
+// ============================================================
+
+export type BillingType = 'recurring' | 'one_time' | 'package';
+export type BillingInterval = 'month' | 'year' | null;
+
+export interface PricingPackage {
+  id: string;
+  enrollment_type_id: string;
+  name: string;
+  slug: string;
+  billing_type: BillingType;
+  billing_interval: BillingInterval;
+  price: number;
+  unit_label: string | null;
+  unit_count: number | null;
+  effective_rate: number | null;
+  stripe_price_id: string | null;
+  description: string | null;
+  is_active: boolean;
+  sort_order: number;
 }
 
-export interface PaymentHistory {
-  id: string
-  parent_id: string
-  student_enrollment_id: string
-  stripe_payment_intent_id: string
-  amount: number
-  currency: string
-  status: 'succeeded' | 'pending' | 'failed' | 'refunded'
-  description: string | null
-  created_at: string
+export interface FoundersAccount {
+  id: string;
+  parent_id: string;
+  family_name: string;
+  founders_number: number;
+  rate_locked_at: string;
+  rate_lock_pricing: Record<string, number>;
+  is_active: boolean;
+  continuous_since: string;
+  notes: string | null;
+  granted_by: string | null;
 }
 
-export interface BillingDashboardData {
-  activeSubscriptions: SubscriptionSummary[]
-  paymentHistory: PaymentHistory[]
-  totalMonthlySpend: number
+export interface FamilyDiscount {
+  id: string;
+  family_parent_id: string;
+  student_id: string;
+  child_order: number;
+  discount_percent: number;
+  is_active: boolean;
 }
 
-export interface SubscriptionSummary {
-  enrollmentId: string
-  studentName: string
-  enrollmentType: string
-  status: string
-  amount: number
-  interval: string
-  nextPaymentDate: string | null
-  stripeSubscriptionId: string | null
+export interface PricingDisplayItem {
+  enrollmentType: string;
+  enrollmentSlug: string;
+  packages: PricingPackage[];
+  includes: string[];
 }
 
-export interface AdminRevenueSummary {
-  totalRevenue: number
-  monthlyRecurring: number
-  activeSubscriptions: number
-  delinquentAccounts: number
-  revenueByType: { type: string; amount: number; count: number }[]
-}
+// Sandra's finalized pilot pricing
+export const PILOT_PRICING: PricingDisplayItem[] = [
+  {
+    enrollmentType: 'Full-Time Academy',
+    enrollmentSlug: 'full-time',
+    packages: [] as PricingPackage[], // loaded from DB
+    includes: [
+      'Daily attendance tracking',
+      'Full subject load (all 6 domains)',
+      'Teacher check-ins',
+      '6-week report cards',
+      'All platform features',
+    ],
+  },
+  {
+    enrollmentType: 'Tutoring Support',
+    enrollmentSlug: 'tutoring',
+    packages: [],
+    includes: [
+      'Targeted subject support',
+      'Progress tracking',
+      'Teacher feedback',
+    ],
+  },
+  {
+    enrollmentType: 'Summer Enrichment',
+    enrollmentSlug: 'summer',
+    packages: [],
+    includes: [
+      'Light, engaging playlist',
+      'Gamified challenges',
+      'Progress monitoring',
+    ],
+  },
+  {
+    enrollmentType: 'A La Carte Courses',
+    enrollmentSlug: 'a-la-carte',
+    packages: [],
+    includes: [
+      'Full access to one subject/course',
+      'One full term duration',
+    ],
+  },
+];
+
+export const FAMILY_DISCOUNT_RULES = {
+  appliesTo: 'full-time' as const,
+  tiers: [
+    { childOrder: 1, discount: 0, label: 'First child — full price' },
+    { childOrder: 2, discount: 25, label: 'Second child — 25% off' },
+    { childOrder: 3, discount: 50, label: 'Third+ child — 50% off' },
+  ],
+};
+
+export const FOUNDERS_RATE_CONFIG = {
+  maxFamilies: 10,
+  description: 'First 10 families lock in pilot pricing indefinitely as long as enrollment stays continuous.',
+};
