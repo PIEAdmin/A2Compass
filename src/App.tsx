@@ -6,10 +6,15 @@ import { initAuth } from './store/authSlice'
 import { useAuth } from './hooks'
 import { DashboardLayout } from './components/layout'
 import { LoadingSpinner } from './components/common'
+
+// Pages
 import LoginPage from './pages/auth/LoginPage'
 import AdminDashboard from './pages/admin/Dashboard'
+import AdminBillingPage from './pages/admin/Billing'
 import TeacherDashboard from './pages/teacher/Dashboard'
 import ParentDashboard from './pages/parent/Dashboard'
+import ParentBillingPage from './pages/parent/Billing'
+import EnrollPage from './pages/parent/Enroll'
 import StudentDashboard from './pages/student/Dashboard'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -22,7 +27,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function RoleRedirect() {
   const { user } = useAuth()
   if (!user) return <Navigate to="/login" replace />
-  const roleRoutes = {
+  const roleRoutes: Record<string, string> = {
     admin: '/admin',
     teacher: '/teacher',
     parent: '/parent',
@@ -53,7 +58,7 @@ export default function App() {
         <Route path="admin" element={<AdminDashboard />} />
         <Route path="admin/students" element={<AdminDashboard />} />
         <Route path="admin/enrollment" element={<AdminDashboard />} />
-        <Route path="admin/billing" element={<AdminDashboard />} />
+        <Route path="admin/billing" element={<AdminBillingPage />} />
         <Route path="admin/subjects" element={<AdminDashboard />} />
         <Route path="admin/reports" element={<AdminDashboard />} />
 
@@ -67,7 +72,8 @@ export default function App() {
         {/* Parent Routes */}
         <Route path="parent" element={<ParentDashboard />} />
         <Route path="parent/progress" element={<ParentDashboard />} />
-        <Route path="parent/billing" element={<ParentDashboard />} />
+        <Route path="parent/billing" element={<ParentBillingPage />} />
+        <Route path="parent/enroll" element={<EnrollPage />} />
         <Route path="parent/messages" element={<ParentDashboard />} />
 
         {/* Student Routes */}
