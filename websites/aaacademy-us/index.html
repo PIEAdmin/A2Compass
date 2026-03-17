@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Achievement Academy — Personalized Education for Every Child</title>
+  <meta name="description" content="Achievement Academy delivers truly personalized K-6 education. We map each child's skills across 94 learning milestones and build a custom learning path — no grade levels, no one-size-fits-all.">
+  <meta name="keywords" content="personalized education, K-6 school, adaptive learning, tutoring, Achievement Academy, Sandra Brooks">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Achievement Academy — Where Every Student's Journey is Uniquely Theirs">
+  <meta property="og:description" content="Truly personalized K-6 education. We meet each child exactly where they are and guide them exactly where they need to go.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://aaacademy.us">
+  <!-- LOGO: Replace with og:image /images/og-image.png -->
+
+  <!-- Favicon -->
+  <!-- FAVICON: Replace with /images/favicon.ico -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: #1B3A6B;
+      line-height: 1.7;
+      background: #FFFFFF;
+      -webkit-font-smoothing: antialiased;
+    }
+    h1, h2, h3, h4 {
+      font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+      line-height: 1.25;
+      font-weight: 700;
+    }
+    img { max-width: 100%; display: block; }
+    a { color: #2563EB; text-decoration: none; transition: color 0.2s; }
+    a:hover { color: #B8922D; }
+
+    /* ===== UTILITY ===== */
+    .container { max-width: 1140px; margin: 0 auto; padding: 0 24px; }
+    .section { padding: 80px 0; }
+    .section-alt { background: #F8FAFC; }
+    .section-warm { background: #FDF6E3; }
+    .text-center { text-align: center; }
+    .section-label {
+      display: inline-block;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #D4A843;
+      margin-bottom: 12px;
+    }
+    .section-title {
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      color: #1B3A6B;
+      margin-bottom: 16px;
+    }
+    .section-subtitle {
+      font-size: 1.1rem;
+      color: #475569;
+      max-width: 640px;
+      margin: 0 auto 48px;
+    }
+
+    /* ===== BUTTONS ===== */
+    .btn {
+      display: inline-block;
+      padding: 14px 32px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: all 0.25s;
+      cursor: pointer;
+      border: none;
+      font-family: 'Inter', sans-serif;
+    }
+    .btn-primary {
+      background: #2563EB;
+      color: #fff;
+    }
+    .btn-primary:hover {
+      background: #1d4ed8;
+      color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(37,99,235,0.3);
+    }
+    .btn-outline {
+      background: transparent;
+      color: #1B3A6B;
+      border: 2px solid #1B3A6B;
+    }
+    .btn-outline:hover {
+      background: #1B3A6B;
+      color: #fff;
+      transform: translateY(-2px);
+    }
+    .btn-gold {
+      background: #D4A843;
+      color: #fff;
+    }
+    .btn-gold:hover {
+      background: #B8922D;
+      color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(212,168,67,0.3);
+    }
+
+    /* ===== NAVBAR ===== */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255,255,255,0.97);
+      backdrop-filter: blur(10px);
+      z-index: 1000;
+      border-bottom: 1px solid rgba(27,58,107,0.08);
+      transition: box-shadow 0.3s;
+    }
+    .navbar.scrolled {
+      box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+    }
+    .navbar .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 72px;
+    }
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #1B3A6B;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .nav-logo:hover { color: #1B3A6B; }
+    .nav-logo .logo-icon {
+      font-size: 1.5rem;
+    }
+    /* LOGO: Replace .nav-logo content with <img src="/images/logo.png" alt="Achievement Academy" height="44"> */
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      list-style: none;
+    }
+    .nav-links a {
+      color: #1B3A6B;
+      font-weight: 500;
+      font-size: 0.92rem;
+      transition: color 0.2s;
+      position: relative;
+    }
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: #D4A843;
+      transition: width 0.25s;
+    }
+    .nav-links a:hover { color: #2563EB; }
+    .nav-links a:hover::after { width: 100%; }
+    .nav-login {
+      padding: 9px 20px !important;
+      background: #2563EB;
+      color: #fff !important;
+      border-radius: 6px;
+      font-size: 0.88rem !important;
+    }
+    .nav-login:hover {
+      background: #1d4ed8;
+      color: #fff !important;
+    }
+    .nav-login::after { display: none !important; }
+
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 4px;
+    }
+    .hamburger span {
+      display: block;
+      width: 26px;
+      height: 2.5px;
+      background: #1B3A6B;
+      border-radius: 2px;
+      transition: all 0.3s;
+    }
+    .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+    .hamburger.active span:nth-child(2) { opacity: 0; }
+    .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+    /* ===== HERO ===== */
+    .hero {
+      padding: 140px 0 100px;
+      background: linear-gradient(135deg, #FDF6E3 0%, #FFFFFF 40%, #F0F6FF 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -60%;
+      right: -20%;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(212,168,67,0.08) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: -40%;
+      left: -10%;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(37,99,235,0.05) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .hero .container { position: relative; z-index: 1; }
+    .hero-content { max-width: 720px; }
+    .hero h1 {
+      font-size: clamp(2.2rem, 5vw, 3.4rem);
+      color: #1B3A6B;
+      margin-bottom: 20px;
+      line-height: 1.15;
+    }
+    .hero h1 span { color: #D4A843; }
+    .hero p {
+      font-size: clamp(1.05rem, 2vw, 1.2rem);
+      color: #475569;
+      margin-bottom: 36px;
+      max-width: 600px;
+    }
+    .hero-buttons { display: flex; gap: 16px; flex-wrap: wrap; }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(212,168,67,0.12);
+      color: #B8922D;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    /* ===== PROBLEM / DIFFERENT ===== */
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .comparison-card {
+      padding: 36px;
+      border-radius: 16px;
+      border: 2px solid transparent;
+    }
+    .comparison-card.traditional {
+      background: #FFF;
+      border-color: #e2e8f0;
+    }
+    .comparison-card.ours {
+      background: linear-gradient(135deg, #FDF6E3, #fff);
+      border-color: #D4A843;
+      box-shadow: 0 4px 24px rgba(212,168,67,0.12);
+    }
+    .comparison-card h3 {
+      font-size: 1.2rem;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .comparison-card ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .comparison-card li {
+      padding-left: 28px;
+      position: relative;
+      font-size: 0.95rem;
+      color: #475569;
+    }
+    .comparison-card.traditional li::before {
+      content: '✕';
+      position: absolute;
+      left: 0;
+      color: #ef4444;
+      font-weight: 700;
+    }
+    .comparison-card.ours li::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      color: #22c55e;
+      font-weight: 700;
+    }
+    .problem-quote {
+      max-width: 760px;
+      margin: 0 auto 48px;
+      padding: 32px 36px;
+      background: #FFF;
+      border-left: 4px solid #D4A843;
+      border-radius: 0 12px 12px 0;
+      font-size: 1.05rem;
+      color: #475569;
+      font-style: italic;
+      line-height: 1.8;
+    }
+
+    /* ===== HOW IT WORKS ===== */
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 36px;
+    }
+    .step-card {
+      text-align: center;
+      padding: 40px 28px;
+      border-radius: 16px;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .step-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(27,58,107,0.08);
+    }
+    .step-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #2563EB, #1B3A6B);
+      color: #fff;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+    .step-icon {
+      font-size: 2.4rem;
+      margin-bottom: 8px;
+    }
+    .step-card h3 {
+      font-size: 1.2rem;
+      margin-bottom: 12px;
+      color: #1B3A6B;
+    }
+    .step-card p {
+      color: #475569;
+      font-size: 0.95rem;
+    }
+
+    /* ===== PROGRAMS ===== */
+    .programs-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 28px;
+    }
+    .program-card {
+      padding: 36px;
+      background: #fff;
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+      transition: transform 0.3s, box-shadow 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .program-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(27,58,107,0.1);
+    }
+    .program-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #D4A843, #2563EB);
+    }
+    .program-icon {
+      font-size: 2.2rem;
+      margin-bottom: 16px;
+    }
+    .program-card h3 {
+      font-size: 1.25rem;
+      color: #1B3A6B;
+      margin-bottom: 10px;
+    }
+    .program-card p {
+      color: #475569;
+      font-size: 0.95rem;
+    }
+
+    /* ===== ABOUT / SANDRA ===== */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 56px;
+      align-items: center;
+    }
+    .about-photo {
+      width: 100%;
+      aspect-ratio: 3/4;
+      background: linear-gradient(135deg, #FDF6E3, #e8dcc8);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    /* PHOTO: Replace .about-photo with <img src="/images/sandra.jpg" alt="Sandra Brooks, Founder"> */
+    .about-content h2 {
+      font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+      margin-bottom: 20px;
+    }
+    .about-content p {
+      color: #475569;
+      margin-bottom: 16px;
+      font-size: 1.02rem;
+    }
+    .about-content .signature {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      color: #1B3A6B;
+      margin-top: 24px;
+    }
+
+    /* ===== TUITION ===== */
+    .tuition-table-wrap {
+      overflow-x: auto;
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+      background: #fff;
+    }
+    .tuition-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+    .tuition-table thead {
+      background: #1B3A6B;
+      color: #fff;
+    }
+    .tuition-table th {
+      padding: 16px 24px;
+      text-align: left;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 0.88rem;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .tuition-table td {
+      padding: 18px 24px;
+      border-bottom: 1px solid #f1f5f9;
+      color: #475569;
+    }
+    .tuition-table tr:last-child td { border-bottom: none; }
+    .tuition-table tbody tr:hover { background: #FDF6E3; }
+    .tuition-table .price {
+      font-weight: 700;
+      color: #1B3A6B;
+      font-size: 1.05rem;
+    }
+    .tuition-table .savings {
+      color: #22c55e;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+    .tuition-extras {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 36px;
+    }
+    .tuition-extra-card {
+      padding: 28px;
+      border-radius: 12px;
+      border: 2px solid #D4A843;
+      background: linear-gradient(135deg, #FDF6E3, #fff);
+    }
+    .tuition-extra-card h4 {
+      font-family: 'Inter', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      color: #1B3A6B;
+      margin-bottom: 8px;
+    }
+    .tuition-extra-card p {
+      font-size: 0.92rem;
+      color: #475569;
+    }
+
+    /* ===== ENROLLMENT / CONTACT ===== */
+    .enrollment-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 56px;
+      align-items: start;
+    }
+    .enrollment-info h2 {
+      font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+      margin-bottom: 16px;
+    }
+    .enrollment-info p {
+      color: #475569;
+      margin-bottom: 20px;
+      font-size: 1.02rem;
+    }
+    .contact-detail {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 0;
+      font-size: 1rem;
+      color: #1B3A6B;
+      font-weight: 500;
+    }
+    .contact-detail .icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      background: #FDF6E3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+    .contact-form {
+      background: #fff;
+      padding: 40px;
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 6px;
+      color: #1B3A6B;
+    }
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-family: 'Inter', sans-serif;
+      color: #1B3A6B;
+      transition: border-color 0.2s;
+      background: #fff;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #2563EB;
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
+    .form-group textarea { resize: vertical; min-height: 100px; }
+
+    /* ===== FOOTER ===== */
+    .footer {
+      background: #0F172A;
+      color: #94a3b8;
+      padding: 56px 0 32px;
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 48px;
+      margin-bottom: 40px;
+    }
+    .footer-brand .nav-logo {
+      color: #fff;
+      margin-bottom: 12px;
+    }
+    .footer-brand p {
+      font-size: 0.92rem;
+      line-height: 1.7;
+      color: #94a3b8;
+    }
+    .footer h4 {
+      font-family: 'Inter', sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+    }
+    .footer-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .footer-links a {
+      color: #94a3b8;
+      font-size: 0.92rem;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: #D4A843; }
+    .footer-bottom {
+      border-top: 1px solid #1e293b;
+      padding-top: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 0.85rem;
+    }
+    .footer-social {
+      display: flex;
+      gap: 16px;
+    }
+    .footer-social a {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: #1e293b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #94a3b8;
+      font-size: 1rem;
+      transition: all 0.2s;
+    }
+    .footer-social a:hover {
+      background: #D4A843;
+      color: #fff;
+    }
+
+    /* ===== ANIMATIONS ===== */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 960px) {
+      .nav-links { display: none; }
+      .nav-links.active {
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        top: 72px;
+        left: 0;
+        right: 0;
+        background: #fff;
+        padding: 24px;
+        gap: 16px;
+        border-bottom: 1px solid #e2e8f0;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      }
+      .hamburger { display: flex; }
+      .comparison-grid { grid-template-columns: 1fr; }
+      .steps-grid { grid-template-columns: 1fr; max-width: 420px; margin: 0 auto; }
+      .programs-grid { grid-template-columns: 1fr; }
+      .about-grid { grid-template-columns: 1fr; text-align: center; }
+      .about-photo { max-width: 280px; margin: 0 auto; }
+      .enrollment-grid { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr; }
+      .tuition-extras { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      .section { padding: 56px 0; }
+      .hero { padding: 110px 0 72px; }
+      .hero-buttons { flex-direction: column; }
+      .hero-buttons .btn { text-align: center; }
+      .footer-bottom { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ====== NAVBAR ====== -->
+  <nav class="navbar" id="navbar">
+    <div class="container">
+      <a href="#home" class="nav-logo">
+        <!-- LOGO: Replace with <img src="/images/logo.png" alt="Achievement Academy" height="44"> -->
+        <span class="logo-icon">🎓</span> Achievement Academy
+      </a>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#home">Home</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#programs">Programs</a></li>
+        <li><a href="#tuition">Tuition</a></li>
+        <li><a href="#enrollment">Enrollment</a></li>
+        <li><a href="#contact">Contact</a></li>
+        <li><a href="https://a2compass.org" class="nav-login" target="_blank" rel="noopener">Login to A² Compass</a></li>
+      </ul>
+      <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ====== HERO ====== -->
+  <section class="hero" id="home">
+    <div class="container">
+      <div class="hero-content fade-up">
+        <div class="hero-badge">✨ Enrolling Now — Limited Spots Available</div>
+        <h1>Where Every Student's Journey is <span>Uniquely Theirs</span></h1>
+        <p>Achievement Academy delivers truly personalized education — not grade levels, not one-size-fits-all. We meet each child exactly where they are and guide them exactly where they need to go.</p>
+        <div class="hero-buttons">
+          <a href="#enrollment" class="btn btn-primary">Start Your Child's Journey</a>
+          <a href="#programs" class="btn btn-outline">See Our Programs</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== WHY WE'RE DIFFERENT ====== -->
+  <section class="section section-alt" id="difference">
+    <div class="container">
+      <div class="text-center fade-up">
+        <span class="section-label">Why We're Different</span>
+        <h2 class="section-title">Grade Levels Don't Tell the Whole Story</h2>
+      </div>
+      <div class="problem-quote fade-up">
+        "A 9-year-old assessed at 3rd grade might be working on kindergarten reading. A 7-year-old in 1st grade might be solving 2nd grade math. Same family, completely different needs."<br><br>
+        At Achievement Academy, we don't sort children by age. We identify their exact skill level across <strong>94 learning milestones</strong> — and build a personalized path from there.
+      </div>
+      <div class="comparison-grid fade-up">
+        <div class="comparison-card traditional">
+          <h3>❌ Traditional Approach</h3>
+          <ul>
+            <li>Students grouped by age, not ability</li>
+            <li>One curriculum for every child</li>
+            <li>Gaps go unnoticed until it's too late</li>
+            <li>Progress measured by grades and test scores</li>
+            <li>Kids who are ahead get bored; kids behind get lost</li>
+          </ul>
+        </div>
+        <div class="comparison-card ours">
+          <h3>✨ The Academy Way</h3>
+          <ul>
+            <li>Students learn at their actual skill level</li>
+            <li>Personalized path across 94 milestones</li>
+            <li>Gaps identified and addressed immediately</li>
+            <li>Progress measured by real skill mastery</li>
+            <li>Every child challenged and supported — always</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== HOW IT WORKS ====== -->
+  <section class="section" id="how-it-works">
+    <div class="container">
+      <div class="text-center fade-up">
+        <span class="section-label">How It Works</span>
+        <h2 class="section-title">Three Steps to Transformative Learning</h2>
+        <p class="section-subtitle">Our process is simple, but the results are extraordinary.</p>
+      </div>
+      <div class="steps-grid">
+        <div class="step-card fade-up">
+          <div class="step-icon">🔍</div>
+          <div class="step-number">1</div>
+          <h3>Comprehensive Assessment</h3>
+          <p>We map your child's skills across reading, math, and more — finding both strengths and gaps traditional tests miss.</p>
+        </div>
+        <div class="step-card fade-up">
+          <div class="step-icon">🗺️</div>
+          <div class="step-number">2</div>
+          <h3>Personalized Learning Path</h3>
+          <p>Our adaptive platform creates a daily playlist of activities matched to exactly what your child needs next. No busywork. No boredom.</p>
+        </div>
+        <div class="step-card fade-up">
+          <div class="step-icon">🌟</div>
+          <div class="step-number">3</div>
+          <h3>Visible Progress</h3>
+          <p>Watch your child grow with weekly updates, milestone celebrations, and clear evidence of learning you can see and share.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== PROGRAMS ====== -->
+  <section class="section section-warm" id="programs">
+    <div class="container">
+      <div class="text-center fade-up">
+        <span class="section-label">Our Programs</span>
+        <h2 class="section-title">Find the Right Fit for Your Family</h2>
+        <p class="section-subtitle">Whether you need a full-time school, targeted tutoring, or something in between — we have a path for your child.</p>
+      </div>
+      <div class="programs-grid">
+        <div class="program-card fade-up">
+          <div class="program-icon">🏫</div>
+          <h3>Full-Time Academy</h3>
+          <p>Complete K–6 education with personalized curriculum, daily adaptive learning, and ongoing teacher support. This is school — reimagined around your child.</p>
+        </div>
+        <div class="program-card fade-up">
+          <div class="program-icon">📚</div>
+          <h3>Tutoring Support</h3>
+          <p>Targeted help for specific skills. Perfect for supplementing traditional school or homeschool. We find the gaps and fill them — fast.</p>
+        </div>
+        <div class="program-card fade-up">
+          <div class="program-icon">☀️</div>
+          <h3>Summer Enrichment</h3>
+          <p>8-week intensive program to build skills, prevent summer slide, and explore new interests. Your child comes back to school ahead, not behind.</p>
+        </div>
+        <div class="program-card fade-up">
+          <div class="program-icon">🧩</div>
+          <h3>A La Carte Courses</h3>
+          <p>Individual courses in specific subjects. Learn at your own pace with expert guidance. Pick exactly what your child needs.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== ABOUT / SANDRA ====== -->
+  <section class="section" id="about">
+    <div class="container">
+      <div class="about-grid fade-up">
+        <div class="about-photo" aria-label="Sandra Brooks, Founder">
+          <!-- PHOTO: Replace with <img src="/images/sandra.jpg" alt="Sandra Brooks, Founder of Achievement Academy"> -->
+          👩‍🏫
+        </div>
+        <div class="about-content">
+          <span class="section-label">Meet the Founder</span>
+          <h2>Hi, I'm Sandra Brooks</h2>
+          <p>I started Achievement Academy because I saw too many kids falling through the cracks of traditional education. Bright children labeled "behind" because they didn't fit a grade-level box. Curious learners losing their spark because nobody met them where they actually were.</p>
+          <p>I knew there was a better way. With years of teaching experience and a deep belief in every child's potential, I built a school where learning is personal — where a 7-year-old can work on 2nd grade math and kindergarten reading at the same time, without shame, without limits.</p>
+          <p>Our approach combines the warmth of small-class, personal attention with the power of adaptive technology that tracks 94 individual skills. The result? Children who don't just "keep up" — they <em>thrive</em>.</p>
+          <p>I'd love to show you how it works for your family.</p>
+          <div class="signature">— Sandra Brooks, Founder & Lead Educator</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== TUITION ====== -->
+  <section class="section section-alt" id="tuition">
+    <div class="container">
+      <div class="text-center fade-up">
+        <span class="section-label">Tuition & Pricing</span>
+        <h2 class="section-title">Transparent, Affordable Pricing</h2>
+        <p class="section-subtitle">Quality personalized education shouldn't break the bank. Here's what to expect.</p>
+      </div>
+      <div class="tuition-table-wrap fade-up">
+        <table class="tuition-table">
+          <thead>
+            <tr>
+              <th>Program</th>
+              <th>Pricing</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Full-Time Academy</strong></td>
+              <td>
+                <span class="price">$175/month</span><br>
+                or <span class="price">$1,750/year</span>
+                <span class="savings"> — Save 2 months!</span>
+              </td>
+              <td>Complete K–6 personalized education with daily adaptive learning and teacher support</td>
+            </tr>
+            <tr>
+              <td><strong>Tutoring — Single Session</strong></td>
+              <td><span class="price">$30/hour</span></td>
+              <td>One-on-one, targeted skill building</td>
+            </tr>
+            <tr>
+              <td><strong>Tutoring — 5 Pack</strong></td>
+              <td>
+                <span class="price">$140</span>
+                <span class="savings"> ($28/hr)</span>
+              </td>
+              <td>5 one-hour sessions — great for focused skill gaps</td>
+            </tr>
+            <tr>
+              <td><strong>Tutoring — 10 Pack</strong></td>
+              <td>
+                <span class="price">$250</span>
+                <span class="savings"> ($25/hr)</span>
+              </td>
+              <td>10 one-hour sessions — best value for ongoing support</td>
+            </tr>
+            <tr>
+              <td><strong>Summer Enrichment</strong></td>
+              <td>
+                <span class="price">$450 full program</span><br>
+                or <span class="price">$125/month</span>
+              </td>
+              <td>8-week intensive to build skills and prevent summer slide</td>
+            </tr>
+            <tr>
+              <td><strong>A La Carte Courses</strong></td>
+              <td><span class="price">$60/course</span></td>
+              <td>Individual subject courses at your child's pace</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="tuition-extras fade-up">
+        <div class="tuition-extra-card">
+          <h4>👨‍👩‍👧‍👦 Family Discounts</h4>
+          <p>2nd child receives <strong>25% off</strong>. 3rd child and beyond receive <strong>50% off</strong>. Education for the whole family.</p>
+        </div>
+        <div class="tuition-extra-card">
+          <h4>🌟 Founders' Rate</h4>
+          <p>Our first <strong>10 families</strong> lock in these rates permanently — even as tuition adjusts in the future. Don't miss your spot.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== ENROLLMENT / CONTACT ====== -->
+  <section class="section section-warm" id="enrollment">
+    <div class="container">
+      <div class="enrollment-grid">
+        <div class="enrollment-info fade-up" id="contact">
+          <span class="section-label">Get Started</span>
+          <h2>Ready to Start Your Child's Journey?</h2>
+          <p>Schedule a free consultation to learn how Achievement Academy can help your child thrive. We'll walk you through our assessment process, answer your questions, and find the right program for your family.</p>
+          <p>No pressure. No obligations. Just a conversation about your child's potential.</p>
+
+          <div style="margin-top: 32px;">
+            <div class="contact-detail">
+              <div class="icon">✉️</div>
+              <div>
+                <div style="font-size:0.82rem; color:#94a3b8; font-weight:400;">Email us</div>
+                <a href="mailto:sandra@aaacademy.us">sandra@aaacademy.us</a>
+              </div>
+            </div>
+            <div class="contact-detail">
+              <div class="icon">📍</div>
+              <div>
+                <div style="font-size:0.82rem; color:#94a3b8; font-weight:400;">Serving families</div>
+                <span>Online & In-Person</span>
+              </div>
+            </div>
+            <div class="contact-detail">
+              <div class="icon">🕐</div>
+              <div>
+                <div style="font-size:0.82rem; color:#94a3b8; font-weight:400;">Response time</div>
+                <span>Within 24 hours</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="contact-form fade-up">
+          <h3 style="font-size:1.3rem; margin-bottom:24px;">Schedule a Free Consultation</h3>
+          <form id="contactForm" onsubmit="return false;">
+            <div class="form-group">
+              <label for="parentName">Your Name</label>
+              <input type="text" id="parentName" name="parentName" placeholder="e.g. Maria Johnson" required>
+            </div>
+            <div class="form-group">
+              <label for="email">Email Address</label>
+              <input type="email" id="email" name="email" placeholder="e.g. maria@email.com" required>
+            </div>
+            <div class="form-group">
+              <label for="childAge">Child's Age</label>
+              <select id="childAge" name="childAge">
+                <option value="" disabled selected>Select your child's age</option>
+                <option value="4">4 years old</option>
+                <option value="5">5 years old</option>
+                <option value="6">6 years old</option>
+                <option value="7">7 years old</option>
+                <option value="8">8 years old</option>
+                <option value="9">9 years old</option>
+                <option value="10">10 years old</option>
+                <option value="11">11 years old</option>
+                <option value="12">12 years old</option>
+                <option value="13+">13+ years old</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="message">Tell Us About Your Child</label>
+              <textarea id="message" name="message" placeholder="What are your biggest concerns or goals for your child's education?"></textarea>
+            </div>
+            <button type="submit" class="btn btn-gold" style="width:100%;">Request a Free Consultation</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== FOOTER ====== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="nav-logo">
+            <span class="logo-icon">🎓</span> Achievement Academy
+          </div>
+          <p>Personalized education that meets every child exactly where they are. Building confidence, closing gaps, and unlocking potential — one milestone at a time.</p>
+        </div>
+        <div>
+          <h4>Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="#about">About Us</a></li>
+            <li><a href="#programs">Programs</a></li>
+            <li><a href="#tuition">Tuition</a></li>
+            <li><a href="#enrollment">Enrollment</a></li>
+            <li><a href="https://a2compass.org" target="_blank" rel="noopener">Login to A² Compass</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Legal</h4>
+          <ul class="footer-links">
+            <li><a href="/privacy">Privacy Policy</a></li>
+            <li><a href="/terms">Terms of Service</a></li>
+          </ul>
+          <h4 style="margin-top:24px;">Follow Us</h4>
+          <div class="footer-social">
+            <!-- SOCIAL: Replace with actual social links -->
+            <a href="#" aria-label="Facebook">f</a>
+            <a href="#" aria-label="Instagram">ig</a>
+            <a href="#" aria-label="YouTube">yt</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2026 Achievement Academy. All rights reserved.</span>
+        <span>Powered by <a href="https://a2compass.org" target="_blank" rel="noopener" style="color:#D4A843;">A² Compass</a></span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ====== JS ====== -->
+  <script>
+    // Navbar scroll effect
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 20);
+    });
+
+    // Mobile menu toggle
+    const hamburger = document.getElementById('hamburger');
+    const navLinks = document.getElementById('navLinks');
+    hamburger.addEventListener('click', () => {
+      hamburger.classList.toggle('active');
+      navLinks.classList.toggle('active');
+    });
+    // Close mobile menu on link click
+    navLinks.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        hamburger.classList.remove('active');
+        navLinks.classList.remove('active');
+      });
+    });
+
+    // Scroll animations
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>
