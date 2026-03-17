@@ -34,11 +34,14 @@ import ParentBillingPage from './pages/parent/Billing'
 import EnrollPage from './pages/parent/Enroll'
 import GrowthTimeline from './pages/parent/GrowthTimeline'
 import AssessmentSummary from './pages/parent/AssessmentSummary'
+import ParentOrientation from './pages/parent/ParentOrientation'
 
 // Student pages
 import FlightPlan from './pages/student/FlightPlan'
 import ActivityPlayer from './pages/student/activity-player/ActivityPlayer'
 import AssessmentPlayer from './pages/student/AssessmentPlayer'
+import OrientationWizard from './pages/student/OrientationWizard'
+import WarmActivities from './pages/student/WarmActivities'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, loading } = useAuth()
@@ -106,6 +109,7 @@ export default function App() {
 
         {/* Parent Routes */}
         <Route path="parent" element={<ParentDashboard />} />
+        <Route path="parent/orientation" element={<ParentOrientation />} />
         <Route path="parent/progress" element={<ParentDashboard />} />
         <Route path="parent/growth" element={<GrowthTimeline />} />
         <Route path="parent/assessments" element={<AssessmentSummary />} />
@@ -117,6 +121,8 @@ export default function App() {
 
         {/* Student Routes */}
         <Route path="student" element={<FlightPlan />} />
+        <Route path="student/orientation" element={<OrientationWizard />} />
+        <Route path="student/activities" element={<WarmActivities />} />
         <Route path="student/assessment" element={<AssessmentPlayer />} />
         <Route path="student/activity/:id" element={<ActivityPlayer />} />
         <Route path="student/subjects" element={<FlightPlan />} />
