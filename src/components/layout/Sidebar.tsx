@@ -22,6 +22,7 @@ const navItems: Record<string, NavItem[]> = {
     { path: '/teacher/mission-control', label: 'Mission Control', icon: '🎯' },
     { path: '/teacher/students', label: 'My Students', icon: '👩‍🎓' },
     { path: '/teacher/skill-map', label: 'Skill Map', icon: '🧠' },
+    { path: '/teacher/assessments', label: 'Assessments', icon: '📋' },
     { path: '/teacher/mastery', label: 'Mastery Tracker', icon: '📊' },
     { path: '/teacher/schedule', label: 'Schedule', icon: '📅' },
     // Content creation section
@@ -30,11 +31,13 @@ const navItems: Record<string, NavItem[]> = {
     { path: '/teacher/library', label: 'Content Library', icon: '📚' },
     { path: '/teacher/curriculum', label: 'Curriculum', icon: '🗂️' },
     { path: '/teacher/assignments', label: 'Assignments', icon: '📝' },
+    { path: '/teacher/item-bank', label: 'Item Bank', icon: '🏦' },
   ],
   parent: [
     { path: '/parent', label: 'Family Hub', icon: '🏠' },
     { path: '/parent/progress', label: 'Progress', icon: '📈' },
     { path: '/parent/growth', label: 'Growth Timeline', icon: '🌱' },
+    { path: '/parent/assessments', label: 'Assessments', icon: '📋' },
     { path: '/parent/milestones', label: 'Milestones', icon: '🎉' },
     { path: '/parent/certificates', label: 'Certificates', icon: '🏆' },
     { path: '/parent/billing', label: 'Billing', icon: '💳' },
@@ -43,6 +46,7 @@ const navItems: Record<string, NavItem[]> = {
   ],
   student: [
     { path: '/student', label: 'Flight Plan', icon: '🛫' },
+    { path: '/student/assessment', label: 'My Assessment', icon: '🌟' },
     { path: '/student/subjects', label: 'My Subjects', icon: '📚' },
     { path: '/student/progress', label: 'My Progress', icon: '🎯' },
     { path: '/student/achievements', label: 'Achievements', icon: '🏆' },

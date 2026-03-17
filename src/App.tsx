@@ -25,16 +25,20 @@ import ActivityCreator from './pages/teacher/activities/ActivityCreator'
 import ContentLibrary from './pages/teacher/library/ContentLibrary'
 import CurriculumPlanner from './pages/teacher/curriculum/CurriculumPlanner'
 import AssignmentTool from './pages/teacher/assignments/AssignmentTool'
+import AssessmentDashboard from './pages/teacher/AssessmentDashboard'
+import ItemBankReview from './pages/teacher/ItemBankReview'
 
 // Parent pages
 import ParentDashboard from './pages/parent/Dashboard'
 import ParentBillingPage from './pages/parent/Billing'
 import EnrollPage from './pages/parent/Enroll'
 import GrowthTimeline from './pages/parent/GrowthTimeline'
+import AssessmentSummary from './pages/parent/AssessmentSummary'
 
 // Student pages
 import FlightPlan from './pages/student/FlightPlan'
 import ActivityPlayer from './pages/student/activity-player/ActivityPlayer'
+import AssessmentPlayer from './pages/student/AssessmentPlayer'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, loading } = useAuth()
@@ -88,6 +92,8 @@ export default function App() {
         <Route path="teacher/schedule" element={<TeacherDashboard />} />
         <Route path="teacher/mastery" element={<TeacherDashboard />} />
         <Route path="teacher/skill-map" element={<SkillMap />} />
+        <Route path="teacher/assessments" element={<AssessmentDashboard />} />
+        <Route path="teacher/item-bank" element={<ItemBankReview />} />
         <Route path="teacher/lessons" element={<LessonsList />} />
         <Route path="teacher/lessons/new" element={<LessonBuilder />} />
         <Route path="teacher/lessons/:id" element={<LessonBuilder />} />
@@ -102,6 +108,7 @@ export default function App() {
         <Route path="parent" element={<ParentDashboard />} />
         <Route path="parent/progress" element={<ParentDashboard />} />
         <Route path="parent/growth" element={<GrowthTimeline />} />
+        <Route path="parent/assessments" element={<AssessmentSummary />} />
         <Route path="parent/milestones" element={<ParentDashboard />} />
         <Route path="parent/certificates" element={<ParentDashboard />} />
         <Route path="parent/billing" element={<ParentBillingPage />} />
@@ -110,6 +117,7 @@ export default function App() {
 
         {/* Student Routes */}
         <Route path="student" element={<FlightPlan />} />
+        <Route path="student/assessment" element={<AssessmentPlayer />} />
         <Route path="student/activity/:id" element={<ActivityPlayer />} />
         <Route path="student/subjects" element={<FlightPlan />} />
         <Route path="student/progress" element={<FlightPlan />} />

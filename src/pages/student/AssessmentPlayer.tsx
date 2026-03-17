@@ -1,0 +1,970 @@
+// ============================================================
+// A² Compass — Assessment Player (Student-Facing)
+// Child-friendly, audio-supported, game-like assessment experience
+// ============================================================
+import { useState, useEffect, useCallback } from 'react';
+import { useAssessmentPlayer } from '../../hooks/useAssessment';
+import { useAuth } from '../../hooks';
+import { LoadingSpinner } from '../../components/common';
+import type {
+  NextItemResult,
+  ProcessResponseResult,
+  QuestionType,
+  SessionType,
+} from '../../types/assessment';
+
+// ---------- TTS Helper ----------
+const speak = (text: string) => {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.9;
+    utterance.pitch = 1.1;
+    window.speechSynthesis.speak(utterance);
+  }
+};
+
+// ---------- Encouraging messages ----------
+const CORRECT_MESSAGES = [
+  '🌟 Amazing! You got it!',
+  '⭐ Fantastic job!',
+  '🎉 You\'re a superstar!',
+  '✨ Wonderful! Keep going!',
+  '🌈 Brilliant work!',
+];
+const INCORRECT_MESSAGES = [
+  'That\'s okay! Let\'s learn together.',
+  'Good try! You\'re learning so much.',
+  'Almost! Let\'s see the answer.',
+  'Great effort! Practice makes perfect.',
+];
+
+function randomMessage(arr: string[]) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+// ==========================================================
+// Main Assessment Player Page
+// ==========================================================
+export default function AssessmentPlayer() {
+  const { user } = useAuth();
+  const studentId = user?.id ?? '';
+
+  const {
+    session,
+    currentSkill,
+    currentItem,
+    showFeedback,
+    lastResponse,
+    showHint,
+    isPaused,
+    isComplete,
+    completionSummary,
+    domainTransition,
+    loading,
+    error,
+    startSession,
+    submitAnswer,
+    useHint,
+    pauseSession,
+    resumeSession,
+  } = useAssessmentPlayer(studentId);
+
+  const [starsEarned, setStarsEarned] = useState(0);
+  const [starAnimation, setStarAnimation] = useState(false);
+  const [sessionType, setSessionType] = useState<SessionType>('initial_placement');
+
+  // Track stars from correct answers
+  useEffect(() => {
+    if (lastResponse?.isCorrect) {
+      setStarsEarned((prev) => prev + 1);
+      setStarAnimation(true);
+      setTimeout(() => setStarAnimation(false), 600);
+    }
+  }, [lastResponse]);
+
+  // ---------- Start Screen ----------
+  if (!session && !loading && !isComplete) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center p-6">
+        <div className="bg-white rounded-3xl shadow-xl p-10 max-w-md w-full text-center">
+          <div className="text-6xl mb-4">🌟</div>
+          <h1 className="text-3xl font-bold text-indigo-700 mb-2">
+            My Learning Adventure
+          </h1>
+          <p className="text-gray-600 mb-8 text-lg">
+            Let's see what you already know! There are no wrong answers — just do
+            your best!
+          </p>
+
+          <button
+            onClick={() => startSession(sessionType)}
+            className="w-full py-4 px-6 bg-indigo-600 text-white text-xl font-bold rounded-2xl
+                       hover:bg-indigo-700 active:scale-95 transition-all shadow-lg"
+          >
+            🚀 Let's Go!
+          </button>
+
+          <button
+            onClick={() => speak('Let\'s see what you already know! There are no wrong answers, just do your best!')}
+            className="mt-4 text-indigo-500 hover:text-indigo-700 flex items-center justify-center gap-2 mx-auto"
+          >
+            🔊 Read to me
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center">
+        <div className="text-center">
+          <LoadingSpinner size="lg" />
+          <p className="mt-4 text-indigo-600 text-lg font-medium">
+            Getting your adventure ready...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ---------- Domain Transition Screen ----------
+  if (domainTransition) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-orange-50 to-pink-50 flex items-center justify-center p-6">
+        <div className="text-center animate-bounce-slow">
+          <div className="text-7xl mb-6">🎉</div>
+          <h2 className="text-3xl font-bold text-orange-600 mb-3">
+            Great work!
+          </h2>
+          <p className="text-xl text-gray-700">
+            Now let's explore{' '}
+            <span className="font-bold text-orange-700">{domainTransition}</span>!
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ---------- Completion Screen ----------
+  if (isComplete) {
+    const mastered = completionSummary?.mastered ?? 0;
+    const total = completionSummary?.totalSkillsAssessed ?? 0;
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-green-50 to-teal-50 flex items-center justify-center p-6">
+        <div className="bg-white rounded-3xl shadow-xl p-10 max-w-lg w-full text-center">
+          <div className="text-7xl mb-4">🏆</div>
+          <h1 className="text-3xl font-bold text-green-700 mb-2">
+            You did it!
+          </h1>
+          <p className="text-xl text-gray-700 mb-6">
+            You answered {session?.items_attempted ?? 0} questions and earned{' '}
+            <span className="font-bold text-yellow-600">{starsEarned} stars</span>!
+          </p>
+
+          {total > 0 && (
+            <div className="bg-green-50 rounded-2xl p-6 mb-6 text-left">
+              <h3 className="font-bold text-green-800 mb-3 text-lg">
+                ⭐ You're a superstar at:
+              </h3>
+              <p className="text-green-700">
+                {mastered} out of {total} skills mastered!
+              </p>
+              {completionSummary!.needsPractice > 0 && (
+                <div className="mt-4">
+                  <h3 className="font-bold text-blue-800 mb-1">
+                    🎯 Next on your adventure:
+                  </h3>
+                  <p className="text-blue-600">
+                    {completionSummary!.needsPractice} skills to practice
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Confetti-style stars */}
+          <div className="flex justify-center gap-2 mb-6 text-3xl">
+            {'⭐'.repeat(Math.min(starsEarned, 10))}
+          </div>
+
+          <button
+            onClick={() => window.history.back()}
+            className="w-full py-4 px-6 bg-green-600 text-white text-xl font-bold rounded-2xl
+                       hover:bg-green-700 active:scale-95 transition-all shadow-lg"
+          >
+            🎓 Show my teacher!
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ---------- Paused Screen ----------
+  if (isPaused) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-6">
+        <div className="bg-white rounded-3xl shadow-xl p-10 max-w-md w-full text-center">
+          <div className="text-6xl mb-4">⏸️</div>
+          <h2 className="text-2xl font-bold text-indigo-700 mb-4">
+            Taking a break!
+          </h2>
+          <p className="text-gray-600 mb-8">
+            Your adventure is saved. Come back when you're ready!
+          </p>
+          <button
+            onClick={resumeSession}
+            className="w-full py-4 px-6 bg-indigo-600 text-white text-xl font-bold rounded-2xl
+                       hover:bg-indigo-700 active:scale-95 transition-all shadow-lg"
+          >
+            ▶️ Keep Going!
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ---------- Error State ----------
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center p-6">
+        <div className="bg-white rounded-3xl shadow-xl p-10 max-w-md w-full text-center">
+          <div className="text-5xl mb-4">😕</div>
+          <h2 className="text-xl font-bold text-red-600 mb-2">Oops!</h2>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="py-3 px-6 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ---------- Main Question View ----------
+  const item = currentItem?.item;
+  const progress = currentItem?.progress;
+  const skillsChecked = session?.skills_assessed ?? 0;
+  const totalTarget = session?.target_skill_ids?.length || 0;
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+      {/* Top Bar */}
+      <div className="bg-white/80 backdrop-blur-sm shadow-sm px-4 py-3">
+        <div className="max-w-2xl mx-auto flex items-center justify-between">
+          <div>
+            <h1 className="text-lg font-bold text-indigo-700 flex items-center gap-2">
+              🌟 My Learning Adventure
+            </h1>
+            {currentSkill?.domainName && (
+              <p className="text-sm text-gray-500">
+                {currentSkill.domainName}
+                {currentSkill.skillName && ` — ${currentSkill.skillName}`}
+              </p>
+            )}
+          </div>
+          <button
+            onClick={pauseSession}
+            className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-colors"
+            aria-label="Pause"
+          >
+            <span className="text-2xl">⏸</span>
+          </button>
+        </div>
+
+        {/* Progress Bar */}
+        {totalTarget > 0 && (
+          <div className="max-w-2xl mx-auto mt-2">
+            <div className="flex items-center gap-3">
+              <div className="flex-1 h-3 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-indigo-400 to-purple-500 rounded-full transition-all duration-500"
+                  style={{
+                    width: `${Math.min(100, (skillsChecked / totalTarget) * 100)}%`,
+                  }}
+                />
+              </div>
+              <span className="text-xs text-gray-500 whitespace-nowrap">
+                {skillsChecked} of {totalTarget} skills checked
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Question Area */}
+      <div className="max-w-2xl mx-auto px-4 py-8">
+        {/* Feedback Overlay */}
+        {showFeedback && lastResponse && (
+          <FeedbackOverlay response={lastResponse} />
+        )}
+
+        {/* Question Content */}
+        {item && !showFeedback && (
+          <div className="bg-white rounded-3xl shadow-lg p-8">
+            {/* Audio button */}
+            <button
+              onClick={() => {
+                const questionText =
+                  item.questionData?.questionText ||
+                  item.questionData?.prompt ||
+                  'Listen to the question';
+                speak(item.audioPrompt || questionText);
+              }}
+              className="mb-6 flex items-center gap-2 text-indigo-500 hover:text-indigo-700 transition-colors"
+            >
+              <span className="text-3xl">🔊</span>
+              <span className="text-sm font-medium">Play Question</span>
+            </button>
+
+            {/* Render the appropriate question type */}
+            <QuestionRenderer
+              item={item}
+              questionType={item.questionType}
+              onAnswer={(response, isCorrect) => submitAnswer(response, isCorrect)}
+              showHint={showHint}
+              disabled={showFeedback}
+            />
+
+            {/* Hint button */}
+            {item.hintText && !showHint && (
+              <button
+                onClick={useHint}
+                className="mt-6 text-amber-500 hover:text-amber-600 flex items-center gap-2 transition-colors"
+              >
+                💡 Need a hint?
+              </button>
+            )}
+            {showHint && item.hintText && (
+              <div className="mt-4 bg-amber-50 border border-amber-200 rounded-2xl p-4 text-amber-800">
+                💡 {item.hintText}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Star Counter */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-sm border-t border-gray-200 py-3 px-4">
+        <div className="max-w-2xl mx-auto flex items-center justify-center gap-2">
+          <span
+            className={`text-2xl transition-transform ${
+              starAnimation ? 'scale-150' : 'scale-100'
+            }`}
+          >
+            ⭐
+          </span>
+          <span className="text-lg font-bold text-yellow-600">
+            Stars earned: {starsEarned}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ==========================================================
+// Feedback Overlay
+// ==========================================================
+function FeedbackOverlay({ response }: { response: ProcessResponseResult }) {
+  const isCorrect = response.isCorrect;
+
+  useEffect(() => {
+    const msg = isCorrect ? randomMessage(CORRECT_MESSAGES) : randomMessage(INCORRECT_MESSAGES);
+    speak(msg);
+  }, [isCorrect]);
+
+  return (
+    <div
+      className={`rounded-3xl p-10 text-center ${
+        isCorrect
+          ? 'bg-gradient-to-br from-green-50 to-emerald-100 border-2 border-green-300'
+          : 'bg-gradient-to-br from-orange-50 to-amber-100 border-2 border-orange-300'
+      }`}
+    >
+      <div className="text-6xl mb-4">
+        {isCorrect ? '🌟' : '🤗'}
+      </div>
+      <h2
+        className={`text-2xl font-bold mb-2 ${
+          isCorrect ? 'text-green-700' : 'text-orange-700'
+        }`}
+      >
+        {isCorrect ? randomMessage(CORRECT_MESSAGES) : randomMessage(INCORRECT_MESSAGES)}
+      </h2>
+      {response.explanation && (
+        <p className="text-gray-600 mt-3">{response.explanation}</p>
+      )}
+    </div>
+  );
+}
+
+// ==========================================================
+// Question Renderer Router
+// ==========================================================
+interface RendererProps {
+  item: NonNullable<NextItemResult['item']>;
+  questionType: QuestionType;
+  onAnswer: (response: Record<string, any>, isCorrect: boolean) => void;
+  showHint: boolean;
+  disabled: boolean;
+}
+
+function QuestionRenderer({ item, questionType, onAnswer, showHint, disabled }: RendererProps) {
+  switch (questionType) {
+    case 'multiple_choice':
+      return <MultipleChoiceRenderer item={item} onAnswer={onAnswer} disabled={disabled} />;
+    case 'tap_select':
+      return <TapSelectRenderer item={item} onAnswer={onAnswer} disabled={disabled} />;
+    case 'counting':
+      return <CountingRenderer item={item} onAnswer={onAnswer} disabled={disabled} />;
+    case 'fill_blank':
+      return <FillBlankRenderer item={item} onAnswer={onAnswer} disabled={disabled} />;
+    case 'matching':
+      return <MatchingRenderer item={item} onAnswer={onAnswer} disabled={disabled} />;
+    case 'sequence':
+      return <SequenceRenderer item={item} onAnswer={onAnswer} disabled={disabled} />;
+    case 'drag_drop':
+      return <DragDropRenderer item={item} onAnswer={onAnswer} disabled={disabled} />;
+    case 'teacher_observed':
+      return <TeacherObservedRenderer item={item} onAnswer={onAnswer} disabled={disabled} />;
+    case 'audio_response':
+      return <AudioResponseRenderer item={item} onAnswer={onAnswer} disabled={disabled} />;
+    default:
+      return <MultipleChoiceRenderer item={item} onAnswer={onAnswer} disabled={disabled} />;
+  }
+}
+
+// ==========================================================
+// Question Type Renderers
+// ==========================================================
+
+interface QProps {
+  item: NonNullable<NextItemResult['item']>;
+  onAnswer: (response: Record<string, any>, isCorrect: boolean) => void;
+  disabled: boolean;
+}
+
+/** Large, friendly multiple-choice buttons */
+function MultipleChoiceRenderer({ item, onAnswer, disabled }: QProps) {
+  const qd = item.questionData;
+  const options: string[] = qd.options || [];
+  const correctAnswer = qd.correctAnswer ?? qd.answer;
+  const questionText = qd.questionText || qd.prompt || '';
+  const displayContent = qd.display || qd.stimulus;
+
+  return (
+    <div>
+      <p className="text-xl font-semibold text-gray-800 mb-4">{questionText}</p>
+      {displayContent && (
+        <div className="text-5xl font-bold text-indigo-700 text-center my-6 p-6 bg-indigo-50 rounded-2xl">
+          {displayContent}
+        </div>
+      )}
+      <div className="grid grid-cols-2 gap-4 mt-6">
+        {options.map((opt, idx) => (
+          <button
+            key={idx}
+            onClick={() => {
+              if (disabled) return;
+              const isCorrect = opt === correctAnswer;
+              onAnswer({ selected: opt }, isCorrect);
+            }}
+            disabled={disabled}
+            className="min-h-[64px] p-4 text-lg font-bold rounded-2xl border-2 border-gray-200
+                       bg-white hover:bg-indigo-50 hover:border-indigo-400
+                       active:scale-95 transition-all disabled:opacity-50
+                       text-gray-800 shadow-sm"
+          >
+            {opt}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Tap to select multiple correct answers */
+function TapSelectRenderer({ item, onAnswer, disabled }: QProps) {
+  const [selected, setSelected] = useState<string[]>([]);
+  const qd = item.questionData;
+  const options: string[] = qd.options || [];
+  const correctAnswers: string[] = qd.correctAnswers || [];
+  const questionText = qd.questionText || qd.prompt || '';
+
+  const toggle = (opt: string) => {
+    if (disabled) return;
+    setSelected((prev) =>
+      prev.includes(opt) ? prev.filter((s) => s !== opt) : [...prev, opt]
+    );
+  };
+
+  const handleSubmit = () => {
+    const isCorrect =
+      selected.length === correctAnswers.length &&
+      selected.every((s) => correctAnswers.includes(s));
+    onAnswer({ selected }, isCorrect);
+  };
+
+  return (
+    <div>
+      <p className="text-xl font-semibold text-gray-800 mb-4">{questionText}</p>
+      <p className="text-sm text-gray-500 mb-4">Tap all that are correct!</p>
+      <div className="grid grid-cols-2 gap-3">
+        {options.map((opt, idx) => (
+          <button
+            key={idx}
+            onClick={() => toggle(opt)}
+            disabled={disabled}
+            className={`min-h-[64px] p-4 text-lg font-bold rounded-2xl border-2 transition-all
+                       active:scale-95 disabled:opacity-50
+                       ${
+                         selected.includes(opt)
+                           ? 'bg-indigo-100 border-indigo-500 text-indigo-800'
+                           : 'bg-white border-gray-200 text-gray-800 hover:bg-indigo-50'
+                       }`}
+          >
+            {selected.includes(opt) && '✓ '}
+            {opt}
+          </button>
+        ))}
+      </div>
+      {selected.length > 0 && (
+        <button
+          onClick={handleSubmit}
+          disabled={disabled}
+          className="mt-6 w-full py-4 bg-indigo-600 text-white text-lg font-bold rounded-2xl
+                     hover:bg-indigo-700 active:scale-95 transition-all"
+        >
+          Check my answer!
+        </button>
+      )}
+    </div>
+  );
+}
+
+/** Count visual objects */
+function CountingRenderer({ item, onAnswer, disabled }: QProps) {
+  const [count, setCount] = useState<number | null>(null);
+  const qd = item.questionData;
+  const objects: string[] = qd.objects || [];
+  const correctCount = qd.correctCount ?? objects.length;
+  const questionText = qd.questionText || 'How many do you see?';
+
+  return (
+    <div>
+      <p className="text-xl font-semibold text-gray-800 mb-4">{questionText}</p>
+      <div className="flex flex-wrap gap-3 justify-center p-6 bg-blue-50 rounded-2xl mb-6">
+        {objects.map((obj, idx) => (
+          <span key={idx} className="text-4xl">
+            {obj}
+          </span>
+        ))}
+      </div>
+      <div className="flex items-center justify-center gap-3">
+        {Array.from({ length: Math.min(10, correctCount + 3) }, (_, i) => i + 1).map(
+          (num) => (
+            <button
+              key={num}
+              onClick={() => {
+                if (disabled) return;
+                setCount(num);
+                onAnswer({ count: num }, num === correctCount);
+              }}
+              disabled={disabled}
+              className={`w-14 h-14 text-xl font-bold rounded-2xl border-2 transition-all
+                         active:scale-95 disabled:opacity-50
+                         ${
+                           count === num
+                             ? 'bg-indigo-500 border-indigo-600 text-white'
+                             : 'bg-white border-gray-200 text-gray-800 hover:bg-indigo-50'
+                         }`}
+            >
+              {num}
+            </button>
+          )
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** Fill in the blank with a dropdown or input */
+function FillBlankRenderer({ item, onAnswer, disabled }: QProps) {
+  const [value, setValue] = useState('');
+  const qd = item.questionData;
+  const sentence = qd.sentence || qd.questionText || '';
+  const options: string[] = qd.options || [];
+  const correctAnswer = qd.correctAnswer ?? qd.answer;
+
+  const handleSubmit = () => {
+    if (disabled || !value) return;
+    onAnswer({ answer: value }, value === correctAnswer);
+  };
+
+  return (
+    <div>
+      <p className="text-xl font-semibold text-gray-800 mb-4">Fill in the blank:</p>
+      <p className="text-lg text-gray-700 mb-6 bg-gray-50 rounded-2xl p-4">
+        {sentence.replace('___', '______')}
+      </p>
+      {options.length > 0 ? (
+        <div className="grid grid-cols-2 gap-3">
+          {options.map((opt, idx) => (
+            <button
+              key={idx}
+              onClick={() => {
+                if (disabled) return;
+                setValue(opt);
+                onAnswer({ answer: opt }, opt === correctAnswer);
+              }}
+              disabled={disabled}
+              className="min-h-[64px] p-4 text-lg font-bold rounded-2xl border-2 border-gray-200
+                         bg-white hover:bg-indigo-50 hover:border-indigo-400
+                         active:scale-95 transition-all disabled:opacity-50"
+            >
+              {opt}
+            </button>
+          ))}
+        </div>
+      ) : (
+        <div className="flex gap-3">
+          <input
+            type="text"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            disabled={disabled}
+            className="flex-1 text-xl p-4 rounded-2xl border-2 border-gray-200 focus:border-indigo-400 outline-none"
+            placeholder="Type your answer..."
+          />
+          <button
+            onClick={handleSubmit}
+            disabled={disabled || !value}
+            className="py-4 px-6 bg-indigo-600 text-white font-bold rounded-2xl
+                       hover:bg-indigo-700 active:scale-95 transition-all disabled:opacity-50"
+          >
+            ✓
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Simplified matching: tap pairs */
+function MatchingRenderer({ item, onAnswer, disabled }: QProps) {
+  const qd = item.questionData;
+  const pairs: { left: string; right: string }[] = qd.pairs || [];
+  const [matched, setMatched] = useState<Record<string, string>>({});
+  const [selectedLeft, setSelectedLeft] = useState<string | null>(null);
+
+  const lefts = pairs.map((p) => p.left);
+  const rights = pairs.map((p) => p.right).sort(() => Math.random() - 0.5);
+
+  const handleLeftClick = (left: string) => {
+    if (disabled) return;
+    setSelectedLeft(left);
+  };
+
+  const handleRightClick = (right: string) => {
+    if (disabled || !selectedLeft) return;
+    const updated = { ...matched, [selectedLeft]: right };
+    setMatched(updated);
+    setSelectedLeft(null);
+
+    // Check if all matched
+    if (Object.keys(updated).length === pairs.length) {
+      const allCorrect = pairs.every((p) => updated[p.left] === p.right);
+      onAnswer({ matches: updated }, allCorrect);
+    }
+  };
+
+  return (
+    <div>
+      <p className="text-xl font-semibold text-gray-800 mb-2">
+        {qd.questionText || 'Match the pairs!'}
+      </p>
+      <p className="text-sm text-gray-500 mb-4">
+        Tap one on the left, then tap its match on the right.
+      </p>
+      <div className="grid grid-cols-2 gap-6">
+        <div className="space-y-3">
+          {lefts.map((left) => (
+            <button
+              key={left}
+              onClick={() => handleLeftClick(left)}
+              disabled={disabled || !!matched[left]}
+              className={`w-full min-h-[56px] p-3 text-lg font-bold rounded-xl border-2 transition-all
+                         ${
+                           matched[left]
+                             ? 'bg-green-100 border-green-400 text-green-800'
+                             : selectedLeft === left
+                             ? 'bg-indigo-100 border-indigo-500 text-indigo-800'
+                             : 'bg-white border-gray-200 hover:bg-indigo-50'
+                         }`}
+            >
+              {left}
+            </button>
+          ))}
+        </div>
+        <div className="space-y-3">
+          {rights.map((right) => (
+            <button
+              key={right}
+              onClick={() => handleRightClick(right)}
+              disabled={disabled || Object.values(matched).includes(right)}
+              className={`w-full min-h-[56px] p-3 text-lg font-bold rounded-xl border-2 transition-all
+                         ${
+                           Object.values(matched).includes(right)
+                             ? 'bg-green-100 border-green-400 text-green-800'
+                             : 'bg-white border-gray-200 hover:bg-purple-50'
+                         }`}
+            >
+              {right}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Sequence: tap "which comes first/next?" simplified */
+function SequenceRenderer({ item, onAnswer, disabled }: QProps) {
+  const qd = item.questionData;
+  const items: string[] = qd.items || [];
+  const correctOrder: string[] = qd.correctOrder || items;
+  const [order, setOrder] = useState<string[]>([]);
+  const remaining = items.filter((i) => !order.includes(i));
+
+  const handleTap = (val: string) => {
+    if (disabled) return;
+    const newOrder = [...order, val];
+    setOrder(newOrder);
+
+    if (newOrder.length === items.length) {
+      const isCorrect = newOrder.every((v, i) => v === correctOrder[i]);
+      onAnswer({ order: newOrder }, isCorrect);
+    }
+  };
+
+  return (
+    <div>
+      <p className="text-xl font-semibold text-gray-800 mb-2">
+        {qd.questionText || 'Put these in order!'}
+      </p>
+      <p className="text-sm text-gray-500 mb-4">Tap them in the right order.</p>
+
+      {/* Selected order */}
+      {order.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-4 p-4 bg-green-50 rounded-2xl min-h-[56px]">
+          {order.map((val, idx) => (
+            <span
+              key={idx}
+              className="px-4 py-2 bg-green-200 text-green-800 font-bold rounded-xl text-lg"
+            >
+              {idx + 1}. {val}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Remaining items */}
+      <div className="grid grid-cols-2 gap-3">
+        {remaining.map((val, idx) => (
+          <button
+            key={idx}
+            onClick={() => handleTap(val)}
+            disabled={disabled}
+            className="min-h-[64px] p-4 text-lg font-bold rounded-2xl border-2 border-gray-200
+                       bg-white hover:bg-indigo-50 hover:border-indigo-400
+                       active:scale-95 transition-all disabled:opacity-50"
+          >
+            {val}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Simplified drag-drop: tap source then tap target */
+function DragDropRenderer({ item, onAnswer, disabled }: QProps) {
+  const qd = item.questionData;
+  const draggables: string[] = qd.draggables || qd.items || [];
+  const targets: string[] = qd.targets || qd.zones || [];
+  const correctMapping: Record<string, string> = qd.correctMapping || {};
+  const [placements, setPlacements] = useState<Record<string, string>>({});
+  const [selectedItem, setSelectedItem] = useState<string | null>(null);
+
+  const handleItemTap = (val: string) => {
+    if (disabled) return;
+    setSelectedItem(val);
+  };
+
+  const handleTargetTap = (target: string) => {
+    if (disabled || !selectedItem) return;
+    const updated = { ...placements, [selectedItem]: target };
+    setPlacements(updated);
+    setSelectedItem(null);
+
+    if (Object.keys(updated).length === draggables.length) {
+      const isCorrect = Object.entries(correctMapping).every(
+        ([k, v]) => updated[k] === v
+      );
+      onAnswer({ placements: updated }, isCorrect);
+    }
+  };
+
+  return (
+    <div>
+      <p className="text-xl font-semibold text-gray-800 mb-2">
+        {qd.questionText || 'Put each item where it belongs!'}
+      </p>
+      <p className="text-sm text-gray-500 mb-4">
+        Tap an item, then tap where it goes.
+      </p>
+
+      {/* Items */}
+      <div className="flex flex-wrap gap-3 mb-6">
+        {draggables
+          .filter((d) => !placements[d])
+          .map((d, idx) => (
+            <button
+              key={idx}
+              onClick={() => handleItemTap(d)}
+              disabled={disabled}
+              className={`px-4 py-3 text-lg font-bold rounded-xl border-2 transition-all
+                         active:scale-95
+                         ${
+                           selectedItem === d
+                             ? 'bg-indigo-100 border-indigo-500 text-indigo-800'
+                             : 'bg-white border-gray-200 hover:bg-indigo-50'
+                         }`}
+            >
+              {d}
+            </button>
+          ))}
+      </div>
+
+      {/* Targets */}
+      <div className="grid grid-cols-2 gap-4">
+        {targets.map((t, idx) => (
+          <button
+            key={idx}
+            onClick={() => handleTargetTap(t)}
+            disabled={disabled}
+            className="min-h-[80px] p-4 border-2 border-dashed border-gray-300 rounded-2xl
+                       bg-gray-50 hover:bg-purple-50 hover:border-purple-400 transition-all text-center"
+          >
+            <span className="text-sm text-gray-500 block mb-1">{t}</span>
+            <div className="flex flex-wrap gap-1 justify-center">
+              {Object.entries(placements)
+                .filter(([, v]) => v === t)
+                .map(([k]) => (
+                  <span
+                    key={k}
+                    className="px-3 py-1 bg-purple-200 text-purple-800 rounded-lg font-bold text-sm"
+                  >
+                    {k}
+                  </span>
+                ))}
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Teacher-observed: shows task instructions, teacher marks pass/fail */
+function TeacherObservedRenderer({ item, onAnswer, disabled }: QProps) {
+  const qd = item.questionData;
+
+  return (
+    <div>
+      <div className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-6 mb-6">
+        <h3 className="font-bold text-blue-800 mb-2 flex items-center gap-2">
+          👩‍🏫 Teacher Observation Task
+        </h3>
+        <p className="text-blue-700 text-lg">
+          {qd.instructions || qd.questionText || 'Observe the student performing the task.'}
+        </p>
+        {qd.materials && (
+          <p className="text-blue-600 text-sm mt-2">
+            Materials: {qd.materials}
+          </p>
+        )}
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <button
+          onClick={() => onAnswer({ teacherResult: 'pass' }, true)}
+          disabled={disabled}
+          className="min-h-[72px] p-4 text-lg font-bold rounded-2xl border-2 border-green-300
+                     bg-green-50 text-green-700 hover:bg-green-100 active:scale-95 transition-all"
+        >
+          ✅ Pass
+        </button>
+        <button
+          onClick={() => onAnswer({ teacherResult: 'fail' }, false)}
+          disabled={disabled}
+          className="min-h-[72px] p-4 text-lg font-bold rounded-2xl border-2 border-orange-300
+                     bg-orange-50 text-orange-700 hover:bg-orange-100 active:scale-95 transition-all"
+        >
+          🔄 Needs Practice
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/** Audio response: play audio prompt, teacher marks correct */
+function AudioResponseRenderer({ item, onAnswer, disabled }: QProps) {
+  const qd = item.questionData;
+
+  return (
+    <div>
+      <div className="bg-purple-50 border-2 border-purple-200 rounded-2xl p-6 mb-6 text-center">
+        <h3 className="font-bold text-purple-800 mb-4">🎤 Listen & Respond</h3>
+        <p className="text-purple-700 text-lg mb-4">
+          {qd.instructions || qd.questionText || 'Listen to the prompt and respond out loud.'}
+        </p>
+        <button
+          onClick={() => speak(qd.audioPrompt || qd.prompt || qd.questionText || '')}
+          className="px-8 py-4 bg-purple-600 text-white text-xl font-bold rounded-2xl
+                     hover:bg-purple-700 active:scale-95 transition-all inline-flex items-center gap-3"
+        >
+          🔊 Play Sound
+        </button>
+      </div>
+
+      <p className="text-sm text-gray-500 text-center mb-4">
+        Teacher: Did the student respond correctly?
+      </p>
+
+      <div className="grid grid-cols-2 gap-4">
+        <button
+          onClick={() => onAnswer({ audioResult: 'correct' }, true)}
+          disabled={disabled}
+          className="min-h-[72px] p-4 text-lg font-bold rounded-2xl border-2 border-green-300
+                     bg-green-50 text-green-700 hover:bg-green-100 active:scale-95 transition-all"
+        >
+          ✅ Correct
+        </button>
+        <button
+          onClick={() => onAnswer({ audioResult: 'incorrect' }, false)}
+          disabled={disabled}
+          className="min-h-[72px] p-4 text-lg font-bold rounded-2xl border-2 border-orange-300
+                     bg-orange-50 text-orange-700 hover:bg-orange-100 active:scale-95 transition-all"
+        >
+          🔄 Try Again
+        </button>
+      </div>
+    </div>
+  );
+}
