@@ -1,7 +1,14 @@
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../../hooks'
 
-const navItems = {
+interface NavItem {
+  path: string
+  label: string
+  icon: string
+  divider?: boolean
+}
+
+const navItems: Record<string, NavItem[]> = {
   admin: [
     { path: '/admin', label: 'Command Center', icon: '📊' },
     { path: '/admin/students', label: 'Students', icon: '👩‍🎓' },
@@ -13,14 +20,22 @@ const navItems = {
   teacher: [
     { path: '/teacher', label: 'Mission Control', icon: '🎯' },
     { path: '/teacher/students', label: 'My Students', icon: '👩‍🎓' },
-    { path: '/teacher/schedule', label: 'Schedule', icon: '📅' },
+    { path: '/teacher/skill-map', label: 'Skill Map', icon: '🧠' },
     { path: '/teacher/mastery', label: 'Mastery Tracker', icon: '📊' },
-    { path: '/teacher/lessons', label: 'Lessons', icon: '📖' },
+    { path: '/teacher/schedule', label: 'Schedule', icon: '📅' },
+    // Content creation section
+    { path: '/teacher/lessons', label: 'Lessons', icon: '📖', divider: true },
+    { path: '/teacher/activities', label: 'Activities', icon: '🎮' },
+    { path: '/teacher/library', label: 'Content Library', icon: '📚' },
+    { path: '/teacher/curriculum', label: 'Curriculum', icon: '🗂️' },
+    { path: '/teacher/assignments', label: 'Assignments', icon: '📝' },
   ],
   parent: [
     { path: '/parent', label: 'Family Hub', icon: '🏠' },
     { path: '/parent/progress', label: 'Progress', icon: '📈' },
+    { path: '/parent/growth', label: 'Growth Timeline', icon: '🌱' },
     { path: '/parent/billing', label: 'Billing', icon: '💳' },
+    { path: '/parent/enroll', label: 'Enroll', icon: '📋' },
     { path: '/parent/messages', label: 'Messages', icon: '✉️' },
   ],
   student: [
@@ -44,23 +59,31 @@ export default function Sidebar() {
         <p className="text-sm text-white/60 mt-1">Achievement Academy</p>
       </div>
 
-      <nav className="flex-1 p-4 space-y-1">
-        {items.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            end={item.path === `/${user.role}`}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
-                isActive
-                  ? 'bg-white/15 text-white font-medium'
-                  : 'text-white/70 hover:bg-white/10 hover:text-white'
-              }`
-            }
-          >
-            <span>{item.icon}</span>
-            <span>{item.label}</span>
-          </NavLink>
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+        {items.map((item, i) => (
+          <div key={item.path}>
+            {item.divider && (
+              <div className="pt-3 pb-1 mt-2 border-t border-white/10">
+                <span className="text-[10px] uppercase tracking-wider text-white/40 px-3">
+                  Content Tools
+                </span>
+              </div>
+            )}
+            <NavLink
+              to={item.path}
+              end={item.path === `/${user.role}`}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                  isActive
+                    ? 'bg-white/15 text-white font-medium'
+                    : 'text-white/70 hover:bg-white/10 hover:text-white'
+                }`
+              }
+            >
+              <span>{item.icon}</span>
+              <span>{item.label}</span>
+            </NavLink>
+          </div>
         ))}
       </nav>
 
