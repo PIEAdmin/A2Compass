@@ -16,7 +16,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="font-display text-4xl font-bold text-white">A² Compass</h1>
-          <p className="text-blue-200 mt-2">Achievement Academy</p>
+          <p className="text-blue-200 mt-2">Achievement Academy — aaacademy.us</p>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-xl p-8 space-y-5">
@@ -60,6 +60,22 @@ export default function LoginPage() {
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
+
+        {/* Domain branding footer */}
+        <div className="text-center mt-6 space-y-1">
+          <p className="text-blue-300/70 text-xs">
+            Platform by A² Compass ·{' '}
+            <a href="https://a2compass.org" className="text-blue-300 hover:text-white underline" target="_blank" rel="noopener noreferrer">
+              a2compass.org
+            </a>
+          </p>
+          <p className="text-blue-300/50 text-xs">
+            Need help?{' '}
+            <a href="mailto:hello@a2compass.org" className="hover:text-blue-300 underline">
+              hello@a2compass.org
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   )

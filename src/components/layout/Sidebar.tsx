@@ -25,7 +25,6 @@ const navItems: Record<string, NavItem[]> = {
     { path: '/teacher/assessments', label: 'Assessments', icon: '📋' },
     { path: '/teacher/mastery', label: 'Mastery Tracker', icon: '📊' },
     { path: '/teacher/schedule', label: 'Schedule', icon: '📅' },
-    // Content creation section
     { path: '/teacher/lessons', label: 'Lessons', icon: '📖', divider: true },
     { path: '/teacher/activities', label: 'Activities', icon: '🎮' },
     { path: '/teacher/library', label: 'Content Library', icon: '📚' },
@@ -63,7 +62,10 @@ export default function Sidebar() {
     <aside className="w-64 bg-compass-navy min-h-screen text-white flex flex-col shrink-0">
       <div className="p-6 border-b border-white/10">
         <h1 className="font-display text-xl font-bold">A² Compass</h1>
-        <p className="text-sm text-white/60 mt-1">Achievement Academy</p>
+        <p className="text-sm text-white/60 mt-1">
+          Achievement Academy
+        </p>
+        <p className="text-[10px] text-white/30 mt-0.5">a2compass.org</p>
       </div>
 
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
