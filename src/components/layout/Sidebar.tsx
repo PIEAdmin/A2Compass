@@ -18,7 +18,8 @@ const navItems: Record<string, NavItem[]> = {
     { path: '/admin/reports', label: 'Reports', icon: '📈' },
   ],
   teacher: [
-    { path: '/teacher', label: 'Mission Control', icon: '🎯' },
+    { path: '/teacher', label: 'Dashboard', icon: '🏠' },
+    { path: '/teacher/mission-control', label: 'Mission Control', icon: '🎯' },
     { path: '/teacher/students', label: 'My Students', icon: '👩‍🎓' },
     { path: '/teacher/skill-map', label: 'Skill Map', icon: '🧠' },
     { path: '/teacher/mastery', label: 'Mastery Tracker', icon: '📊' },
@@ -34,6 +35,8 @@ const navItems: Record<string, NavItem[]> = {
     { path: '/parent', label: 'Family Hub', icon: '🏠' },
     { path: '/parent/progress', label: 'Progress', icon: '📈' },
     { path: '/parent/growth', label: 'Growth Timeline', icon: '🌱' },
+    { path: '/parent/milestones', label: 'Milestones', icon: '🎉' },
+    { path: '/parent/certificates', label: 'Certificates', icon: '🏆' },
     { path: '/parent/billing', label: 'Billing', icon: '💳' },
     { path: '/parent/enroll', label: 'Enroll', icon: '📋' },
     { path: '/parent/messages', label: 'Messages', icon: '✉️' },

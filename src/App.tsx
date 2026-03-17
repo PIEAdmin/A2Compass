@@ -16,6 +16,7 @@ import AdminBillingPage from './pages/admin/Billing'
 
 // Teacher pages
 import TeacherDashboard from './pages/teacher/Dashboard'
+import MissionControl from './pages/teacher/MissionControl'
 import SkillMap from './pages/teacher/SkillMap'
 import LessonsList from './pages/teacher/lessons/LessonsList'
 import LessonBuilder from './pages/teacher/lessons/LessonBuilder'
@@ -82,6 +83,7 @@ export default function App() {
 
         {/* Teacher Routes */}
         <Route path="teacher" element={<TeacherDashboard />} />
+        <Route path="teacher/mission-control" element={<MissionControl />} />
         <Route path="teacher/students" element={<TeacherDashboard />} />
         <Route path="teacher/schedule" element={<TeacherDashboard />} />
         <Route path="teacher/mastery" element={<TeacherDashboard />} />
@@ -100,6 +102,8 @@ export default function App() {
         <Route path="parent" element={<ParentDashboard />} />
         <Route path="parent/progress" element={<ParentDashboard />} />
         <Route path="parent/growth" element={<GrowthTimeline />} />
+        <Route path="parent/milestones" element={<ParentDashboard />} />
+        <Route path="parent/certificates" element={<ParentDashboard />} />
         <Route path="parent/billing" element={<ParentBillingPage />} />
         <Route path="parent/enroll" element={<EnrollPage />} />
         <Route path="parent/messages" element={<ParentDashboard />} />
@@ -115,3 +119,4 @@ export default function App() {
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
+}
