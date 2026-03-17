@@ -1,54 +1,41 @@
-export const TIERS = {
-  EXPLORERS_CAMP: {
-    slug: 'explorers-camp',
-    name: "Explorers' Camp",
-    emoji: '🌿',
-    grades: '1-6',
-    color: 'explorer',
-    description: 'Discovery-based learning with guided exploration',
+import type { TierSlug, TierThemeConfig } from '../types'
+
+export const TIER_THEMES: Record<TierSlug, TierThemeConfig> = {
+  'explorers-camp': {
+    primaryColor: '#FF6B35',
+    secondaryColor: '#FFD166',
+    accentColor: '#06D6A0',
+    bgGradient: 'from-orange-50 to-yellow-50',
+    icon: '🏕️',
+    fontStyle: 'playful',
   },
-  SCHOLARS_GUILD: {
-    slug: 'scholars-guild',
-    name: "Scholars' Guild",
-    emoji: '📘',
-    grades: '7-9',
-    color: 'scholar',
-    description: 'Critical thinking and collaborative learning',
+  'scholars-guild': {
+    primaryColor: '#118AB2',
+    secondaryColor: '#06D6A0',
+    accentColor: '#FFD166',
+    bgGradient: 'from-blue-50 to-teal-50',
+    icon: '🏛️',
+    fontStyle: 'balanced',
   },
-  THE_COLLEGIUM: {
-    slug: 'the-collegium',
-    name: 'The Collegium',
-    emoji: '🎓',
-    grades: '10-12',
-    color: 'collegium',
-    description: 'Independent research and college preparation',
+  'the-collegium': {
+    primaryColor: '#073B4C',
+    secondaryColor: '#118AB2',
+    accentColor: '#EF476F',
+    bgGradient: 'from-slate-50 to-blue-50',
+    icon: '🎓',
+    fontStyle: 'professional',
   },
-} as const
+}
 
-export const MASTERY_THRESHOLD = 0.85
+export const TIER_LABELS: Record<TierSlug, string> = {
+  'explorers-camp': "Explorers\' Camp",
+  'scholars-guild': "Scholars\' Guild",
+  'the-collegium': 'The Collegium',
+}
 
-export const SUBJECTS = [
-  { slug: 'math', name: 'Mathematics', icon: '🔢' },
-  { slug: 'reading-ela', name: 'Reading / ELA', icon: '📖' },
-  { slug: 'science', name: 'Science', icon: '🔬' },
-  { slug: 'social-studies', name: 'Social Studies', icon: '🌍' },
-  { slug: 'foreign-language', name: 'Foreign Language', icon: '🗣️' },
-  { slug: 'creative-arts', name: 'Creative Arts', icon: '🎨' },
-] as const
-
-export const LEARNING_FORMATS = [
-  { slug: 'live-seminar', name: 'Live Seminar', icon: '📡' },
-  { slug: 'discussion-board', name: 'Discussion Board', icon: '💬' },
-  { slug: 'choice-board', name: 'Choice Board', icon: '🎯' },
-  { slug: 'independent-project', name: 'Independent Project', icon: '🔨' },
-  { slug: 'partner-quest', name: 'Partner Quest', icon: '🤝' },
-  { slug: 'one-on-one-coaching', name: 'One-on-One Coaching', icon: '👤' },
-  { slug: 'practice-arena', name: 'Practice Arena', icon: '⚔️' },
-] as const
-
-export const ENROLLMENT_TYPES = [
-  { slug: 'full-time', name: 'Full-Time', description: 'Complete curriculum coverage' },
-  { slug: 'tutoring', name: 'Tutoring', description: 'Targeted subject support' },
-  { slug: 'summer-program', name: 'Summer Program', description: 'Seasonal enrichment' },
-  { slug: 'a-la-carte', name: 'A La Carte', description: 'Individual course selection' },
-] as const
+export const GRADE_TO_TIER: Record<number, TierSlug> = {
+  1: 'explorers-camp', 2: 'explorers-camp', 3: 'explorers-camp',
+  4: 'explorers-camp', 5: 'explorers-camp', 6: 'explorers-camp',
+  7: 'scholars-guild', 8: 'scholars-guild', 9: 'scholars-guild',
+  10: 'the-collegium', 11: 'the-collegium', 12: 'the-collegium',
+}

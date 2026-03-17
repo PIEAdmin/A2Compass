@@ -1,28 +1,28 @@
-import { TIERS } from '../../constants'
+import type { TierSlug } from '../../types'
+import { TIER_THEMES } from '../../constants'
 
-type TierKey = keyof typeof TIERS
-
-const tierMap: Record<string, TierKey> = {
-  'explorers-camp': 'EXPLORERS_CAMP',
-  'scholars-guild': 'SCHOLARS_GUILD',
-  'the-collegium': 'THE_COLLEGIUM',
+interface Props {
+  tier: TierSlug
+  size?: 'sm' | 'md' | 'lg'
 }
 
-export default function TierBadge({ tierSlug }: { tierSlug: string }) {
-  const key = tierMap[tierSlug]
-  if (!key) return null
-  const tier = TIERS[key]
+const tierNames: Record<TierSlug, string> = {
+  'explorers-camp': "Explorers' Camp",
+  'scholars-guild': "Scholars' Guild",
+  'the-collegium': 'The Collegium',
+}
 
-  const colorClasses: Record<string, string> = {
-    explorer: 'bg-explorer-light text-explorer',
-    scholar: 'bg-scholar-light text-scholar',
-    collegium: 'bg-collegium-light text-collegium',
-  }
+export default function TierBadge({ tier, size = 'md' }: Props) {
+  const theme = TIER_THEMES[tier]
+  const sizeClasses = { sm: 'text-xs px-2 py-0.5', md: 'text-sm px-3 py-1', lg: 'text-base px-4 py-1.5' }[size]
 
   return (
-    <span className={`${colorClasses[tier.color]} font-medium px-3 py-1 rounded-full text-sm inline-flex items-center gap-1`}>
-      <span>{tier.emoji}</span>
-      <span>{tier.name}</span>
+    <span
+      className={`inline-flex items-center gap-1 rounded-full font-medium ${sizeClasses}`}
+      style={{ backgroundColor: theme.primaryColor + '15', color: theme.primaryColor }}
+    >
+      <span>{theme.icon}</span>
+      <span>{tierNames[tier]}</span>
     </span>
   )
 }

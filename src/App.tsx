@@ -22,7 +22,13 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function RoleRedirect() {
   const { user } = useAuth()
   if (!user) return <Navigate to="/login" replace />
-  return <Navigate to={`/${user.role}`} replace />
+  const roleRoutes = {
+    admin: '/admin',
+    teacher: '/teacher',
+    parent: '/parent',
+    student: '/student',
+  }
+  return <Navigate to={roleRoutes[user.role] || '/student'} replace />
 }
 
 export default function App() {
@@ -42,10 +48,33 @@ export default function App() {
         </ProtectedRoute>
       }>
         <Route index element={<RoleRedirect />} />
+
+        {/* Admin Routes */}
         <Route path="admin" element={<AdminDashboard />} />
+        <Route path="admin/students" element={<AdminDashboard />} />
+        <Route path="admin/enrollment" element={<AdminDashboard />} />
+        <Route path="admin/billing" element={<AdminDashboard />} />
+        <Route path="admin/subjects" element={<AdminDashboard />} />
+        <Route path="admin/reports" element={<AdminDashboard />} />
+
+        {/* Teacher Routes */}
         <Route path="teacher" element={<TeacherDashboard />} />
+        <Route path="teacher/students" element={<TeacherDashboard />} />
+        <Route path="teacher/schedule" element={<TeacherDashboard />} />
+        <Route path="teacher/mastery" element={<TeacherDashboard />} />
+        <Route path="teacher/lessons" element={<TeacherDashboard />} />
+
+        {/* Parent Routes */}
         <Route path="parent" element={<ParentDashboard />} />
+        <Route path="parent/progress" element={<ParentDashboard />} />
+        <Route path="parent/billing" element={<ParentDashboard />} />
+        <Route path="parent/messages" element={<ParentDashboard />} />
+
+        {/* Student Routes */}
         <Route path="student" element={<StudentDashboard />} />
+        <Route path="student/subjects" element={<StudentDashboard />} />
+        <Route path="student/progress" element={<StudentDashboard />} />
+        <Route path="student/achievements" element={<StudentDashboard />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

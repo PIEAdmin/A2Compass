@@ -1,8 +1,10 @@
-export default function LoadingSpinner({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
-  const sizeClasses = { sm: 'w-4 h-4', md: 'w-8 h-8', lg: 'w-12 h-12' }
+interface Props { size?: 'sm' | 'md' | 'lg' }
+
+export default function LoadingSpinner({ size = 'md' }: Props) {
+  const sizeClass = { sm: 'h-4 w-4', md: 'h-8 w-8', lg: 'h-12 w-12' }[size]
   return (
     <div className="flex items-center justify-center p-8">
-      <div className={`${sizeClasses[size]} border-2 border-compass-blue/20 border-t-compass-blue rounded-full animate-spin`} />
+      <div className={`${sizeClass} animate-spin rounded-full border-4 border-gray-200 border-t-compass-blue`} />
     </div>
   )
 }

@@ -1,6 +1,5 @@
 import { supabase } from './supabase'
-
-export type UserRole = 'admin' | 'teacher' | 'parent' | 'student'
+import type { UserRole } from '../types'
 
 export interface AuthUser {
   id: string
@@ -12,8 +11,7 @@ export interface AuthUser {
 export const authService = {
   async signUp(email: string, password: string, metadata: { full_name: string; role: UserRole }) {
     const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
+      email, password,
       options: { data: { full_name: metadata.full_name, role: metadata.role } },
     })
     if (error) throw error

@@ -3,25 +3,31 @@ import { useAuth } from '../../hooks'
 
 const navItems = {
   admin: [
-    { path: '/admin', label: 'Dashboard', icon: '📊' },
+    { path: '/admin', label: 'Command Center', icon: '📊' },
     { path: '/admin/students', label: 'Students', icon: '👩‍🎓' },
     { path: '/admin/enrollment', label: 'Enrollment', icon: '📋' },
+    { path: '/admin/billing', label: 'Billing', icon: '💳' },
     { path: '/admin/subjects', label: 'Subjects', icon: '📚' },
+    { path: '/admin/reports', label: 'Reports', icon: '📈' },
   ],
   teacher: [
-    { path: '/teacher', label: 'Dashboard', icon: '📊' },
+    { path: '/teacher', label: 'Mission Control', icon: '🎯' },
     { path: '/teacher/students', label: 'My Students', icon: '👩‍🎓' },
+    { path: '/teacher/schedule', label: 'Schedule', icon: '📅' },
+    { path: '/teacher/mastery', label: 'Mastery Tracker', icon: '📊' },
     { path: '/teacher/lessons', label: 'Lessons', icon: '📖' },
-    { path: '/teacher/mastery', label: 'Mastery Tracker', icon: '🎯' },
   ],
   parent: [
-    { path: '/parent', label: 'Dashboard', icon: '📊' },
+    { path: '/parent', label: 'Family Hub', icon: '🏠' },
     { path: '/parent/progress', label: 'Progress', icon: '📈' },
+    { path: '/parent/billing', label: 'Billing', icon: '💳' },
+    { path: '/parent/messages', label: 'Messages', icon: '✉️' },
   ],
   student: [
     { path: '/student', label: 'Flight Plan', icon: '🛫' },
     { path: '/student/subjects', label: 'My Subjects', icon: '📚' },
-    { path: '/student/mastery', label: 'My Progress', icon: '🎯' },
+    { path: '/student/progress', label: 'My Progress', icon: '🎯' },
+    { path: '/student/achievements', label: 'Achievements', icon: '🏆' },
   ],
 }
 
@@ -32,7 +38,7 @@ export default function Sidebar() {
   const items = navItems[user.role] || []
 
   return (
-    <aside className="w-64 bg-compass-navy min-h-screen text-white flex flex-col">
+    <aside className="w-64 bg-compass-navy min-h-screen text-white flex flex-col shrink-0">
       <div className="p-6 border-b border-white/10">
         <h1 className="font-display text-xl font-bold">A² Compass</h1>
         <p className="text-sm text-white/60 mt-1">Achievement Academy</p>
@@ -61,7 +67,7 @@ export default function Sidebar() {
       <div className="p-4 border-t border-white/10">
         <div className="flex items-center gap-3 mb-3">
           <div className="w-8 h-8 rounded-full bg-compass-blue flex items-center justify-center text-sm font-medium">
-            {user.fullName.charAt(0).toUpperCase()}
+            {user.fullName?.charAt(0)?.toUpperCase() || '?'}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium truncate">{user.fullName}</p>
