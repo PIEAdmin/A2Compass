@@ -33,12 +33,23 @@ export interface Profile {
   id: string
   user_id: string
   role: UserRole
-  full_name: string
+  first_name: string
+  last_name: string
   email: string
   avatar_url: string | null
   created_at: string
   updated_at: string
 }
+/** Build display name from profile first_name + last_name */
+export function profileDisplayName(
+  profile?: { first_name?: string; last_name?: string } | null,
+  fallback = 'Unknown'
+): string {
+  if (!profile) return fallback;
+  const name = [profile.first_name, profile.last_name].filter(Boolean).join(' ');
+  return name || fallback;
+}
+
 
 export interface StudentProfile {
   id: string

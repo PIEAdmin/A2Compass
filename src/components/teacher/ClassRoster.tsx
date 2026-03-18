@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { StudentProfile, EnrollmentSlug, TierSlug } from '../../types'
+import { profileDisplayName } from '../../types'
 import { TierBadge, MasteryBar } from '../common'
 
 interface Props {
@@ -18,7 +19,7 @@ export default function ClassRoster({ students, onSelectStudent }: Props) {
       const hasEnrollment = s.enrollments?.some(e => e.enrollment_type?.slug === filterEnrollment)
       if (!hasEnrollment) return false
     }
-    if (search && !s.profile?.full_name?.toLowerCase().includes(search.toLowerCase())) return false
+    if (search && !profileDisplayName(s.profile).toLowerCase().includes(search.toLowerCase())) return false
     return true
   })
 
@@ -71,10 +72,10 @@ export default function ClassRoster({ students, onSelectStudent }: Props) {
               onClick={() => onSelectStudent?.(student)}
             >
               <div className="w-10 h-10 rounded-full bg-compass-blue/10 flex items-center justify-center text-sm font-medium text-compass-blue">
-                {student.profile?.full_name?.charAt(0)?.toUpperCase() || '?'}
+                {student.profile?.first_name?.charAt(0)?.toUpperCase() || '?'}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm text-gray-800">{student.profile?.full_name || 'Unknown'}</p>
+                <p className="font-medium text-sm text-gray-800">{profileDisplayName(student.profile)}</p>
                 <div className="flex items-center gap-2 mt-0.5">
                   <span className="text-xs text-gray-500">Grade {student.grade_level}</span>
                   {student.tier && <TierBadge tier={student.tier.slug as TierSlug} size="sm" />}

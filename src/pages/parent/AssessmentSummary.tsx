@@ -9,6 +9,7 @@ import { useAssessmentDashboard } from '../../hooks/useAssessment';
 import { studentService } from '../../services/students';
 import { useAuth } from '../../hooks';
 import type { StudentProfile } from '../../types';
+import { profileDisplayName } from '../../types';
 import type { DomainProgress } from '../../types/assessment';
 
 // ---------- Domain explainers (parent-friendly) ----------
@@ -106,7 +107,7 @@ export default function AssessmentSummary() {
                       : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
                   }`}
               >
-                {child.profile?.full_name || 'Child'}
+                {profileDisplayName(child.profile, 'Child')}
               </button>
             ))}
           </div>
@@ -130,7 +131,7 @@ export default function AssessmentSummary() {
             {/* Summary Card */}
             <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg">
               <h2 className="text-2xl font-bold mb-1">
-                {selectedChild?.profile?.full_name || 'Your Child'}'s Learning
+                {profileDisplayName(selectedChild?.profile, 'Your Child')}'s Learning
                 Snapshot
               </h2>
               <p className="text-indigo-100 text-sm mb-4">
@@ -243,7 +244,7 @@ export default function AssessmentSummary() {
             <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-2xl p-6 text-center">
               <div className="text-4xl mb-2">🏆</div>
               <h3 className="font-bold text-gray-800 text-lg mb-1">
-                {selectedChild?.profile?.full_name || 'Your child'} has mastered{' '}
+                {profileDisplayName(selectedChild?.profile, 'Your child')} has mastered{' '}
                 {summary.totalSkillsMastered} skills!
               </h3>
               <p className="text-gray-500 text-sm">

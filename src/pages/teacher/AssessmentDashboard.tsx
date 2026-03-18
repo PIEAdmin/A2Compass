@@ -9,6 +9,7 @@ import { assessmentService } from '../../services/assessment.service';
 import { studentService } from '../../services/students';
 import { useAuth } from '../../hooks';
 import type { StudentProfile } from '../../types';
+import { profileDisplayName } from '../../types';
 import type {
   AssessmentSession,
   AssessmentSkillResult,
@@ -135,7 +136,7 @@ export default function AssessmentDashboard() {
                       <span className="mr-2">
                         {isActive ? '●' : '○'}
                       </span>
-                      {s.profile?.full_name || 'Student'}
+                      {profileDisplayName(s.profile, 'Student')}
                     </button>
                   );
                 })}
@@ -175,7 +176,7 @@ export default function AssessmentDashboard() {
                   <div className="flex items-center justify-between">
                     <div>
                       <h2 className="text-xl font-bold text-gray-800">
-                        {selectedStudent?.profile?.full_name || 'Student'}
+                        {profileDisplayName(selectedStudent?.profile, 'Student')}
                       </h2>
                       {summary && (
                         <p className="text-sm text-gray-500 mt-1">
@@ -382,7 +383,7 @@ export default function AssessmentDashboard() {
             </h3>
             <p className="text-sm text-gray-500 mb-6">
               Choose assessment type for{' '}
-              <strong>{selectedStudent?.profile?.full_name || 'this student'}</strong>:
+              <strong>{profileDisplayName(selectedStudent?.profile, 'this student')}</strong>:
             </p>
             <div className="space-y-3">
               {([

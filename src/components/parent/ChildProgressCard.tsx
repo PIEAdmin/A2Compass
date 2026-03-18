@@ -1,4 +1,5 @@
 import type { StudentProfile, MasterySummary, FlightPlanItem } from '../../types'
+import { profileDisplayName } from '../../types'
 import type { TierSlug } from '../../types'
 import { TierBadge, MasteryBar } from '../common'
 
@@ -14,10 +15,10 @@ export default function ChildProgressCard({ student, masterySummaries, recentAct
     <div className="bg-white rounded-xl border border-gray-200 p-6">
       <div className="flex items-center gap-4 mb-4">
         <div className="w-12 h-12 rounded-full bg-compass-blue/10 flex items-center justify-center text-lg font-medium text-compass-blue">
-          {student.profile?.full_name?.charAt(0)?.toUpperCase() || '?'}
+          {student.profile?.first_name?.charAt(0)?.toUpperCase() || '?'}
         </div>
         <div>
-          <h3 className="font-semibold text-compass-navy">{student.profile?.full_name || 'Student'}</h3>
+          <h3 className="font-semibold text-compass-navy">{profileDisplayName(student.profile, 'Student')}</h3>
           <div className="flex items-center gap-2 mt-0.5">
             <span className="text-sm text-gray-500">Grade {student.grade_level}</span>
             {student.tier && <TierBadge tier={student.tier.slug as TierSlug} size="sm" />}
