@@ -38,6 +38,9 @@ import ParentOrientation from './pages/parent/ParentOrientation'
 
 // Student pages
 import FlightPlan from './pages/student/FlightPlan'
+import StudentSubjects from './pages/student/StudentSubjects'
+import StudentProgress from './pages/student/StudentProgress'
+import StudentAchievements from './pages/student/StudentAchievements'
 import ActivityPlayer from './pages/student/activity-player/ActivityPlayer'
 import AssessmentPlayer from './pages/student/AssessmentPlayer'
 import OrientationWizard from './pages/student/OrientationWizard'
@@ -132,9 +135,9 @@ export default function App() {
         <Route path="student/activities" element={<WarmActivities />} />
         <Route path="student/assessment" element={<AssessmentPlayer />} />
         <Route path="student/activity/:id" element={<ActivityPlayer />} />
-        <Route path="student/subjects" element={<FlightPlan />} />
-        <Route path="student/progress" element={<FlightPlan />} />
-        <Route path="student/achievements" element={<FlightPlan />} />
+        <Route path="student/subjects" element={<StudentSubjects />} />
+        <Route path="student/progress" element={<StudentProgress />} />
+        <Route path="student/achievements" element={<StudentAchievements />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

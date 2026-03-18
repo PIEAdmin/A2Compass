@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import type { PlaylistItem, PlaylistReason, PlaylistItemStatus } from '../../types/skills';
 import { usePlaylist } from '../../hooks/useSkills';
+import { useAuth } from '../../hooks';
 
 const REASON_COLORS: Record<PlaylistReason, { bg: string; text: string; label: string }> = {
   needs_practice: { bg: 'bg-orange-100', text: 'text-orange-700', label: 'Needs Practice' },
@@ -40,12 +41,10 @@ function formatDate(): string {
   });
 }
 
-interface FlightPlanProps {
-  studentId: string;
-  studentName?: string;
-}
-
-export default function FlightPlan({ studentId, studentName = 'Explorer' }: FlightPlanProps) {
+export default function FlightPlan() {
+  const { user } = useAuth();
+  const studentId = user?.id || '';
+  const studentName = user?.fullName?.split(' ')[0] || 'Explorer';
   const today = new Date().toISOString().split('T')[0];
   const { items, loading, error, complete, skip, start } = usePlaylist(studentId, today);
   const [showMastered, setShowMastered] = useState(false);
@@ -215,8 +214,9 @@ export default function FlightPlan({ studentId, studentName = 'Explorer' }: Flig
 
         {items.length === 0 && !loading && (
           <div className="bg-white rounded-xl shadow-sm border p-8 text-center">
-            <p className="text-gray-500">No skills scheduled for today yet.</p>
-            <p className="text-gray-400 text-sm mt-1">Your teacher will set up your playlist soon!</p>
+            <p className="text-4xl mb-3">🗺️</p>
+            <p className="text-gray-700 font-medium">No skills scheduled for today yet.</p>
+            <p className="text-gray-400 text-sm mt-1">Your teacher will set up your playlist after your assessment!</p>
           </div>
         )}
       </div>
