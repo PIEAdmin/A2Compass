@@ -43,6 +43,13 @@ import AssessmentPlayer from './pages/student/AssessmentPlayer'
 import OrientationWizard from './pages/student/OrientationWizard'
 import WarmActivities from './pages/student/WarmActivities'
 
+function GuestRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, loading } = useAuth()
+  if (loading) return <LoadingSpinner size="lg" />
+  if (isAuthenticated) return <Navigate to="/" replace />
+  return <>{children}</>
+}
+
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, loading } = useAuth()
   if (loading) return <LoadingSpinner size="lg" />
@@ -71,7 +78,7 @@ export default function App() {
 
   return (
     <Routes>
-      <Route path="/login" element={<LoginPage />} />
+      <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
 
       <Route path="/" element={
         <ProtectedRoute>

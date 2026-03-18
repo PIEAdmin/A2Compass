@@ -1,10 +1,18 @@
-import { useState, type FormEvent } from 'react'
+import { useState, useEffect, type FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks'
 
 export default function LoginPage() {
-  const { signIn, loading, error, clearError } = useAuth()
+  const { signIn, loading, error, clearError, isAuthenticated } = useAuth()
+  const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/', { replace: true })
+    }
+  }, [isAuthenticated, navigate])
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
