@@ -22,6 +22,14 @@ export default function EnrollmentManager() {
     return acc
   }, {} as Record<string, number>)
 
+  function getStudentName(enrollment: any): string {
+    const profile = enrollment.student?.profile
+    if (profile?.first_name) {
+      return `${profile.first_name} ${profile.last_name || ''}`.trim()
+    }
+    return 'Unknown'
+  }
+
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-6">
       <h3 className="font-semibold text-compass-navy mb-4">📋 Enrollment Management</h3>
@@ -51,7 +59,7 @@ export default function EnrollmentManager() {
             <tbody>
               {enrollments.map((e) => (
                 <tr key={e.id} className="border-b border-gray-100">
-                  <td className="py-2">{(e.student as any)?.profile?.full_name || 'Unknown'}</td>
+                  <td className="py-2">{getStudentName(e)}</td>
                   <td className="py-2">{e.enrollment_type?.name || '-'}</td>
                   <td className="py-2">
                     <span className={`text-xs px-2 py-0.5 rounded-full ${
