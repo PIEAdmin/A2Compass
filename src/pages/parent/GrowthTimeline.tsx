@@ -1,6 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import type { DomainSkillGroup, SkillProfileEntry } from '../../types/skills';
 import { useStudentSkillProfile } from '../../hooks/useSkills';
+import { useAuth } from '../../hooks';
+import { studentService } from '../../services/students';
+import { LoadingSpinner } from '../../components/common';
+import type { StudentProfile } from '../../types';
+import { profileDisplayName } from '../../types';
 
 const DOMAIN_ICONS: Record<string, string> = {
   A: '📖', B: '✍️', C: '🗣️', D: '📚', E: '🔤',
@@ -13,13 +18,81 @@ function formatMasteryDate(dateStr: string | null): string {
   return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
 }
 
-interface GrowthTimelineProps {
-  studentId: string;
-  studentName?: string;
-  tierName?: string;
+export default function GrowthTimeline() {
+  const { user } = useAuth();
+  const [children, setChildren] = useState<StudentProfile[]>([]);
+  const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
+  const [loadingChildren, setLoadingChildren] = useState(true);
+
+  useEffect(() => {
+    if (!user) return;
+    loadChildren();
+  }, [user]);
+
+  async function loadChildren() {
+    setLoadingChildren(true);
+    try {
+      const data = await studentService.getStudentsByParent(user!.id);
+      setChildren(data);
+      if (data.length > 0) setSelectedChildId(data[0].id);
+    } catch (err) {
+      console.error('Failed to load children:', err);
+    } finally {
+      setLoadingChildren(false);
+    }
+  }
+
+  if (loadingChildren) return <LoadingSpinner size="lg" />;
+
+  const selectedChild = children.find((c) => c.id === selectedChildId);
+  const studentName = profileDisplayName(selectedChild?.profile, 'Your Child');
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="p-6 max-w-4xl mx-auto space-y-6">
+        {/* Child Selector (if multiple) */}
+        {children.length > 1 && (
+          <div className="flex gap-2">
+            {children.map((child) => (
+              <button
+                key={child.id}
+                onClick={() => setSelectedChildId(child.id)}
+                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors
+                  ${
+                    child.id === selectedChildId
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+                  }`}
+              >
+                {profileDisplayName(child.profile, 'Child')}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {selectedChildId ? (
+          <GrowthTimelineContent
+            studentId={selectedChildId}
+            studentName={studentName}
+          />
+        ) : (
+          <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+            <div className="text-5xl mb-4">🌱</div>
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">
+              No students found
+            </h3>
+            <p className="text-gray-500">
+              Once your children are enrolled, their growth journey will appear here.
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
-export default function GrowthTimeline({ studentId, studentName = 'Your Child', tierName }: GrowthTimelineProps) {
+// Inner component that receives studentId
+function GrowthTimelineContent({ studentId, studentName = 'Your Child' }: { studentId: string; studentName?: string }) {
   const { groups, loading, error } = useStudentSkillProfile(studentId);
   const [domainFilter, setDomainFilter] = useState<string>('all');
   const [showShareMessage, setShowShareMessage] = useState(false);
@@ -89,17 +162,12 @@ export default function GrowthTimeline({ studentId, studentName = 'Your Child', 
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl shadow-sm border p-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{studentName}'s Growth Journey 🌱</h1>
-            {tierName && (
-              <span className="inline-block mt-1 px-3 py-0.5 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium">
-                {tierName}
-              </span>
-            )}
           </div>
           <button
             onClick={handleShare}
