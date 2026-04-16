@@ -9,13 +9,11 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 <style>
-/* ── Base ──────────────────────────────────────── */
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0;overflow-x:hidden;overscroll-behavior:none;font-family:'Segoe UI',system-ui,sans-serif}
 button{touch-action:manipulation;cursor:pointer;border:none;outline:none}
 #app{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden}
 
-/* ── Animations ───────────────────────────────── */
 @keyframes float{0%,100%{transform:translateY(0) rotate(0deg)}25%{transform:translateY(-18px) rotate(5deg)}50%{transform:translateY(-8px) rotate(-3deg)}75%{transform:translateY(-22px) rotate(2deg)}}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
 @keyframes bounceIn{0%{opacity:0;transform:scale(.7)}60%{opacity:1;transform:scale(1.05)}100%{transform:scale(1)}}
@@ -32,43 +30,47 @@ button{touch-action:manipulation;cursor:pointer;border:none;outline:none}
 .animate-wiggle{animation:wiggle .4s ease-in-out 3}
 
 .star-burst{position:absolute;font-size:2rem;animation:starBurst .7s ease-out forwards;pointer-events:none}
-
-/* ── Floating stars (welcome) ─────────────────── */
 .floating-star{position:absolute;font-size:1.6rem;opacity:.55;animation:float 5s ease-in-out infinite}
 .floating-star:nth-child(2){animation-delay:1s;font-size:1.2rem}
 .floating-star:nth-child(3){animation-delay:2s;font-size:2rem}
 .floating-star:nth-child(4){animation-delay:3s;font-size:1rem}
 .floating-star:nth-child(5){animation-delay:1.5s;font-size:1.4rem}
 
-/* ── Feedback overlays ────────────────────────── */
 .overlay-correct{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(34,197,94,.92);animation:fadeIn .2s ease-out}
 .overlay-wrong{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(251,146,60,.90);animation:fadeIn .2s ease-out}
 
-/* ── Answer button base ───────────────────────── */
-.answer-btn{min-height:80px;border-radius:16px;font-size:1.5rem;font-weight:700;display:flex;align-items:center;justify-content:center;transition:transform .12s,box-shadow .12s;box-shadow:0 4px 6px rgba(0,0,0,.15)}
+.answer-btn{min-height:72px;border-radius:16px;font-size:1.4rem;font-weight:700;display:flex;align-items:center;justify-content:center;transition:transform .12s,box-shadow .12s;box-shadow:0 4px 6px rgba(0,0,0,.15)}
 .answer-btn:active{transform:scale(.95)}
 .answer-btn.disabled{pointer-events:none;opacity:.6}
 
-/* ── Speaker button ───────────────────────────── */
 .speak-btn{position:fixed;top:12px;right:12px;z-index:40;width:48px;height:48px;border-radius:50%;background:#5B3E96;color:#fff;font-size:1.4rem;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.25)}
-
-/* ── Progress stars ───────────────────────────── */
 .progress-star{font-size:1.3rem;margin:0 2px;transition:transform .2s}
-
-/* ── Student card ─────────────────────────────── */
 .student-card{transition:transform .15s,box-shadow .15s;cursor:pointer}
 .student-card:hover,.student-card:active{transform:scale(1.05);box-shadow:0 8px 24px rgba(0,0,0,.2)}
-
-/* ── Emoji grid (counting) ────────────────────── */
 .emoji-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;max-width:340px;margin:0 auto}
 .emoji-grid span{font-size:1.8rem;line-height:1}
 
-/* ── Teacher table ────────────────────────────── */
-.teacher-table{width:100%;border-collapse:collapse;font-size:.85rem}
-.teacher-table th,.teacher-table td{padding:6px 8px;border:1px solid #e5e7eb;text-align:left}
+.teacher-table{width:100%;border-collapse:collapse;font-size:.8rem}
+.teacher-table th,.teacher-table td{padding:5px 6px;border:1px solid #e5e7eb;text-align:left}
 .teacher-table th{background:#f3f4f6;font-weight:600}
 .teacher-table tr.correct-row{background:#f0fdf4}
 .teacher-table tr.wrong-row{background:#fef2f2}
+
+.level-badge{display:inline-block;padding:2px 10px;border-radius:999px;font-size:.75rem;font-weight:700;text-transform:uppercase}
+.level-exceeding{background:#dcfce7;color:#166534}
+.level-meeting{background:#dbeafe;color:#1e40af}
+.level-developing{background:#fef9c3;color:#854d0e}
+.level-beginning{background:#fee2e2;color:#991b1b}
+
+.rec-card{border-left:4px solid;padding:8px 12px;margin-bottom:8px;border-radius:0 8px 8px 0;font-size:.85rem}
+.rec-spring{border-color:#4285C4;background:#eff6ff}
+.rec-summer{border-color:#D4A843;background:#fefce8}
+
+@media print{
+  .no-print{display:none!important}
+  body{font-size:11px}
+  #app{min-height:auto}
+}
 </style>
 </head>
 <body>
@@ -76,19 +78,17 @@ button{touch-action:manipulation;cursor:pointer;border:none;outline:none}
 
 <script>
 /* ================================================================
-   A² Compass – Discovery Games  (Mini Assessment)
+   A² Compass – Discovery Games  (Enhanced Mini Assessment)
+   Covers Language Arts + Math with graded results & recommendations
    ================================================================ */
 
-// ── Supabase config ──────────────────────────────
 const SUPABASE_URL = 'https://imtfjlistxccyjeocamp.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImltdGZqbGlzdHhjY3lqZW9jYW1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIxNTM2MDIsImV4cCI6MjA1NzcyOTYwMn0.wMvfZRNz0M04NCNJ7TNsUpqIDnAsmVkaGpSsDyo-ank';
 
-// ── Helpers ──────────────────────────────────────
 const $ = sel => document.querySelector(sel);
 const shuffle = arr => { const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]} return a; };
 const pick = arr => arr[Math.floor(Math.random()*arr.length)];
 
-// ── Speech ───────────────────────────────────────
 function speak(text){
   try{
     if(!('speechSynthesis' in window)) return;
@@ -99,7 +99,7 @@ function speak(text){
   }catch(e){}
 }
 
-// ── State ────────────────────────────────────────
+/* ── State ── */
 let state = resetState();
 
 function resetState(){
@@ -112,19 +112,22 @@ function resetState(){
     sectionResults:[],
     startTime:null,
     questionStartTime:null,
-    sections:[], // built on student select
+    sections:[],
     answering:false
   };
 }
 
-// ── Section / Question Generation ────────────────
+/* ── DOMAIN MAPPING ── */
+const LA_SECTIONS = ['Uppercase Letters','Lowercase Letters','Letter Sounds','CVC Words','Sentences'];
+const MATH_SECTIONS = ['Counting Objects','Number Recognition','Addition','Subtraction','Days of the Week'];
+
+/* ── Section Builders ── */
 
 const UPPERCASE_TARGETS = ['A','M','S','D','T','B'];
 const LOWERCASE_TARGETS = ['a','m','s','d','t','b'];
 const ALL_UPPER = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 const ALL_LOWER = 'abcdefghijklmnopqrstuvwxyz'.split('');
 
-// Similar-looking letter groups to avoid as distractors
 const SIMILAR_UPPER = {A:['H','V','W'],M:['N','W'],S:['Z','5'],D:['O','B'],T:['I','L'],B:['D','P','R']};
 const SIMILAR_LOWER = {a:['o','e','c'],m:['n','r'],s:['z','c'],d:['b','p','q'],t:['l','i','f'],b:['d','p','q']};
 
@@ -138,6 +141,7 @@ function buildLetterSection(targets, pool, similar, isUpper){
   const label = isUpper ? 'Uppercase Letters' : 'Lowercase Letters';
   const emoji = isUpper ? '📝' : '🔤';
   const desc  = isUpper ? "Let's find some big letters!" : "Now let's find the little letters!";
+  const domain = 'Language Arts';
   const questions = shuffle(targets).map(t=>{
     const distractors = letterDistractors(t, pool, similar);
     return {
@@ -146,10 +150,11 @@ function buildLetterSection(targets, pool, similar, isUpper){
       speakText:`Tap the letter ${t}`,
       choices: shuffle([t,...distractors]),
       correct: t,
-      section: label
+      section: label,
+      domain
     };
   });
-  return { label, emoji, desc, questions };
+  return { label, emoji, desc, questions, domain };
 }
 
 function buildSoundsSection(){
@@ -159,22 +164,67 @@ function buildSoundsSection(){
     {phoneme:'/t/',say:'tuh',answer:'T'},
     {phoneme:'/b/',say:'buh',answer:'B'},
     {phoneme:'/a/',say:'aah',answer:'A'},
+    {phoneme:'/d/',say:'duh',answer:'D'},
   ]);
   const questions = sounds.map(s=>{
     const pool = ['A','B','D','M','S','T'].filter(l=>l!==s.answer);
     const distractors = shuffle(pool).slice(0,3);
     return {
       type:'sound',
-      prompt:`Which letter makes this sound?`,
+      prompt:'Which letter makes this sound?',
       speakText: s.say,
       phoneme: s.phoneme,
       say: s.say,
       choices: shuffle([s.answer,...distractors]),
       correct: s.answer,
-      section:'Letter Sounds'
+      section:'Letter Sounds',
+      domain:'Language Arts'
     };
   });
-  return { label:'Letter Sounds', emoji:'🔊', desc:"Listen carefully and find the letter!", questions };
+  return { label:'Letter Sounds', emoji:'🔊', desc:"Listen carefully and find the letter!", questions, domain:'Language Arts' };
+}
+
+function buildCVCSection(){
+  const words = shuffle([
+    {word:'CAT', img:'🐱', choices:['CAT','CUT','COT','BAT']},
+    {word:'DOG', img:'🐕', choices:['DIG','DOG','LOG','BOG']},
+    {word:'SUN', img:'☀️', choices:['SUN','SIT','RUN','FUN']},
+    {word:'BIG', img:'🐘', choices:['BAG','BUG','BIG','DIG']},
+    {word:'HOP', img:'🐰', choices:['HIP','HOP','TOP','MOP']},
+    {word:'PEN', img:'🖊️', choices:['PIN','PAN','PEN','TEN']},
+  ]);
+  const questions = words.map(w=>({
+    type:'cvc',
+    prompt:`Look at the picture. Which word is this?`,
+    speakText:`Look at the picture. Which word is this?`,
+    displayEmoji: w.img,
+    choices: shuffle(w.choices),
+    correct: w.word,
+    section:'CVC Words',
+    domain:'Language Arts'
+  }));
+  return { label:'CVC Words', emoji:'📖', desc:"Match the picture to the word!", questions, domain:'Language Arts' };
+}
+
+function buildSentencesSection(){
+  const items = shuffle([
+    {sentence:'The cat sat on the ___.',answer:'mat',choices:['mat','map','man','mad'],hint:'🐱 on something soft'},
+    {sentence:'I can see a big ___ .',answer:'dog',choices:['dog','log','dig','dot'],hint:'🐕 a friendly animal'},
+    {sentence:'The ___ is hot.',answer:'sun',choices:['sun','run','bun','fun'],hint:'☀️ up in the sky'},
+    {sentence:'She has a red ___.',answer:'hat',choices:['hat','hit','hot','bat'],hint:'👒 you wear on your head'},
+    {sentence:'He can ___ fast.',answer:'run',choices:['run','fun','sun','bun'],hint:'🏃 moving quickly'},
+  ]);
+  const questions = items.map(it=>({
+    type:'sentence',
+    prompt: it.sentence,
+    speakText: it.sentence.replace('___','blank'),
+    displayHint: it.hint,
+    choices: shuffle(it.choices),
+    correct: it.answer,
+    section:'Sentences',
+    domain:'Language Arts'
+  }));
+  return { label:'Sentences', emoji:'📝', desc:"Fill in the missing word!", questions, domain:'Language Arts' };
 }
 
 function buildCountingSection(){
@@ -193,9 +243,10 @@ function buildCountingSection(){
     emojiCount: it.count,
     choices: shuffle(it.choices).map(String),
     correct: String(it.count),
-    section:'Counting Objects'
+    section:'Counting Objects',
+    domain:'Math'
   }));
-  return { label:'Counting Objects', emoji:'🔢', desc:"Count the objects carefully!", questions };
+  return { label:'Counting Objects', emoji:'🔢', desc:"Count the objects carefully!", questions, domain:'Math' };
 }
 
 function buildNumberSection(){
@@ -209,13 +260,56 @@ function buildNumberSection(){
   const questions = nums.map(it=>({
     type:'number',
     prompt:'What number is this?',
-    speakText:`What number is this?`,
+    speakText:'What number is this?',
     bigNumber: it.n,
     choices: shuffle(it.choices).map(String),
     correct: String(it.n),
-    section:'Number Recognition'
+    section:'Number Recognition',
+    domain:'Math'
   }));
-  return { label:'Number Recognition', emoji:'🔟', desc:"Can you read these numbers?", questions };
+  return { label:'Number Recognition', emoji:'🔟', desc:"Can you read these numbers?", questions, domain:'Math' };
+}
+
+function buildAdditionSection(){
+  const problems = shuffle([
+    {a:2,b:3,choices:[4,5,6,3]},
+    {a:4,b:1,choices:[3,4,5,6]},
+    {a:3,b:3,choices:[5,6,7,4]},
+    {a:5,b:2,choices:[6,7,8,5]},
+    {a:1,b:6,choices:[5,6,7,8]},
+    {a:4,b:4,choices:[7,8,9,6]},
+  ]);
+  const questions = problems.map(p=>({
+    type:'math',
+    prompt:`${p.a} + ${p.b} = ?`,
+    speakText:`What is ${p.a} plus ${p.b}?`,
+    choices: shuffle(p.choices).map(String),
+    correct: String(p.a+p.b),
+    section:'Addition',
+    domain:'Math'
+  }));
+  return { label:'Addition', emoji:'➕', desc:"Let's add some numbers together!", questions, domain:'Math' };
+}
+
+function buildSubtractionSection(){
+  const problems = shuffle([
+    {a:5,b:2,choices:[2,3,4,1]},
+    {a:7,b:3,choices:[3,4,5,2]},
+    {a:6,b:1,choices:[4,5,6,3]},
+    {a:8,b:4,choices:[3,4,5,2]},
+    {a:9,b:5,choices:[3,4,5,2]},
+    {a:10,b:3,choices:[6,7,8,5]},
+  ]);
+  const questions = problems.map(p=>({
+    type:'math',
+    prompt:`${p.a} − ${p.b} = ?`,
+    speakText:`What is ${p.a} minus ${p.b}?`,
+    choices: shuffle(p.choices).map(String),
+    correct: String(p.a-p.b),
+    section:'Subtraction',
+    domain:'Math'
+  }));
+  return { label:'Subtraction', emoji:'➖', desc:"Let's take away some numbers!", questions, domain:'Math' };
 }
 
 function buildDaysSection(){
@@ -231,27 +325,34 @@ function buildDaysSection(){
     speakText:`What day comes after ${it.after}?`,
     choices: shuffle(it.choices),
     correct: it.answer,
-    section:'Days of the Week'
+    section:'Days of the Week',
+    domain:'Math'
   }));
-  return { label:'Days of the Week', emoji:'📅', desc:"Do you know the days of the week?", questions };
+  return { label:'Days of the Week', emoji:'📅', desc:"Do you know the days of the week?", questions, domain:'Math' };
 }
 
 function buildAllSections(){
   return [
+    // Language Arts
     buildLetterSection(UPPERCASE_TARGETS, ALL_UPPER, SIMILAR_UPPER, true),
     buildLetterSection(LOWERCASE_TARGETS, ALL_LOWER, SIMILAR_LOWER, false),
     buildSoundsSection(),
+    buildCVCSection(),
+    buildSentencesSection(),
+    // Math
     buildCountingSection(),
     buildNumberSection(),
+    buildAdditionSection(),
+    buildSubtractionSection(),
     buildDaysSection(),
   ];
 }
 
-// ── Encouragement helpers ────────────────────────
+/* ── Encouragement ── */
 const CORRECT_MSGS = ['⭐ Amazing!','🌟 Great job!','✨ You\'re a star!','🎉 Awesome!','💫 Fantastic!','🥳 Wonderful!'];
 const WRONG_INTROS = ['Almost!','So close!','Good try!','Nice effort!'];
 
-// ── Render engine ────────────────────────────────
+/* ── Render engine ── */
 const app = document.getElementById('app');
 
 function render(){
@@ -268,7 +369,7 @@ function render(){
   }
 }
 
-/* ── WELCOME ──────────────────────────────────── */
+/* ── WELCOME ── */
 function renderWelcome(){
   app.innerHTML = `
     <div class="relative w-full min-h-[100dvh] flex flex-col items-center justify-center bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 text-white p-6 animate-fade-in">
@@ -277,16 +378,16 @@ function renderWelcome(){
       <div class="floating-star" style="top:60%;left:8%">✨</div>
       <div class="floating-star" style="top:70%;right:10%">💫</div>
       <div class="floating-star" style="top:40%;left:75%">⭐</div>
-
       <p class="text-sm tracking-widest opacity-80 mb-2">🧭 A² Compass</p>
       <h1 class="text-5xl font-extrabold mb-3 animate-bounce-in">Discovery Games! ✨</h1>
-      <p class="text-xl opacity-90 mb-10 text-center">Let's play some fun learning games!</p>
+      <p class="text-xl opacity-90 mb-2 text-center">Let's play some fun learning games!</p>
+      <p class="text-sm opacity-70 mb-10 text-center">Language Arts & Math</p>
       <button onclick="goStudentSelect()" class="bg-amber-400 hover:bg-amber-500 text-gray-900 font-bold text-2xl px-10 py-5 rounded-2xl shadow-lg animate-pulse-custom">Let's Start! 🚀</button>
     </div>`;
   addSpeakBtn("Welcome to A² Compass Discovery Games! Let's play some fun learning games!");
 }
 
-/* ── STUDENT SELECT ───────────────────────────── */
+/* ── STUDENT SELECT ── */
 function renderStudentSelect(){
   app.innerHTML = `
     <div class="w-full min-h-[100dvh] flex flex-col items-center justify-center bg-gradient-to-br from-indigo-400 via-purple-400 to-pink-400 text-white p-6 animate-slide-up">
@@ -309,12 +410,19 @@ function renderStudentSelect(){
   addSpeakBtn("Who's playing today? Choose Adela or Leandro.");
 }
 
-/* ── SECTION INTRO ────────────────────────────── */
+/* ── SECTION INTRO ── */
 function renderSectionIntro(){
   const sec = state.sections[state.currentSection];
   const count = sec.questions.length;
+  const sectionNum = state.currentSection + 1;
+  const totalSections = state.sections.length;
+
+  // Domain label
+  const domainLabel = sec.domain === 'Language Arts' ? '📚 Language Arts' : '🔢 Math';
+
   app.innerHTML = `
     <div class="w-full min-h-[100dvh] flex flex-col items-center justify-center bg-gradient-to-br from-teal-400 via-cyan-400 to-blue-500 text-white p-6 animate-slide-up">
+      <p class="text-sm opacity-70 mb-2">Section ${sectionNum} of ${totalSections} · ${domainLabel}</p>
       <div class="text-7xl mb-4 animate-bounce-in">${sec.emoji}</div>
       <h2 class="text-3xl font-bold mb-2 text-center">${sec.label}</h2>
       <p class="text-lg opacity-90 mb-1 text-center">${sec.desc}</p>
@@ -324,14 +432,13 @@ function renderSectionIntro(){
   addSpeakBtn(`${sec.label}. ${sec.desc}. ${count} games to play. Ready? Go!`);
 }
 
-/* ── QUESTION ─────────────────────────────────── */
+/* ── QUESTION ── */
 function renderQuestion(){
   const sec = state.sections[state.currentSection];
   const q   = sec.questions[state.currentQuestion];
   const total = sec.questions.length;
   const idx   = state.currentQuestion;
 
-  // progress stars
   let stars = '';
   for(let i=0;i<total;i++){
     if(i < idx) stars += '<span class="progress-star">⭐</span>';
@@ -339,7 +446,6 @@ function renderQuestion(){
     else stars += '<span class="progress-star">☆</span>';
   }
 
-  // question body
   let body = '';
   if(q.type==='counting'){
     let emojis = '';
@@ -349,8 +455,19 @@ function renderQuestion(){
     body = `<div class="text-center mb-2" style="font-size:clamp(100px,30vw,200px);line-height:1;font-weight:800;color:#5B3E96">${q.bigNumber}</div><p class="text-2xl font-bold text-center">${q.prompt}</p>`;
   } else if(q.type==='sound'){
     body = `<button onclick="speakSound()" class="text-7xl mb-3 bg-purple-100 w-28 h-28 rounded-full flex items-center justify-center mx-auto shadow-lg active:scale-95" style="touch-action:manipulation">🔊</button>
-            <p class="text-lg text-gray-500 mb-1 text-center">Listen to the sound!</p>
+            <p class="text-lg text-gray-500 mb-1 text-center">Tap to hear the sound!</p>
             <p class="text-2xl font-bold text-center">${q.prompt}</p>`;
+  } else if(q.type==='cvc'){
+    body = `<div class="text-center mb-3" style="font-size:80px;line-height:1">${q.displayEmoji}</div>
+            <p class="text-2xl font-bold text-center">${q.prompt}</p>`;
+  } else if(q.type==='sentence'){
+    body = `<div class="bg-white rounded-xl p-4 mb-3 shadow-md max-w-sm mx-auto">
+              <p class="text-2xl font-bold text-center text-gray-800">${q.prompt}</p>
+              <p class="text-sm text-gray-400 text-center mt-2">${q.displayHint}</p>
+            </div>`;
+  } else if(q.type==='math'){
+    body = `<div class="text-center mb-2" style="font-size:clamp(60px,20vw,120px);line-height:1;font-weight:800;color:#5B3E96">${q.prompt.replace(' = ?','')}</div>
+            <p class="text-2xl font-bold text-center text-gray-600">= ?</p>`;
   } else {
     body = `<p class="text-3xl font-bold text-center">${q.prompt}</p>`;
   }
@@ -363,25 +480,21 @@ function renderQuestion(){
   ];
 
   let choices = q.choices.map((c,i)=>`
-    <button onclick="submitAnswer('${c.replace(/'/g,"\\'")}')" class="answer-btn ${btnColors[i%4]} w-full">${c}</button>
+    <button onclick="submitAnswer('${c.replace(/'/g,"\\\\'")}')" class="answer-btn ${btnColors[i%4]} w-full">${c}</button>
   `).join('');
 
   app.innerHTML = `
     <div class="w-full min-h-[100dvh] flex flex-col bg-gray-50 animate-fade-in">
-      <!-- progress -->
       <div class="pt-4 px-4 flex flex-wrap justify-center">${stars}</div>
-      <p class="text-center text-sm text-gray-400 mt-1 mb-3">Question ${idx+1} of ${total}</p>
-      <!-- question body -->
+      <p class="text-center text-sm text-gray-400 mt-1 mb-3">${sec.label} · ${idx+1} of ${total}</p>
       <div class="flex-1 flex flex-col items-center justify-center px-4 pb-2 animate-bounce-in">
         ${body}
       </div>
-      <!-- answer grid -->
       <div class="grid grid-cols-2 gap-3 p-4 pb-6 max-w-md mx-auto w-full">
         ${choices}
       </div>
     </div>`;
 
-  // speak
   if(q.type==='sound'){
     setTimeout(()=>speak(q.say),400);
     addSpeakBtn(q.say);
@@ -400,7 +513,7 @@ function speakSound(){
   speak(q.say);
 }
 
-/* ── CORRECT FEEDBACK ─────────────────────────── */
+/* ── CORRECT FEEDBACK ── */
 function renderCorrectFeedback(){
   const msg = pick(CORRECT_MSGS);
   app.innerHTML += `
@@ -408,7 +521,6 @@ function renderCorrectFeedback(){
       <div class="text-6xl mb-4 animate-bounce-in">${msg.split(' ')[0]}</div>
       <p class="text-3xl font-bold text-white">${msg}</p>
     </div>`;
-  // star bursts
   for(let i=0;i<5;i++){
     const el = document.createElement('div');
     el.className='star-burst';
@@ -419,10 +531,10 @@ function renderCorrectFeedback(){
     document.getElementById('feedback-overlay').appendChild(el);
   }
   speak(msg.replace(/[⭐🌟✨🎉💫🥳]/g,''));
-  setTimeout(nextAfterFeedback, 1500);
+  setTimeout(nextAfterFeedback, 1400);
 }
 
-/* ── WRONG FEEDBACK ───────────────────────────── */
+/* ── WRONG FEEDBACK ── */
 function renderWrongFeedback(){
   const lastResult = state.sectionResults[state.sectionResults.length-1];
   const intro = pick(WRONG_INTROS);
@@ -433,10 +545,10 @@ function renderWrongFeedback(){
       <p class="text-xl text-white mt-4">Let's try the next one! 💪</p>
     </div>`;
   speak(`${intro} The answer is ${lastResult.correct}. Let's try the next one!`);
-  setTimeout(nextAfterFeedback, 2500);
+  setTimeout(nextAfterFeedback, 2200);
 }
 
-/* ── SECTION COMPLETE ─────────────────────────── */
+/* ── SECTION COMPLETE ── */
 function renderSectionComplete(){
   const sec = state.sections[state.currentSection];
   const correct = state.sectionResults.filter(r=>r.isCorrect).length;
@@ -456,8 +568,12 @@ function renderSectionComplete(){
   const btnLabel = isLast ? 'See My Stars! 🏆' : 'Next Game! 🎮';
   const btnAction = isLast ? 'goAllDone()' : 'goNextSection()';
 
+  const sectionNum = state.currentSection + 1;
+  const totalSections = state.sections.length;
+
   app.innerHTML = `
     <div class="w-full min-h-[100dvh] flex flex-col items-center justify-center bg-gradient-to-br from-yellow-300 via-orange-300 to-pink-400 text-gray-900 p-6 animate-slide-up">
+      <p class="text-sm opacity-60 mb-2">${sectionNum} of ${totalSections} sections complete</p>
       <div class="text-5xl mb-3">🎊</div>
       <h2 class="text-3xl font-bold mb-2">Section done!</h2>
       <p class="text-2xl mb-2">${starsHtml}</p>
@@ -466,113 +582,346 @@ function renderSectionComplete(){
       <button onclick="${btnAction}" class="bg-white text-gray-900 font-bold text-2xl px-10 py-5 rounded-2xl shadow-lg animate-pulse-custom">${btnLabel}</button>
     </div>`;
   speak(`Section done! You got ${correct} out of ${total} stars. ${encouragement.replace(/[🏆🌟💪🌱]/g,'')}`);
-  addSpeakBtn(`You got ${correct} out of ${total} stars. ${encouragement.replace(/[🏆🌟💪🌱]/g,'')}`);
+  addSpeakBtn(`You got ${correct} out of ${total} stars.`);
 }
 
-/* ── ALL DONE ─────────────────────────────────── */
+/* ── ALL DONE ── */
 function renderAllDone(){
   const name = state.student.name;
   const totalCorrect = state.results.filter(r=>r.isCorrect).length;
   const totalQ = state.results.length;
 
-  // domain breakdown
-  const domains = computeDomainScores();
-  let domainCards = domains.map(d=>{
-    let s='';
-    for(let i=0;i<d.total;i++) s += i<d.correct?'⭐':'☆';
-    return `<div class="bg-white bg-opacity-20 rounded-xl p-3 flex items-center gap-3">
-      <span class="text-2xl">${d.emoji}</span>
-      <div><p class="font-bold text-sm">${d.label}</p><p class="text-xs">${s}</p></div>
-    </div>`;
-  }).join('');
+  const la = computeDomainAggregate('Language Arts');
+  const math = computeDomainAggregate('Math');
 
   app.innerHTML = `
     <div class="w-full min-h-[100dvh] flex flex-col items-center justify-center bg-gradient-to-br from-purple-500 via-pink-500 to-amber-400 text-white p-6 animate-slide-up">
       <h1 class="text-4xl font-extrabold mb-2 text-center animate-bounce-in">🎉 Amazing job, ${name}! 🎉</h1>
       <p class="text-lg mb-1">You completed all the Discovery Games!</p>
       <p class="text-3xl font-bold mb-4">You earned ${totalCorrect} out of ${totalQ} stars! ⭐</p>
-      <div class="grid gap-2 w-full max-w-sm mb-6">${domainCards}</div>
+
+      <div class="w-full max-w-sm mb-4">
+        <div class="bg-white bg-opacity-20 rounded-xl p-4 mb-3">
+          <p class="font-bold text-lg mb-1">📚 Language Arts</p>
+          <p class="text-2xl">${la.starsHtml}</p>
+          <p class="text-sm opacity-80">${la.correct} of ${la.total} stars</p>
+        </div>
+        <div class="bg-white bg-opacity-20 rounded-xl p-4">
+          <p class="font-bold text-lg mb-1">🔢 Math</p>
+          <p class="text-2xl">${math.starsHtml}</p>
+          <p class="text-sm opacity-80">${math.correct} of ${math.total} stars</p>
+        </div>
+      </div>
+
       <p class="text-sm opacity-80 mb-6 text-center">Sandra will use your results to build your perfect learning adventure!</p>
       <div class="flex gap-4 flex-wrap justify-center">
         <button onclick="playAgain()" class="bg-white text-purple-600 font-bold text-lg px-6 py-3 rounded-xl shadow">🔄 Play Again</button>
-        <button onclick="goTeacher()" class="bg-white text-purple-600 font-bold text-lg px-6 py-3 rounded-xl shadow">📋 Teacher View</button>
+        <button onclick="goTeacher()" class="bg-white text-purple-600 font-bold text-lg px-6 py-3 rounded-xl shadow">📋 Teacher Report</button>
       </div>
     </div>`;
   addSpeakBtn(`Amazing job ${name}! You earned ${totalCorrect} out of ${totalQ} stars!`);
 
-  // confetti
   setTimeout(()=>{confetti({particleCount:120,spread:80,origin:{y:0.6}});},300);
   setTimeout(()=>{confetti({particleCount:80,spread:100,origin:{y:0.5}});},900);
   setTimeout(()=>{confetti({particleCount:60,angle:60,spread:60,origin:{x:0,y:0.6}});},1500);
   setTimeout(()=>{confetti({particleCount:60,angle:120,spread:60,origin:{x:1,y:0.6}});},1500);
 
-  // save
   saveResults();
 }
 
-/* ── TEACHER SUMMARY ──────────────────────────── */
+/* ── TEACHER SUMMARY (GRADED with RECOMMENDATIONS) ── */
 function renderTeacherSummary(){
   const name = state.student.name;
   const age  = state.student.age;
   const totalCorrect = state.results.filter(r=>r.isCorrect).length;
   const totalQ = state.results.length;
-  const pct = ((totalCorrect/totalQ)*100).toFixed(1);
+  const pct = ((totalCorrect/totalQ)*100).toFixed(0);
   const now = new Date().toLocaleString();
+  const duration = Math.round((Date.now() - state.startTime)/1000);
+  const mins = Math.floor(duration/60);
+  const secs = duration%60;
 
-  const domains = computeDomainScores();
+  const la = computeDomainAggregate('Language Arts');
+  const math = computeDomainAggregate('Math');
 
-  let tables = domains.map(d=>{
-    const rows = d.items.map(r=>{
+  const laLevel = getLevel(la.pct);
+  const mathLevel = getLevel(math.pct);
+  const laGrade = getGradeEquiv('Language Arts', la.sectionScores, age);
+  const mathGrade = getGradeEquiv('Math', math.sectionScores, age);
+
+  const sections = computeAllSectionScores();
+
+  // Section detail tables
+  let sectionCards = sections.map(s=>{
+    const lvl = getLevel((s.correct/s.total)*100);
+    const rows = s.items.map(r=>{
       const cls = r.isCorrect ? 'correct-row' : 'wrong-row';
       const icon = r.isCorrect ? '✅' : '❌';
-      return `<tr class="${cls}"><td>${r.question}</td><td>${r.correct}</td><td>${r.answer}</td><td>${icon}</td><td>${r.timeMs}ms</td></tr>`;
+      return `<tr class="${cls}"><td>${r.question}</td><td>${r.correct}</td><td>${r.answer}</td><td>${icon}</td></tr>`;
     }).join('');
     return `
       <div class="mb-4">
-        <h3 class="font-bold text-sm mb-1">${d.emoji} ${d.label} — ${d.correct}/${d.total}</h3>
-        <table class="teacher-table"><thead><tr><th>Question</th><th>Correct</th><th>Student</th><th></th><th>Time</th></tr></thead><tbody>${rows}</tbody></table>
+        <div class="flex items-center gap-2 mb-1">
+          <span class="text-lg">${s.emoji}</span>
+          <span class="font-bold text-sm">${s.label}</span>
+          <span class="text-sm text-gray-500">${s.correct}/${s.total}</span>
+          <span class="level-badge level-${lvl.toLowerCase()}">${lvl}</span>
+        </div>
+        <table class="teacher-table"><thead><tr><th>Question</th><th>Correct</th><th>Student</th><th></th></tr></thead><tbody>${rows}</tbody></table>
       </div>`;
   }).join('');
 
+  // Recommendations
+  const recs = generateRecommendations(name, age, la, math, sections);
+
   app.innerHTML = `
     <div class="w-full min-h-[100dvh] bg-white text-gray-800 p-4 overflow-auto animate-fade-in">
-      <h2 class="text-xl font-bold mb-1">Assessment Results — ${name} (Age ${age})</h2>
-      <p class="text-xs text-gray-400 mb-2">${now}</p>
-      <p class="text-lg font-semibold mb-4">Overall: ${totalCorrect}/${totalQ} (${pct}%)</p>
-      ${tables}
-      <div class="flex gap-3 mt-4 mb-8 flex-wrap">
-        <button onclick="goAllDone()" class="bg-purple-500 text-white font-bold px-5 py-2 rounded-lg">← Back to Results</button>
-        <button onclick="playAgain()" class="bg-blue-500 text-white font-bold px-5 py-2 rounded-lg">Start New Assessment</button>
+      <div class="no-print flex justify-between items-center mb-2">
+        <h2 class="text-xl font-bold">📋 Assessment Report</h2>
+        <button onclick="window.print()" class="bg-gray-100 text-gray-600 text-sm px-3 py-1 rounded-lg">🖨️ Print</button>
+      </div>
+
+      <!-- Header -->
+      <div class="bg-gray-50 rounded-xl p-4 mb-4">
+        <h3 class="text-lg font-bold">${name} (Age ${age})</h3>
+        <p class="text-xs text-gray-400">${now} · Duration: ${mins}m ${secs}s</p>
+        <p class="text-lg font-semibold mt-1">Overall: ${totalCorrect}/${totalQ} (${pct}%)</p>
+      </div>
+
+      <!-- Domain Summary -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+        <div class="border-2 border-blue-200 rounded-xl p-4">
+          <h4 class="font-bold text-blue-700 mb-1">📚 Language Arts</h4>
+          <p class="text-2xl font-bold">${la.correct}/${la.total} <span class="text-sm font-normal text-gray-500">(${la.pct}%)</span></p>
+          <div class="flex gap-2 mt-2 flex-wrap">
+            <span class="level-badge level-${laLevel.toLowerCase()}">${laLevel}</span>
+            <span class="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full font-semibold">${laGrade}</span>
+          </div>
+        </div>
+        <div class="border-2 border-amber-200 rounded-xl p-4">
+          <h4 class="font-bold text-amber-700 mb-1">🔢 Math</h4>
+          <p class="text-2xl font-bold">${math.correct}/${math.total} <span class="text-sm font-normal text-gray-500">(${math.pct}%)</span></p>
+          <div class="flex gap-2 mt-2 flex-wrap">
+            <span class="level-badge level-${mathLevel.toLowerCase()}">${mathLevel}</span>
+            <span class="text-xs bg-amber-50 text-amber-700 px-2 py-1 rounded-full font-semibold">${mathGrade}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recommendations -->
+      <div class="mb-4">
+        <h3 class="text-lg font-bold mb-2">📌 Recommendations</h3>
+
+        <h4 class="font-semibold text-sm mb-1 text-blue-700">🌸 Spring Focus (Apr 16 – Jun 15)</h4>
+        ${recs.spring.map(r=>`<div class="rec-card rec-spring">${r}</div>`).join('')}
+
+        <h4 class="font-semibold text-sm mb-1 mt-3 text-amber-700">☀️ Summer School Plan</h4>
+        ${recs.summer.map(r=>`<div class="rec-card rec-summer">${r}</div>`).join('')}
+
+        <div class="bg-purple-50 rounded-xl p-3 mt-3">
+          <h4 class="font-semibold text-sm text-purple-700 mb-1">🎯 Suggested Starting Levels</h4>
+          <p class="text-sm"><strong>${name}:</strong> ${laGrade} Language Arts, ${mathGrade} Math</p>
+        </div>
+      </div>
+
+      <!-- Section Details -->
+      <h3 class="text-lg font-bold mb-2">📊 Section Breakdown</h3>
+      ${sectionCards}
+
+      <div class="flex gap-3 mt-4 mb-8 flex-wrap no-print">
+        <button onclick="goAllDone()" class="bg-purple-500 text-white font-bold px-5 py-2 rounded-lg">← Back</button>
+        <button onclick="playAgain()" class="bg-blue-500 text-white font-bold px-5 py-2 rounded-lg">New Assessment</button>
       </div>
     </div>`;
 }
 
-// ── Domain score computation ─────────────────────
-function computeDomainScores(){
-  const sectionMeta = [
-    {label:'Uppercase Letters',emoji:'📝'},
-    {label:'Lowercase Letters',emoji:'🔤'},
-    {label:'Letter Sounds',emoji:'🔊'},
-    {label:'Counting Objects',emoji:'🔢'},
-    {label:'Number Recognition',emoji:'🔟'},
-    {label:'Days of the Week',emoji:'📅'},
-  ];
-  return sectionMeta.map(m=>{
-    const items = state.results.filter(r=>r.section===m.label);
+/* ── Grading Helpers ── */
+
+function getLevel(pct){
+  if(pct >= 90) return 'Exceeding';
+  if(pct >= 70) return 'Meeting';
+  if(pct >= 50) return 'Developing';
+  return 'Beginning';
+}
+
+function getGradeEquiv(domain, sectionScores, age){
+  if(domain === 'Language Arts'){
+    const letterPct = avg(sectionScores['Uppercase Letters'], sectionScores['Lowercase Letters']);
+    const soundPct = sectionScores['Letter Sounds'] || 0;
+    const cvcPct = sectionScores['CVC Words'] || 0;
+    const sentPct = sectionScores['Sentences'] || 0;
+
+    if(sentPct >= 80 && cvcPct >= 80) return 'Grade 2 Reading';
+    if(cvcPct >= 60 && soundPct >= 60) return 'Grade 1 Reading';
+    if(letterPct >= 70 && soundPct >= 50) return 'Kindergarten Reading';
+    if(letterPct >= 50) return 'Pre-K Reading';
+    return 'Pre-K Emerging';
+  } else {
+    const countPct = sectionScores['Counting Objects'] || 0;
+    const numPct = sectionScores['Number Recognition'] || 0;
+    const addPct = sectionScores['Addition'] || 0;
+    const subPct = sectionScores['Subtraction'] || 0;
+    const daysPct = sectionScores['Days of the Week'] || 0;
+
+    if(addPct >= 70 && subPct >= 70) return 'Grade 2 Math';
+    if(addPct >= 50 && numPct >= 70) return 'Grade 1 Math';
+    if(countPct >= 70 && numPct >= 50) return 'Kindergarten Math';
+    if(countPct >= 50) return 'Pre-K Math';
+    return 'Pre-K Emerging';
+  }
+}
+
+function avg(...vals){
+  const valid = vals.filter(v=>v!==undefined && v!==null);
+  if(!valid.length) return 0;
+  return valid.reduce((a,b)=>a+b,0)/valid.length;
+}
+
+function computeDomainAggregate(domain){
+  const items = state.results.filter(r=>r.domain===domain);
+  const correct = items.filter(r=>r.isCorrect).length;
+  const total = items.length;
+  const pct = total ? Math.round((correct/total)*100) : 0;
+
+  let starsHtml = '';
+  const starCount = Math.min(total, 30);
+  const correctStars = Math.round((correct/total)*starCount);
+  for(let i=0;i<starCount;i++) starsHtml += i<correctStars ? '⭐' : '☆';
+
+  // Section-level scores
+  const sectionScores = {};
+  const sectionNames = domain === 'Language Arts' ? LA_SECTIONS : MATH_SECTIONS;
+  sectionNames.forEach(s=>{
+    const si = items.filter(r=>r.section===s);
+    sectionScores[s] = si.length ? Math.round((si.filter(r=>r.isCorrect).length/si.length)*100) : null;
+  });
+
+  return { correct, total, pct, starsHtml, sectionScores };
+}
+
+function computeAllSectionScores(){
+  const allSections = [...LA_SECTIONS, ...MATH_SECTIONS];
+  const emojiMap = {
+    'Uppercase Letters':'📝','Lowercase Letters':'🔤','Letter Sounds':'🔊',
+    'CVC Words':'📖','Sentences':'📝',
+    'Counting Objects':'🔢','Number Recognition':'🔟','Addition':'➕',
+    'Subtraction':'➖','Days of the Week':'📅'
+  };
+  return allSections.map(label=>{
+    const items = state.results.filter(r=>r.section===label);
     return {
-      label: m.label,
-      emoji: m.emoji,
+      label,
+      emoji: emojiMap[label]||'📋',
       correct: items.filter(r=>r.isCorrect).length,
       total: items.length,
       items
     };
-  });
+  }).filter(s=>s.total>0);
 }
 
-// ── Navigation ───────────────────────────────────
-function goStudentSelect(){
-  state.screen='STUDENT_SELECT'; render();
+/* ── Recommendation Generator ── */
+function generateRecommendations(name, age, la, math, sections){
+  const spring = [];
+  const summer = [];
+
+  // Language Arts recommendations
+  const secMap = {};
+  sections.forEach(s=>{ secMap[s.label] = { correct:s.correct, total:s.total, pct: s.total ? Math.round((s.correct/s.total)*100) : 0 }; });
+
+  // LA - Letters
+  const upperPct = secMap['Uppercase Letters']?.pct || 0;
+  const lowerPct = secMap['Lowercase Letters']?.pct || 0;
+  if(upperPct < 80 || lowerPct < 80){
+    spring.push(`<strong>📚 Letter Recognition:</strong> ${name} needs practice with ${upperPct<80?'uppercase ':''}${upperPct<80&&lowerPct<80?'and ':''}${lowerPct<80?'lowercase ':''}letters. Use letter flashcards, ABC songs, and magnetic letters daily.`);
+  }
+
+  // LA - Sounds
+  const soundPct = secMap['Letter Sounds']?.pct || 0;
+  if(soundPct < 70){
+    spring.push(`<strong>🔊 Letter Sounds:</strong> Focus on phonics — connecting letters to their sounds. Practice beginning sounds with picture cards. Try "I Spy" games with letter sounds.`);
+    summer.push(`<strong>🔊 Phonics Mastery:</strong> Systematic phonics instruction — one letter-sound per day with practice words. Goal: all consonant and short vowel sounds by end of summer.`);
+  }
+
+  // LA - CVC
+  const cvcPct = secMap['CVC Words']?.pct || 0;
+  if(cvcPct < 70){
+    if(soundPct >= 60){
+      spring.push(`<strong>📖 CVC Words:</strong> ${name} is ready to blend sounds into words. Practice CVC word families (-at, -an, -ig, -op, -ug) with word building activities.`);
+    }
+    summer.push(`<strong>📖 CVC Reading:</strong> Build fluency with CVC word families. Use decodable readers and word-building with letter tiles. Target: read simple CVC sentences independently.`);
+  }
+
+  // LA - Sentences
+  const sentPct = secMap['Sentences']?.pct || 0;
+  if(sentPct < 70){
+    summer.push(`<strong>📝 Sentence Reading:</strong> Practice reading simple sentences with sight words + CVC words. Use fill-in-the-blank activities and read-aloud with picture clues.`);
+  }
+
+  // If LA is strong
+  if(la.pct >= 80){
+    spring.push(`<strong>📚 Language Arts:</strong> ${name} shows strong foundational skills! Challenge with grade-level reading passages and introduce sight word lists.`);
+  }
+
+  // Math - Counting
+  const countPct = secMap['Counting Objects']?.pct || 0;
+  if(countPct < 70){
+    spring.push(`<strong>🔢 Counting:</strong> Practice one-to-one counting with physical objects. Start with counting to 10 accurately, then extend to 20. Use manipulatives (blocks, beads, snacks).`);
+    summer.push(`<strong>🔢 Counting Fluency:</strong> Master counting to 20 with one-to-one correspondence. Practice counting forward and backward. Introduce skip counting by 2s and 5s.`);
+  }
+
+  // Math - Number Recognition
+  const numPct = secMap['Number Recognition']?.pct || 0;
+  if(numPct < 70){
+    spring.push(`<strong>🔟 Number Recognition:</strong> Practice recognizing and naming numbers 1-20. Use number cards, number hunts, and tracing activities.`);
+  }
+
+  // Math - Addition
+  const addPct = secMap['Addition']?.pct || 0;
+  if(addPct < 70){
+    if(countPct >= 60){
+      spring.push(`<strong>➕ Addition:</strong> Introduce addition within 10 using counting objects, number lines, and "putting together" stories. Start with +1 and +2 facts.`);
+    }
+    summer.push(`<strong>➕ Addition Fluency:</strong> Master addition facts within 10. Use ten-frames, number bonds, and daily fact practice. Goal: automatic recall of sums to 10.`);
+  }
+
+  // Math - Subtraction
+  const subPct = secMap['Subtraction']?.pct || 0;
+  if(subPct < 70){
+    summer.push(`<strong>➖ Subtraction:</strong> Practice subtraction within 10 using "taking away" stories and manipulatives. Connect to addition fact families.`);
+  }
+
+  // Math - Days
+  const daysPct = secMap['Days of the Week']?.pct || 0;
+  if(daysPct < 70){
+    spring.push(`<strong>📅 Days of the Week:</strong> Practice days in order daily. Use a morning calendar routine — "Today is ___, yesterday was ___, tomorrow will be ___".`);
+  }
+
+  // If math is strong
+  if(math.pct >= 80){
+    spring.push(`<strong>🔢 Math:</strong> ${name} demonstrates strong number sense! Introduce place value concepts and addition/subtraction within 20.`);
+  }
+
+  // General guidance based on age
+  if(age === 7 && la.pct < 60){
+    summer.push(`<strong>📚 Catch-Up Priority:</strong> At age 7, ${name} should target Grade 1 reading level by end of summer. Focus on phonics + sight words + daily read-aloud (15 min/day).`);
+  }
+  if(age === 9 && la.pct < 60){
+    summer.push(`<strong>📚 Intensive Support:</strong> At age 9, ${name} needs accelerated phonics instruction to close the gap. Recommend daily 20-min structured literacy sessions + audiobooks for comprehension.`);
+  }
+  if(age === 9 && math.pct < 60){
+    summer.push(`<strong>🔢 Math Acceleration:</strong> At age 9, ${name} should target Grade 2 math by end of summer. Focus on number sense (place value to 100), addition/subtraction fluency, and intro to multiplication.`);
+  }
+
+  // Ensure at least one recommendation per season
+  if(!spring.length) spring.push(`<strong>✅ On Track:</strong> ${name} shows solid skills across all areas assessed. Continue current instruction and introduce next-level challenges.`);
+  if(!summer.length) summer.push(`<strong>☀️ Enrichment:</strong> ${name} is meeting expectations! Use summer for enrichment — reading chapter books, math puzzles, and real-world math (cooking, shopping).`);
+
+  return { spring, summer };
 }
+
+/* ── Navigation ── */
+function goStudentSelect(){ state.screen='STUDENT_SELECT'; render(); }
+
 function selectStudent(name,age){
   state = resetState();
   state.student = {name,age};
@@ -584,16 +933,17 @@ function selectStudent(name,age){
   state.sectionResults = [];
   render();
 }
+
 function startSectionQuestions(){
   state.currentQuestion = 0;
   state.sectionResults = [];
   state.screen='QUESTION';
   render();
 }
+
 function submitAnswer(ans){
   if(state.answering) return;
   state.answering = true;
-  // disable buttons
   document.querySelectorAll('.answer-btn').forEach(b=>b.classList.add('disabled'));
 
   const sec = state.sections[state.currentSection];
@@ -603,6 +953,7 @@ function submitAnswer(ans){
 
   const result = {
     section: q.section,
+    domain: q.domain,
     question: q.prompt,
     correct: q.correct,
     answer: ans,
@@ -615,8 +966,8 @@ function submitAnswer(ans){
   state.screen = isCorrect ? 'CORRECT_FEEDBACK' : 'WRONG_FEEDBACK';
   render();
 }
+
 function nextAfterFeedback(){
-  // remove overlay
   const ov = document.getElementById('feedback-overlay');
   if(ov) ov.remove();
 
@@ -629,6 +980,7 @@ function nextAfterFeedback(){
   }
   render();
 }
+
 function goNextSection(){
   state.currentSection++;
   state.currentQuestion = 0;
@@ -636,20 +988,13 @@ function goNextSection(){
   state.screen='SECTION_INTRO';
   render();
 }
-function goAllDone(){
-  state.screen='ALL_DONE'; render();
-}
-function goTeacher(){
-  state.screen='TEACHER_SUMMARY'; render();
-}
-function playAgain(){
-  state = resetState();
-  state.screen='STUDENT_SELECT'; render();
-}
 
-// ── Speak button helper ──────────────────────────
+function goAllDone(){ state.screen='ALL_DONE'; render(); }
+function goTeacher(){ state.screen='TEACHER_SUMMARY'; render(); }
+function playAgain(){ state = resetState(); state.screen='STUDENT_SELECT'; render(); }
+
+/* ── Speak button ── */
 function addSpeakBtn(text){
-  // remove old
   const old = document.getElementById('global-speak-btn');
   if(old) old.remove();
   const btn = document.createElement('button');
@@ -660,9 +1005,11 @@ function addSpeakBtn(text){
   document.body.appendChild(btn);
 }
 
-// ── Supabase save ────────────────────────────────
+/* ── Supabase save ── */
 async function saveResults(){
   try{
+    const la = computeDomainAggregate('Language Arts');
+    const math = computeDomainAggregate('Math');
     const sessionData = {
       student_name: state.student.name,
       student_age: state.student.age,
@@ -670,8 +1017,18 @@ async function saveResults(){
       total_correct: state.results.filter(r=>r.isCorrect).length,
       total_questions: state.results.length,
       score_percent: ((state.results.filter(r=>r.isCorrect).length / state.results.length)*100).toFixed(2),
-      domain_scores: computeDomainScores(),
-      raw_results: state.results
+      domain_scores: {
+        language_arts: { correct: la.correct, total: la.total, pct: la.pct, level: getLevel(la.pct) },
+        math: { correct: math.correct, total: math.total, pct: math.pct, level: getLevel(math.pct) }
+      },
+      section_scores: computeAllSectionScores().map(s=>({
+        label: s.label,
+        correct: s.correct,
+        total: s.total,
+        pct: s.total ? Math.round((s.correct/s.total)*100) : 0
+      })),
+      raw_results: state.results,
+      duration_seconds: Math.round((Date.now() - state.startTime)/1000)
     };
     const resp = await fetch(`${SUPABASE_URL}/rest/v1/mini_assessment_sessions`,{
       method:'POST',
@@ -689,12 +1046,12 @@ async function saveResults(){
   }
 }
 
-// ── Prevent back navigation ──────────────────────
+/* ── Prevent back navigation ── */
 window.addEventListener('popstate', e=>{e.preventDefault();});
 history.pushState(null,null,location.href);
 window.addEventListener('popstate',()=>history.pushState(null,null,location.href));
 
-// ── Boot ─────────────────────────────────────────
+/* ── Boot ── */
 render();
 </script>
 </body>
