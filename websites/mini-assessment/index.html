@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>A² Compass – Discovery Games</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<style>
+/* ── Base ──────────────────────────────────────── */
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;overflow-x:hidden;overscroll-behavior:none;font-family:'Segoe UI',system-ui,sans-serif}
+button{touch-action:manipulation;cursor:pointer;border:none;outline:none}
+#app{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden}
+
+/* ── Animations ───────────────────────────────── */
+@keyframes float{0%,100%{transform:translateY(0) rotate(0deg)}25%{transform:translateY(-18px) rotate(5deg)}50%{transform:translateY(-8px) rotate(-3deg)}75%{transform:translateY(-22px) rotate(2deg)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+@keyframes bounceIn{0%{opacity:0;transform:scale(.7)}60%{opacity:1;transform:scale(1.05)}100%{transform:scale(1)}}
+@keyframes starBurst{0%{opacity:1;transform:scale(0) rotate(0deg)}50%{opacity:1;transform:scale(1.4) rotate(180deg)}100%{opacity:0;transform:scale(2) rotate(360deg)}}
+@keyframes slideUp{0%{opacity:0;transform:translateY(40px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{0%{opacity:0}100%{opacity:1}}
+@keyframes wiggle{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+
+.animate-float{animation:float 4s ease-in-out infinite}
+.animate-pulse-custom{animation:pulse 2s ease-in-out infinite}
+.animate-bounce-in{animation:bounceIn .5s ease-out forwards}
+.animate-slide-up{animation:slideUp .45s ease-out forwards}
+.animate-fade-in{animation:fadeIn .35s ease-out forwards}
+.animate-wiggle{animation:wiggle .4s ease-in-out 3}
+
+.star-burst{position:absolute;font-size:2rem;animation:starBurst .7s ease-out forwards;pointer-events:none}
+
+/* ── Floating stars (welcome) ─────────────────── */
+.floating-star{position:absolute;font-size:1.6rem;opacity:.55;animation:float 5s ease-in-out infinite}
+.floating-star:nth-child(2){animation-delay:1s;font-size:1.2rem}
+.floating-star:nth-child(3){animation-delay:2s;font-size:2rem}
+.floating-star:nth-child(4){animation-delay:3s;font-size:1rem}
+.floating-star:nth-child(5){animation-delay:1.5s;font-size:1.4rem}
+
+/* ── Feedback overlays ────────────────────────── */
+.overlay-correct{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(34,197,94,.92);animation:fadeIn .2s ease-out}
+.overlay-wrong{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(251,146,60,.90);animation:fadeIn .2s ease-out}
+
+/* ── Answer button base ───────────────────────── */
+.answer-btn{min-height:80px;border-radius:16px;font-size:1.5rem;font-weight:700;display:flex;align-items:center;justify-content:center;transition:transform .12s,box-shadow .12s;box-shadow:0 4px 6px rgba(0,0,0,.15)}
+.answer-btn:active{transform:scale(.95)}
+.answer-btn.disabled{pointer-events:none;opacity:.6}
+
+/* ── Speaker button ───────────────────────────── */
+.speak-btn{position:fixed;top:12px;right:12px;z-index:40;width:48px;height:48px;border-radius:50%;background:#5B3E96;color:#fff;font-size:1.4rem;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+
+/* ── Progress stars ───────────────────────────── */
+.progress-star{font-size:1.3rem;margin:0 2px;transition:transform .2s}
+
+/* ── Student card ─────────────────────────────── */
+.student-card{transition:transform .15s,box-shadow .15s;cursor:pointer}
+.student-card:hover,.student-card:active{transform:scale(1.05);box-shadow:0 8px 24px rgba(0,0,0,.2)}
+
+/* ── Emoji grid (counting) ────────────────────── */
+.emoji-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;max-width:340px;margin:0 auto}
+.emoji-grid span{font-size:1.8rem;line-height:1}
+
+/* ── Teacher table ────────────────────────────── */
+.teacher-table{width:100%;border-collapse:collapse;font-size:.85rem}
+.teacher-table th,.teacher-table td{padding:6px 8px;border:1px solid #e5e7eb;text-align:left}
+.teacher-table th{background:#f3f4f6;font-weight:600}
+.teacher-table tr.correct-row{background:#f0fdf4}
+.teacher-table tr.wrong-row{background:#fef2f2}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* ================================================================
+   A² Compass – Discovery Games  (Mini Assessment)
+   ================================================================ */
+
+// ── Supabase config ──────────────────────────────
+const SUPABASE_URL = 'https://imtfjlistxccyjeocamp.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImltdGZqbGlzdHhjY3lqZW9jYW1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIxNTM2MDIsImV4cCI6MjA1NzcyOTYwMn0.wMvfZRNz0M04NCNJ7TNsUpqIDnAsmVkaGpSsDyo-ank';
+
+// ── Helpers ──────────────────────────────────────
+const $ = sel => document.querySelector(sel);
+const shuffle = arr => { const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]} return a; };
+const pick = arr => arr[Math.floor(Math.random()*arr.length)];
+
+// ── Speech ───────────────────────────────────────
+function speak(text){
+  try{
+    if(!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    u.rate=0.85; u.pitch=1.1; u.lang='en-US';
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+// ── State ────────────────────────────────────────
+let state = resetState();
+
+function resetState(){
+  return {
+    screen:'WELCOME',
+    student:null,
+    currentSection:0,
+    currentQuestion:0,
+    results:[],
+    sectionResults:[],
+    startTime:null,
+    questionStartTime:null,
+    sections:[], // built on student select
+    answering:false
+  };
+}
+
+// ── Section / Question Generation ────────────────
+
+const UPPERCASE_TARGETS = ['A','M','S','D','T','B'];
+const LOWERCASE_TARGETS = ['a','m','s','d','t','b'];
+const ALL_UPPER = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+const ALL_LOWER = 'abcdefghijklmnopqrstuvwxyz'.split('');
+
+// Similar-looking letter groups to avoid as distractors
+const SIMILAR_UPPER = {A:['H','V','W'],M:['N','W'],S:['Z','5'],D:['O','B'],T:['I','L'],B:['D','P','R']};
+const SIMILAR_LOWER = {a:['o','e','c'],m:['n','r'],s:['z','c'],d:['b','p','q'],t:['l','i','f'],b:['d','p','q']};
+
+function letterDistractors(target, pool, similar){
+  const avoid = new Set([target, ...(similar[target]||[])]);
+  const candidates = pool.filter(l=>!avoid.has(l));
+  return shuffle(candidates).slice(0,3);
+}
+
+function buildLetterSection(targets, pool, similar, isUpper){
+  const label = isUpper ? 'Uppercase Letters' : 'Lowercase Letters';
+  const emoji = isUpper ? '📝' : '🔤';
+  const desc  = isUpper ? "Let's find some big letters!" : "Now let's find the little letters!";
+  const questions = shuffle(targets).map(t=>{
+    const distractors = letterDistractors(t, pool, similar);
+    return {
+      type:'letter',
+      prompt:`Tap the letter  ${t}`,
+      speakText:`Tap the letter ${t}`,
+      choices: shuffle([t,...distractors]),
+      correct: t,
+      section: label
+    };
+  });
+  return { label, emoji, desc, questions };
+}
+
+function buildSoundsSection(){
+  const sounds = shuffle([
+    {phoneme:'/m/',say:'mmm',answer:'M'},
+    {phoneme:'/s/',say:'sss',answer:'S'},
+    {phoneme:'/t/',say:'tuh',answer:'T'},
+    {phoneme:'/b/',say:'buh',answer:'B'},
+    {phoneme:'/a/',say:'aah',answer:'A'},
+  ]);
+  const questions = sounds.map(s=>{
+    const pool = ['A','B','D','M','S','T'].filter(l=>l!==s.answer);
+    const distractors = shuffle(pool).slice(0,3);
+    return {
+      type:'sound',
+      prompt:`Which letter makes this sound?`,
+      speakText: s.say,
+      phoneme: s.phoneme,
+      say: s.say,
+      choices: shuffle([s.answer,...distractors]),
+      correct: s.answer,
+      section:'Letter Sounds'
+    };
+  });
+  return { label:'Letter Sounds', emoji:'🔊', desc:"Listen carefully and find the letter!", questions };
+}
+
+function buildCountingSection(){
+  const items = shuffle([
+    {count:4, emoji:'⭐', name:'stars', choices:[3,4,5,6]},
+    {count:7, emoji:'❤️', name:'hearts', choices:[5,6,7,8]},
+    {count:11,emoji:'🍎', name:'apples', choices:[9,10,11,12]},
+    {count:15,emoji:'🐟', name:'fish', choices:[13,14,15,16]},
+    {count:18,emoji:'🌸', name:'flowers', choices:[16,17,18,19]},
+  ]);
+  const questions = items.map(it=>({
+    type:'counting',
+    prompt:`How many ${it.name} do you see?`,
+    speakText:`How many ${it.name} do you see?`,
+    emojiChar: it.emoji,
+    emojiCount: it.count,
+    choices: shuffle(it.choices).map(String),
+    correct: String(it.count),
+    section:'Counting Objects'
+  }));
+  return { label:'Counting Objects', emoji:'🔢', desc:"Count the objects carefully!", questions };
+}
+
+function buildNumberSection(){
+  const nums = shuffle([
+    {n:3, choices:[1,2,3,4]},
+    {n:8, choices:[6,7,8,9]},
+    {n:12,choices:[10,11,12,13]},
+    {n:16,choices:[14,15,16,17]},
+    {n:20,choices:[18,19,20,21]},
+  ]);
+  const questions = nums.map(it=>({
+    type:'number',
+    prompt:'What number is this?',
+    speakText:`What number is this?`,
+    bigNumber: it.n,
+    choices: shuffle(it.choices).map(String),
+    correct: String(it.n),
+    section:'Number Recognition'
+  }));
+  return { label:'Number Recognition', emoji:'🔟', desc:"Can you read these numbers?", questions };
+}
+
+function buildDaysSection(){
+  const items = shuffle([
+    {after:'Monday',   answer:'Tuesday',  choices:['Tuesday','Wednesday','Sunday','Friday']},
+    {after:'Wednesday',answer:'Thursday', choices:['Monday','Thursday','Saturday','Tuesday']},
+    {after:'Friday',   answer:'Saturday', choices:['Sunday','Saturday','Thursday','Wednesday']},
+    {after:'Sunday',   answer:'Monday',   choices:['Monday','Tuesday','Friday','Saturday']},
+  ]);
+  const questions = items.map(it=>({
+    type:'days',
+    prompt:`What day comes after ${it.after}?`,
+    speakText:`What day comes after ${it.after}?`,
+    choices: shuffle(it.choices),
+    correct: it.answer,
+    section:'Days of the Week'
+  }));
+  return { label:'Days of the Week', emoji:'📅', desc:"Do you know the days of the week?", questions };
+}
+
+function buildAllSections(){
+  return [
+    buildLetterSection(UPPERCASE_TARGETS, ALL_UPPER, SIMILAR_UPPER, true),
+    buildLetterSection(LOWERCASE_TARGETS, ALL_LOWER, SIMILAR_LOWER, false),
+    buildSoundsSection(),
+    buildCountingSection(),
+    buildNumberSection(),
+    buildDaysSection(),
+  ];
+}
+
+// ── Encouragement helpers ────────────────────────
+const CORRECT_MSGS = ['⭐ Amazing!','🌟 Great job!','✨ You\'re a star!','🎉 Awesome!','💫 Fantastic!','🥳 Wonderful!'];
+const WRONG_INTROS = ['Almost!','So close!','Good try!','Nice effort!'];
+
+// ── Render engine ────────────────────────────────
+const app = document.getElementById('app');
+
+function render(){
+  switch(state.screen){
+    case 'WELCOME':        return renderWelcome();
+    case 'STUDENT_SELECT': return renderStudentSelect();
+    case 'SECTION_INTRO':  return renderSectionIntro();
+    case 'QUESTION':       return renderQuestion();
+    case 'CORRECT_FEEDBACK': return renderCorrectFeedback();
+    case 'WRONG_FEEDBACK':   return renderWrongFeedback();
+    case 'SECTION_COMPLETE': return renderSectionComplete();
+    case 'ALL_DONE':         return renderAllDone();
+    case 'TEACHER_SUMMARY':  return renderTeacherSummary();
+  }
+}
+
+/* ── WELCOME ──────────────────────────────────── */
+function renderWelcome(){
+  app.innerHTML = `
+    <div class="relative w-full min-h-[100dvh] flex flex-col items-center justify-center bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 text-white p-6 animate-fade-in">
+      <div class="floating-star" style="top:8%;left:12%">⭐</div>
+      <div class="floating-star" style="top:15%;right:15%">🌟</div>
+      <div class="floating-star" style="top:60%;left:8%">✨</div>
+      <div class="floating-star" style="top:70%;right:10%">💫</div>
+      <div class="floating-star" style="top:40%;left:75%">⭐</div>
+
+      <p class="text-sm tracking-widest opacity-80 mb-2">🧭 A² Compass</p>
+      <h1 class="text-5xl font-extrabold mb-3 animate-bounce-in">Discovery Games! ✨</h1>
+      <p class="text-xl opacity-90 mb-10 text-center">Let's play some fun learning games!</p>
+      <button onclick="goStudentSelect()" class="bg-amber-400 hover:bg-amber-500 text-gray-900 font-bold text-2xl px-10 py-5 rounded-2xl shadow-lg animate-pulse-custom">Let's Start! 🚀</button>
+    </div>`;
+  addSpeakBtn("Welcome to A² Compass Discovery Games! Let's play some fun learning games!");
+}
+
+/* ── STUDENT SELECT ───────────────────────────── */
+function renderStudentSelect(){
+  app.innerHTML = `
+    <div class="w-full min-h-[100dvh] flex flex-col items-center justify-center bg-gradient-to-br from-indigo-400 via-purple-400 to-pink-400 text-white p-6 animate-slide-up">
+      <h2 class="text-3xl font-bold mb-8">Who's playing today? 👋</h2>
+      <div class="flex flex-col sm:flex-row gap-6">
+        <div onclick="selectStudent('Adela',7)" class="student-card bg-white text-gray-800 rounded-3xl p-8 flex flex-col items-center shadow-xl w-56">
+          <div class="w-20 h-20 rounded-full bg-purple-500 text-white flex items-center justify-center text-3xl font-bold mb-3">A</div>
+          <span class="text-2xl font-bold">Adela</span>
+          <span class="text-gray-500">Age 7</span>
+          <span class="mt-2 text-purple-500 font-semibold text-sm">Tap to start!</span>
+        </div>
+        <div onclick="selectStudent('Leandro',9)" class="student-card bg-white text-gray-800 rounded-3xl p-8 flex flex-col items-center shadow-xl w-56">
+          <div class="w-20 h-20 rounded-full bg-blue-500 text-white flex items-center justify-center text-3xl font-bold mb-3">L</div>
+          <span class="text-2xl font-bold">Leandro</span>
+          <span class="text-gray-500">Age 9</span>
+          <span class="mt-2 text-blue-500 font-semibold text-sm">Tap to start!</span>
+        </div>
+      </div>
+    </div>`;
+  addSpeakBtn("Who's playing today? Choose Adela or Leandro.");
+}
+
+/* ── SECTION INTRO ────────────────────────────── */
+function renderSectionIntro(){
+  const sec = state.sections[state.currentSection];
+  const count = sec.questions.length;
+  app.innerHTML = `
+    <div class="w-full min-h-[100dvh] flex flex-col items-center justify-center bg-gradient-to-br from-teal-400 via-cyan-400 to-blue-500 text-white p-6 animate-slide-up">
+      <div class="text-7xl mb-4 animate-bounce-in">${sec.emoji}</div>
+      <h2 class="text-3xl font-bold mb-2 text-center">${sec.label}</h2>
+      <p class="text-lg opacity-90 mb-1 text-center">${sec.desc}</p>
+      <p class="text-md opacity-80 mb-8">${count} games to play!</p>
+      <button onclick="startSectionQuestions()" class="bg-amber-400 hover:bg-amber-500 text-gray-900 font-bold text-2xl px-10 py-5 rounded-2xl shadow-lg animate-pulse-custom">Ready? Go! 🎯</button>
+    </div>`;
+  addSpeakBtn(`${sec.label}. ${sec.desc}. ${count} games to play. Ready? Go!`);
+}
+
+/* ── QUESTION ─────────────────────────────────── */
+function renderQuestion(){
+  const sec = state.sections[state.currentSection];
+  const q   = sec.questions[state.currentQuestion];
+  const total = sec.questions.length;
+  const idx   = state.currentQuestion;
+
+  // progress stars
+  let stars = '';
+  for(let i=0;i<total;i++){
+    if(i < idx) stars += '<span class="progress-star">⭐</span>';
+    else if(i === idx) stars += '<span class="progress-star animate-wiggle">🔵</span>';
+    else stars += '<span class="progress-star">☆</span>';
+  }
+
+  // question body
+  let body = '';
+  if(q.type==='counting'){
+    let emojis = '';
+    for(let i=0;i<q.emojiCount;i++) emojis += `<span>${q.emojiChar}</span>`;
+    body = `<div class="emoji-grid mb-4">${emojis}</div><p class="text-2xl font-bold text-center">${q.prompt}</p>`;
+  } else if(q.type==='number'){
+    body = `<div class="text-center mb-2" style="font-size:clamp(100px,30vw,200px);line-height:1;font-weight:800;color:#5B3E96">${q.bigNumber}</div><p class="text-2xl font-bold text-center">${q.prompt}</p>`;
+  } else if(q.type==='sound'){
+    body = `<button onclick="speakSound()" class="text-7xl mb-3 bg-purple-100 w-28 h-28 rounded-full flex items-center justify-center mx-auto shadow-lg active:scale-95" style="touch-action:manipulation">🔊</button>
+            <p class="text-lg text-gray-500 mb-1 text-center">Listen to the sound!</p>
+            <p class="text-2xl font-bold text-center">${q.prompt}</p>`;
+  } else {
+    body = `<p class="text-3xl font-bold text-center">${q.prompt}</p>`;
+  }
+
+  const btnColors = [
+    'bg-blue-500 hover:bg-blue-600 text-white',
+    'bg-purple-500 hover:bg-purple-600 text-white',
+    'bg-amber-500 hover:bg-amber-600 text-white',
+    'bg-teal-500 hover:bg-teal-600 text-white',
+  ];
+
+  let choices = q.choices.map((c,i)=>`
+    <button onclick="submitAnswer('${c.replace(/'/g,"\\'")}')" class="answer-btn ${btnColors[i%4]} w-full">${c}</button>
+  `).join('');
+
+  app.innerHTML = `
+    <div class="w-full min-h-[100dvh] flex flex-col bg-gray-50 animate-fade-in">
+      <!-- progress -->
+      <div class="pt-4 px-4 flex flex-wrap justify-center">${stars}</div>
+      <p class="text-center text-sm text-gray-400 mt-1 mb-3">Question ${idx+1} of ${total}</p>
+      <!-- question body -->
+      <div class="flex-1 flex flex-col items-center justify-center px-4 pb-2 animate-bounce-in">
+        ${body}
+      </div>
+      <!-- answer grid -->
+      <div class="grid grid-cols-2 gap-3 p-4 pb-6 max-w-md mx-auto w-full">
+        ${choices}
+      </div>
+    </div>`;
+
+  // speak
+  if(q.type==='sound'){
+    setTimeout(()=>speak(q.say),400);
+    addSpeakBtn(q.say);
+  } else {
+    setTimeout(()=>speak(q.speakText),300);
+    addSpeakBtn(q.speakText);
+  }
+
+  state.questionStartTime = Date.now();
+  state.answering = false;
+}
+
+function speakSound(){
+  const sec = state.sections[state.currentSection];
+  const q   = sec.questions[state.currentQuestion];
+  speak(q.say);
+}
+
+/* ── CORRECT FEEDBACK ─────────────────────────── */
+function renderCorrectFeedback(){
+  const msg = pick(CORRECT_MSGS);
+  app.innerHTML += `
+    <div class="overlay-correct" id="feedback-overlay">
+      <div class="text-6xl mb-4 animate-bounce-in">${msg.split(' ')[0]}</div>
+      <p class="text-3xl font-bold text-white">${msg}</p>
+    </div>`;
+  // star bursts
+  for(let i=0;i<5;i++){
+    const el = document.createElement('div');
+    el.className='star-burst';
+    el.textContent='⭐';
+    el.style.top=`${30+Math.random()*40}%`;
+    el.style.left=`${10+Math.random()*80}%`;
+    el.style.animationDelay=`${i*0.1}s`;
+    document.getElementById('feedback-overlay').appendChild(el);
+  }
+  speak(msg.replace(/[⭐🌟✨🎉💫🥳]/g,''));
+  setTimeout(nextAfterFeedback, 1500);
+}
+
+/* ── WRONG FEEDBACK ───────────────────────────── */
+function renderWrongFeedback(){
+  const lastResult = state.sectionResults[state.sectionResults.length-1];
+  const intro = pick(WRONG_INTROS);
+  app.innerHTML += `
+    <div class="overlay-wrong" id="feedback-overlay">
+      <p class="text-3xl font-bold text-white mb-3">${intro}</p>
+      <p class="text-2xl text-white">The answer is <span class="font-extrabold text-4xl">${lastResult.correct}</span></p>
+      <p class="text-xl text-white mt-4">Let's try the next one! 💪</p>
+    </div>`;
+  speak(`${intro} The answer is ${lastResult.correct}. Let's try the next one!`);
+  setTimeout(nextAfterFeedback, 2500);
+}
+
+/* ── SECTION COMPLETE ─────────────────────────── */
+function renderSectionComplete(){
+  const sec = state.sections[state.currentSection];
+  const correct = state.sectionResults.filter(r=>r.isCorrect).length;
+  const total   = sec.questions.length;
+  const pct     = correct/total;
+
+  let starsHtml = '';
+  for(let i=0;i<total;i++) starsHtml += i<correct ? '⭐' : '☆';
+
+  let encouragement;
+  if(pct>=1) encouragement = "Perfect! You're amazing! 🏆";
+  else if(pct>=0.8) encouragement = "Wow, great job! 🌟";
+  else if(pct>=0.6) encouragement = "Nice work! You're learning so much! 💪";
+  else encouragement = "Great try! Every game helps you learn! 🌱";
+
+  const isLast = state.currentSection >= state.sections.length - 1;
+  const btnLabel = isLast ? 'See My Stars! 🏆' : 'Next Game! 🎮';
+  const btnAction = isLast ? 'goAllDone()' : 'goNextSection()';
+
+  app.innerHTML = `
+    <div class="w-full min-h-[100dvh] flex flex-col items-center justify-center bg-gradient-to-br from-yellow-300 via-orange-300 to-pink-400 text-gray-900 p-6 animate-slide-up">
+      <div class="text-5xl mb-3">🎊</div>
+      <h2 class="text-3xl font-bold mb-2">Section done!</h2>
+      <p class="text-2xl mb-2">${starsHtml}</p>
+      <p class="text-xl mb-1">You got ${correct} out of ${total} stars!</p>
+      <p class="text-lg mb-8 text-center">${encouragement}</p>
+      <button onclick="${btnAction}" class="bg-white text-gray-900 font-bold text-2xl px-10 py-5 rounded-2xl shadow-lg animate-pulse-custom">${btnLabel}</button>
+    </div>`;
+  speak(`Section done! You got ${correct} out of ${total} stars. ${encouragement.replace(/[🏆🌟💪🌱]/g,'')}`);
+  addSpeakBtn(`You got ${correct} out of ${total} stars. ${encouragement.replace(/[🏆🌟💪🌱]/g,'')}`);
+}
+
+/* ── ALL DONE ─────────────────────────────────── */
+function renderAllDone(){
+  const name = state.student.name;
+  const totalCorrect = state.results.filter(r=>r.isCorrect).length;
+  const totalQ = state.results.length;
+
+  // domain breakdown
+  const domains = computeDomainScores();
+  let domainCards = domains.map(d=>{
+    let s='';
+    for(let i=0;i<d.total;i++) s += i<d.correct?'⭐':'☆';
+    return `<div class="bg-white bg-opacity-20 rounded-xl p-3 flex items-center gap-3">
+      <span class="text-2xl">${d.emoji}</span>
+      <div><p class="font-bold text-sm">${d.label}</p><p class="text-xs">${s}</p></div>
+    </div>`;
+  }).join('');
+
+  app.innerHTML = `
+    <div class="w-full min-h-[100dvh] flex flex-col items-center justify-center bg-gradient-to-br from-purple-500 via-pink-500 to-amber-400 text-white p-6 animate-slide-up">
+      <h1 class="text-4xl font-extrabold mb-2 text-center animate-bounce-in">🎉 Amazing job, ${name}! 🎉</h1>
+      <p class="text-lg mb-1">You completed all the Discovery Games!</p>
+      <p class="text-3xl font-bold mb-4">You earned ${totalCorrect} out of ${totalQ} stars! ⭐</p>
+      <div class="grid gap-2 w-full max-w-sm mb-6">${domainCards}</div>
+      <p class="text-sm opacity-80 mb-6 text-center">Sandra will use your results to build your perfect learning adventure!</p>
+      <div class="flex gap-4 flex-wrap justify-center">
+        <button onclick="playAgain()" class="bg-white text-purple-600 font-bold text-lg px-6 py-3 rounded-xl shadow">🔄 Play Again</button>
+        <button onclick="goTeacher()" class="bg-white text-purple-600 font-bold text-lg px-6 py-3 rounded-xl shadow">📋 Teacher View</button>
+      </div>
+    </div>`;
+  addSpeakBtn(`Amazing job ${name}! You earned ${totalCorrect} out of ${totalQ} stars!`);
+
+  // confetti
+  setTimeout(()=>{confetti({particleCount:120,spread:80,origin:{y:0.6}});},300);
+  setTimeout(()=>{confetti({particleCount:80,spread:100,origin:{y:0.5}});},900);
+  setTimeout(()=>{confetti({particleCount:60,angle:60,spread:60,origin:{x:0,y:0.6}});},1500);
+  setTimeout(()=>{confetti({particleCount:60,angle:120,spread:60,origin:{x:1,y:0.6}});},1500);
+
+  // save
+  saveResults();
+}
+
+/* ── TEACHER SUMMARY ──────────────────────────── */
+function renderTeacherSummary(){
+  const name = state.student.name;
+  const age  = state.student.age;
+  const totalCorrect = state.results.filter(r=>r.isCorrect).length;
+  const totalQ = state.results.length;
+  const pct = ((totalCorrect/totalQ)*100).toFixed(1);
+  const now = new Date().toLocaleString();
+
+  const domains = computeDomainScores();
+
+  let tables = domains.map(d=>{
+    const rows = d.items.map(r=>{
+      const cls = r.isCorrect ? 'correct-row' : 'wrong-row';
+      const icon = r.isCorrect ? '✅' : '❌';
+      return `<tr class="${cls}"><td>${r.question}</td><td>${r.correct}</td><td>${r.answer}</td><td>${icon}</td><td>${r.timeMs}ms</td></tr>`;
+    }).join('');
+    return `
+      <div class="mb-4">
+        <h3 class="font-bold text-sm mb-1">${d.emoji} ${d.label} — ${d.correct}/${d.total}</h3>
+        <table class="teacher-table"><thead><tr><th>Question</th><th>Correct</th><th>Student</th><th></th><th>Time</th></tr></thead><tbody>${rows}</tbody></table>
+      </div>`;
+  }).join('');
+
+  app.innerHTML = `
+    <div class="w-full min-h-[100dvh] bg-white text-gray-800 p-4 overflow-auto animate-fade-in">
+      <h2 class="text-xl font-bold mb-1">Assessment Results — ${name} (Age ${age})</h2>
+      <p class="text-xs text-gray-400 mb-2">${now}</p>
+      <p class="text-lg font-semibold mb-4">Overall: ${totalCorrect}/${totalQ} (${pct}%)</p>
+      ${tables}
+      <div class="flex gap-3 mt-4 mb-8 flex-wrap">
+        <button onclick="goAllDone()" class="bg-purple-500 text-white font-bold px-5 py-2 rounded-lg">← Back to Results</button>
+        <button onclick="playAgain()" class="bg-blue-500 text-white font-bold px-5 py-2 rounded-lg">Start New Assessment</button>
+      </div>
+    </div>`;
+}
+
+// ── Domain score computation ─────────────────────
+function computeDomainScores(){
+  const sectionMeta = [
+    {label:'Uppercase Letters',emoji:'📝'},
+    {label:'Lowercase Letters',emoji:'🔤'},
+    {label:'Letter Sounds',emoji:'🔊'},
+    {label:'Counting Objects',emoji:'🔢'},
+    {label:'Number Recognition',emoji:'🔟'},
+    {label:'Days of the Week',emoji:'📅'},
+  ];
+  return sectionMeta.map(m=>{
+    const items = state.results.filter(r=>r.section===m.label);
+    return {
+      label: m.label,
+      emoji: m.emoji,
+      correct: items.filter(r=>r.isCorrect).length,
+      total: items.length,
+      items
+    };
+  });
+}
+
+// ── Navigation ───────────────────────────────────
+function goStudentSelect(){
+  state.screen='STUDENT_SELECT'; render();
+}
+function selectStudent(name,age){
+  state = resetState();
+  state.student = {name,age};
+  state.sections = buildAllSections();
+  state.startTime = Date.now();
+  state.screen = 'SECTION_INTRO';
+  state.currentSection = 0;
+  state.currentQuestion = 0;
+  state.sectionResults = [];
+  render();
+}
+function startSectionQuestions(){
+  state.currentQuestion = 0;
+  state.sectionResults = [];
+  state.screen='QUESTION';
+  render();
+}
+function submitAnswer(ans){
+  if(state.answering) return;
+  state.answering = true;
+  // disable buttons
+  document.querySelectorAll('.answer-btn').forEach(b=>b.classList.add('disabled'));
+
+  const sec = state.sections[state.currentSection];
+  const q   = sec.questions[state.currentQuestion];
+  const timeMs = Date.now() - state.questionStartTime;
+  const isCorrect = ans === q.correct;
+
+  const result = {
+    section: q.section,
+    question: q.prompt,
+    correct: q.correct,
+    answer: ans,
+    isCorrect,
+    timeMs
+  };
+  state.results.push(result);
+  state.sectionResults.push(result);
+
+  state.screen = isCorrect ? 'CORRECT_FEEDBACK' : 'WRONG_FEEDBACK';
+  render();
+}
+function nextAfterFeedback(){
+  // remove overlay
+  const ov = document.getElementById('feedback-overlay');
+  if(ov) ov.remove();
+
+  const sec = state.sections[state.currentSection];
+  if(state.currentQuestion < sec.questions.length - 1){
+    state.currentQuestion++;
+    state.screen='QUESTION';
+  } else {
+    state.screen='SECTION_COMPLETE';
+  }
+  render();
+}
+function goNextSection(){
+  state.currentSection++;
+  state.currentQuestion = 0;
+  state.sectionResults = [];
+  state.screen='SECTION_INTRO';
+  render();
+}
+function goAllDone(){
+  state.screen='ALL_DONE'; render();
+}
+function goTeacher(){
+  state.screen='TEACHER_SUMMARY'; render();
+}
+function playAgain(){
+  state = resetState();
+  state.screen='STUDENT_SELECT'; render();
+}
+
+// ── Speak button helper ──────────────────────────
+function addSpeakBtn(text){
+  // remove old
+  const old = document.getElementById('global-speak-btn');
+  if(old) old.remove();
+  const btn = document.createElement('button');
+  btn.id='global-speak-btn';
+  btn.className='speak-btn';
+  btn.textContent='🔊';
+  btn.onclick=()=>speak(text);
+  document.body.appendChild(btn);
+}
+
+// ── Supabase save ────────────────────────────────
+async function saveResults(){
+  try{
+    const sessionData = {
+      student_name: state.student.name,
+      student_age: state.student.age,
+      completed_at: new Date().toISOString(),
+      total_correct: state.results.filter(r=>r.isCorrect).length,
+      total_questions: state.results.length,
+      score_percent: ((state.results.filter(r=>r.isCorrect).length / state.results.length)*100).toFixed(2),
+      domain_scores: computeDomainScores(),
+      raw_results: state.results
+    };
+    const resp = await fetch(`${SUPABASE_URL}/rest/v1/mini_assessment_sessions`,{
+      method:'POST',
+      headers:{
+        'apikey': SUPABASE_KEY,
+        'Content-Type':'application/json',
+        'Prefer':'return=representation'
+      },
+      body: JSON.stringify(sessionData)
+    });
+    if(resp.ok) console.log('Results saved to Supabase!');
+    else console.log('Supabase save status:', resp.status);
+  }catch(err){
+    console.log('Could not save to DB, results shown on screen:', err);
+  }
+}
+
+// ── Prevent back navigation ──────────────────────
+window.addEventListener('popstate', e=>{e.preventDefault();});
+history.pushState(null,null,location.href);
+window.addEventListener('popstate',()=>history.pushState(null,null,location.href));
+
+// ── Boot ─────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
