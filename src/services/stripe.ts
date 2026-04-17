@@ -74,13 +74,13 @@ export const stripeService = {
   async getSubscriptions(parentId: string): Promise<SubscriptionSummary[]> {
     const { data, error } = await supabase
       .from('student_enrollments')
-      .select(\`
+      .select(`
         id,
         status,
         stripe_subscription_id,
         enrollment_type:enrollment_types(name, slug),
         student:student_profiles(*, profile:profiles!student_profiles_user_id_fkey(*))
-      \`)
+      `)
       .eq('student.parent_id', parentId)
       .in('status', ['active', 'trial', 'past_due'])
     if (error) { console.error('getSubscriptions error:', error); return [] }
