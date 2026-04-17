@@ -27,6 +27,10 @@ import CurriculumPlanner from './pages/teacher/curriculum/CurriculumPlanner'
 import AssignmentTool from './pages/teacher/assignments/AssignmentTool'
 import AssessmentDashboard from './pages/teacher/AssessmentDashboard'
 import ItemBankReview from './pages/teacher/ItemBankReview'
+import CurriculumBrowser from './pages/teacher/CurriculumBrowser'
+import ReportCardBuilder from './pages/teacher/ReportCardBuilder'
+import StudentDiscoveryProfile from './pages/teacher/StudentDiscoveryProfile'
+import PacingGuidePage from './pages/teacher/PacingGuidePage'
 
 // Parent pages
 import ParentDashboard from './pages/parent/Dashboard'
@@ -35,6 +39,7 @@ import EnrollPage from './pages/parent/Enroll'
 import GrowthTimeline from './pages/parent/GrowthTimeline'
 import AssessmentSummary from './pages/parent/AssessmentSummary'
 import ParentOrientation from './pages/parent/ParentOrientation'
+import ParentLetters from './pages/parent/ParentLetters'
 
 // Student pages
 import FlightPlan from './pages/student/FlightPlan'
@@ -116,6 +121,10 @@ export default function App() {
         <Route path="teacher/library" element={<ContentLibrary />} />
         <Route path="teacher/curriculum" element={<CurriculumPlanner />} />
         <Route path="teacher/assignments" element={<AssignmentTool />} />
+        <Route path="teacher/curriculum-browser" element={<CurriculumBrowser />} />
+        <Route path="teacher/report-cards" element={<ReportCardBuilder />} />
+        <Route path="teacher/discovery-profile/:studentId" element={<StudentDiscoveryProfile />} />
+        <Route path="teacher/pacing-guide" element={<PacingGuidePage />} />
 
         {/* Parent Routes */}
         <Route path="parent" element={<ParentDashboard />} />
@@ -128,6 +137,7 @@ export default function App() {
         <Route path="parent/billing" element={<ParentBillingPage />} />
         <Route path="parent/enroll" element={<EnrollPage />} />
         <Route path="parent/messages" element={<ParentDashboard />} />
+        <Route path="parent/letters" element={<ParentLetters />} />
 
         {/* Student Routes */}
         <Route path="student" element={<FlightPlan />} />
