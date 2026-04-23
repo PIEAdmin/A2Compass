@@ -65,7 +65,7 @@ export default function AssessmentDashboard() {
       const data = await studentService.getStudentsByTeacher(user!.id);
       setStudents(data);
       if (data.length > 0 && !selectedStudentId) {
-        setSelectedStudentId(data[0].user_id);
+        setSelectedStudentId(data[0].id);
       }
     } catch (err) {
       console.error('Failed to load students:', err);
@@ -99,7 +99,7 @@ export default function AssessmentDashboard() {
     }
   }
 
-  const selectedStudent = students.find((s) => s.user_id === selectedStudentId);
+  const selectedStudent = students.find((s) => s.id === selectedStudentId);
 
   if (studentsLoading) return <LoadingSpinner size="lg" />;
 
@@ -118,12 +118,12 @@ export default function AssessmentDashboard() {
               <h3 className="font-semibold text-gray-800 mb-3">Students</h3>
               <div className="space-y-1">
                 {students.map((s) => {
-                  const isActive = s.user_id === selectedStudentId;
+                  const isActive = s.id === selectedStudentId;
                   return (
                     <button
                       key={s.id}
                       onClick={() => {
-                        setSelectedStudentId(s.user_id);
+                        setSelectedStudentId(s.id);
                         setSessionDetail(null);
                       }}
                       className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors
