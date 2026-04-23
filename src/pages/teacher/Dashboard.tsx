@@ -122,10 +122,10 @@ export default function TeacherDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="p-6 max-w-6xl mx-auto space-y-6">
+      <div className="p-4 sm:p-6 max-w-6xl mx-auto space-y-6">
         {/* Welcome Header */}
         <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-xl shadow-lg p-6 text-white">
-          <h1 className="text-2xl font-bold">
+          <h1 className="text-xl sm:text-2xl font-bold">
             {getGreeting()}, {teacherName}! 🎯
           </h1>
           <p className="text-indigo-200 mt-1">{formatDate()}</p>
@@ -177,7 +177,7 @@ export default function TeacherDashboard() {
         {/* Quick Links */}
         <div className="bg-white rounded-xl shadow-sm border p-5">
           <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Quick Links</h2>
-          <div className="grid grid-cols-4 lg:grid-cols-8 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
             {QUICK_LINKS.map((link) => (
               <Link
                 key={link.path}
