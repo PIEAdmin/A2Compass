@@ -31,6 +31,7 @@ import CurriculumBrowser from './pages/teacher/CurriculumBrowser'
 import ReportCardBuilder from './pages/teacher/ReportCardBuilder'
 import StudentDiscoveryProfile from './pages/teacher/StudentDiscoveryProfile'
 import PacingGuidePage from './pages/teacher/PacingGuidePage'
+import DiscoveryGamesResults from './pages/teacher/DiscoveryGamesResults'
 
 // Parent pages
 import ParentDashboard from './pages/parent/Dashboard'
@@ -112,6 +113,7 @@ export default function App() {
         <Route path="teacher/skill-map" element={<SkillMap />} />
         <Route path="teacher/assessments" element={<AssessmentDashboard />} />
         <Route path="teacher/item-bank" element={<ItemBankReview />} />
+        <Route path="teacher/discovery-results" element={<DiscoveryGamesResults />} />
         <Route path="teacher/lessons" element={<LessonsList />} />
         <Route path="teacher/lessons/new" element={<LessonBuilder />} />
         <Route path="teacher/lessons/:id" element={<LessonBuilder />} />
