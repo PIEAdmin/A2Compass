@@ -118,10 +118,10 @@ export const assessmentService = {
       .from('assessment_skill_results')
       .select(`
         *,
-        skill:skills!skill_id (
+        skill:skill_nodes!skill_id (
           code,
           name,
-          domain:domains!domain_id ( name )
+          domain:skill_domains!domain_id ( name )
         )
       `)
       .eq('session_id', sessionId)
@@ -164,9 +164,9 @@ export const assessmentService = {
       .select(`
         skill_id,
         proficiency,
-        skill:skills!skill_id (
+        skill:skill_nodes!skill_id (
           domain_id,
-          domain:domains!domain_id ( name )
+          domain:skill_domains!domain_id ( name )
         )
       `)
       .eq('student_id', studentId)
