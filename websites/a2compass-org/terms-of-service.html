@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Terms of Service — A² Compass</title>
+  <meta name="description" content="Terms of Service for A² Compass, the adaptive learning platform by Achievement Academy.">
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧭</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy: #1B3A6B;
+      --royal: #2563EB;
+      --royal-light: #3B82F6;
+      --gold: #D4A843;
+      --deep-gold: #B8922D;
+      --light-gold: #FDF6E3;
+      --white: #FFFFFF;
+      --light-gray: #F8FAFC;
+      --dark: #0F172A;
+      --text: #334155;
+      --text-light: #64748B;
+      --border: #E2E8F0;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.1);
+      --radius: 12px;
+      --radius-lg: 20px;
+    }
+
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: var(--text);
+      line-height: 1.7;
+      background: var(--white);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h1, h2, h3, h4 {
+      font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+      color: var(--navy);
+      line-height: 1.2;
+    }
+
+    a { color: var(--royal); text-decoration: none; transition: color 0.2s; }
+    a:hover { color: var(--deep-gold); }
+
+    /* ===================== NAVBAR ===================== */
+    .navbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 1000;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+      transition: box-shadow 0.3s;
+    }
+    .navbar.scrolled { box-shadow: var(--shadow-md); }
+
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 72px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--navy);
+      text-decoration: none;
+    }
+    .logo-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px; height: 38px;
+      background: linear-gradient(135deg, var(--royal), #1D4ED8);
+      color: var(--white);
+      border-radius: 10px;
+      font-size: 1.1rem;
+    }
+    .logo sup { font-size: 0.7em; color: var(--gold); }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      list-style: none;
+    }
+    .nav-links a {
+      font-size: 0.925rem;
+      font-weight: 500;
+      color: var(--text);
+      transition: color 0.2s;
+      padding: 4px 0;
+    }
+    .nav-links a:hover { color: var(--royal); }
+    .nav-links a.nav-active {
+      color: var(--royal);
+      border-bottom: 2px solid var(--royal);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 1rem;
+      padding: 14px 32px;
+      border-radius: 100px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      text-decoration: none;
+    }
+    .btn-primary {
+      background: var(--royal);
+      color: var(--white);
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+    }
+    .btn-primary:hover {
+      background: #1D4ED8;
+      color: var(--white);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+    }
+    .btn-sm { padding: 10px 24px; font-size: 0.9rem; }
+    .btn-login {
+      font-weight: 600;
+      font-size: 0.925rem;
+      color: var(--navy);
+      padding: 8px 16px;
+    }
+
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+    }
+    .hamburger span {
+      display: block;
+      width: 24px; height: 2.5px;
+      background: var(--navy);
+      border-radius: 2px;
+      transition: all 0.3s;
+    }
+
+    .mobile-nav {
+      display: none;
+      position: fixed;
+      top: 72px; left: 0; right: 0; bottom: 0;
+      background: var(--white);
+      z-index: 999;
+      padding: 32px 24px;
+      flex-direction: column;
+      gap: 8px;
+      overflow-y: auto;
+    }
+    .mobile-nav.active { display: flex; }
+    .mobile-nav a {
+      display: block;
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: var(--navy);
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .mobile-nav .mobile-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    .mobile-nav .mobile-actions .btn { justify-content: center; }
+
+    @media (max-width: 900px) {
+      .nav-links, .nav-actions { display: none; }
+      .hamburger { display: flex; }
+    }
+
+    /* ===================== PAGE HEADER ===================== */
+    .page-header {
+      padding-top: 120px;
+      padding-bottom: 48px;
+      background: linear-gradient(165deg, #F0F7FF 0%, var(--white) 60%, var(--light-gold) 100%);
+      text-align: center;
+    }
+    .page-header h1 {
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--navy) 0%, var(--royal) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+    }
+    .page-header .last-updated {
+      font-size: 0.95rem;
+      color: var(--text-light);
+      font-weight: 500;
+    }
+    .page-header .last-updated time {
+      font-weight: 600;
+      color: var(--navy);
+    }
+
+    /* ===================== LEGAL CONTENT ===================== */
+    .legal-content {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 48px 24px 96px;
+    }
+
+    .summary-box {
+      background: linear-gradient(135deg, #EFF6FF, var(--light-gold));
+      border-left: 4px solid var(--gold);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 28px 32px;
+      margin-bottom: 48px;
+    }
+    .summary-box h2 {
+      font-size: 1.25rem;
+      margin-bottom: 16px;
+    }
+    .summary-box ul {
+      margin: 0;
+      padding-left: 0;
+      list-style: none;
+    }
+    .summary-box li {
+      position: relative;
+      padding: 6px 0 6px 28px;
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+    .summary-box li::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      top: 6px;
+      width: 20px; height: 20px;
+      background: var(--royal);
+      color: var(--white);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.6rem;
+      font-weight: 700;
+    }
+
+    .legal-content h2 {
+      font-size: 1.5rem;
+      margin-top: 48px;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .legal-content h3 {
+      font-family: 'Inter', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin-top: 32px;
+      margin-bottom: 12px;
+    }
+
+    .legal-content p {
+      margin-bottom: 16px;
+      font-size: 1rem;
+      line-height: 1.8;
+    }
+
+    .legal-content ul, .legal-content ol {
+      margin: 12px 0 20px 24px;
+    }
+    .legal-content li {
+      margin-bottom: 8px;
+      font-size: 1rem;
+      line-height: 1.7;
+    }
+    .legal-content li ul {
+      margin-top: 8px;
+    }
+
+    .legal-content strong {
+      color: var(--navy);
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+      margin: 20px 0;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .legal-content table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+    .legal-content thead {
+      background: var(--light-gray);
+    }
+    .legal-content th {
+      text-align: left;
+      padding: 14px 18px;
+      font-weight: 700;
+      color: var(--navy);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      border-bottom: 2px solid var(--border);
+    }
+    .legal-content td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    .legal-content tr:last-child td {
+      border-bottom: none;
+    }
+
+    .legal-content code {
+      background: var(--light-gray);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }
+
+    .legal-content sup {
+      font-size: 0.7em;
+    }
+
+    /* ===================== FOOTER ===================== */
+    .footer {
+      background: var(--dark);
+      color: rgba(255,255,255,0.7);
+      padding: 64px 0 32px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 48px;
+      margin-bottom: 48px;
+    }
+    .footer-brand p {
+      margin-top: 16px;
+      font-size: 0.925rem;
+      line-height: 1.7;
+      max-width: 300px;
+    }
+    .footer h4 {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--white);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 20px;
+    }
+    .footer-links { list-style: none; }
+    .footer-links li { margin-bottom: 12px; }
+    .footer-links a {
+      color: rgba(255,255,255,0.6);
+      font-size: 0.925rem;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--gold); }
+    .footer-bottom {
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding-top: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .footer-bottom p { font-size: 0.85rem; }
+    .footer-socials { display: flex; gap: 16px; }
+    .footer-socials a {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255,255,255,0.6);
+      font-size: 1.1rem;
+      transition: all 0.2s;
+    }
+    .footer-socials a:hover {
+      background: var(--royal);
+      color: var(--white);
+    }
+    .logo-footer {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--white);
+    }
+    .logo-footer sup { color: var(--gold); font-size: 0.7em; }
+
+    @media (max-width: 768px) {
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+      .footer-bottom { flex-direction: column; text-align: center; }
+    }
+    @media (max-width: 480px) {
+      .footer-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="/" class="logo">
+        <span class="logo-icon">🧭</span>
+        A<sup>2</sup> Compass
+      </a>
+      <ul class="nav-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="/privacy-policy" class="">Privacy Policy</a></li>
+        <li><a href="/terms-of-service" class="nav-active">Terms of Service</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a href="https://aaacademy.app" class="btn-login">Login</a>
+        <a href="https://aaacademy.us" class="btn btn-primary btn-sm">Get Started</a>
+      </div>
+      <button class="hamburger" id="hamburger" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <div class="mobile-nav" id="mobile-nav">
+      <a href="/">Home</a>
+      <a href="/privacy-policy">Privacy Policy</a>
+      <a href="/terms-of-service">Terms of Service</a>
+      <div class="mobile-actions">
+        <a href="https://aaacademy.app" class="btn" style="border: 2px solid var(--border); color: var(--navy);">Login</a>
+        <a href="https://aaacademy.us" class="btn btn-primary">Get Started</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- PAGE HEADER -->
+  <header class="page-header">
+    <div class="container">
+      <h1>Terms of Service</h1>
+      <p class="last-updated">Last Updated: <time datetime="2026-04-29">April 29, 2026</time></p>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <main class="legal-content">
+    <div class="summary-box"><h2>Summary — Key Points in Plain Language</h2><ul>
+<li><strong>A<sup>2</sup> Compass is for learning.</strong> It's an adaptive educational platform for students ages 3–18, operated by Achievement Academy.</li>
+<li><strong>Parents create accounts.</strong> Children under 13 cannot create their own accounts. A parent or teacher must do it, and parental consent is required.</li>
+<li><strong>Payments are handled by Stripe.</strong> We never store your credit card information on our servers.</li>
+<li><strong>Assessments must be supervised.</strong> All student assessments are conducted in the presence of school staff or an authorized proxy — they are not self-serve.</li>
+<li><strong>We respect your data.</strong> See our <a href="/privacy-policy">Privacy Policy</a> for full details on how we handle personal information.</li>
+<li><strong>You can cancel at any time.</strong> See our refund policy in Section 6 for details.</li>
+<li><strong>Questions?</strong> Contact us at admin@allexapiegroup.com.</li>
+</ul></div>
+<h2>1. Agreement to Terms</h2>
+<p>By accessing or using A<sup>2</sup> Compass at <a href="https://aaacademy.app">https://aaacademy.app</a> (the "Platform"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, do not use the Platform.
+</p>
+<p>If you are creating an account on behalf of a child under 18, you represent that you are the child's parent, legal guardian, or an authorized teacher/administrator, and you agree to these Terms on behalf of the child.
+</p>
+<p>These Terms constitute a legally binding agreement between you and <strong>Achievement Academy</strong> ("we," "us," "our"), the operator of A<sup>2</sup> Compass.
+</p>
+<h2>2. Description of Service</h2>
+<p>A<sup>2</sup> Compass is an <strong>adaptive learning platform</strong> that provides personalized educational content, progress tracking, and assessments for students ages 3–18. The Platform is designed to support:
+</p>
+<ul>
+<li>Individualized learning paths based on each student's skill level</li>
+<li>Progress tracking and reporting for parents and teachers</li>
+<li>Supervised assessments to evaluate student learning</li>
+<li>Multiple enrollment models including full-time, tutoring, summer programs, and individual courses</li>
+</ul>
+<p>A<sup>2</sup> Compass is a product of Achievement Academy, operated by Sandra Brooks. For more information, visit <a href="https://a2compass.org">https://a2compass.org</a> or <a href="https://aaacademy.us">https://aaacademy.us</a>.
+</p>
+<h2>3. Account Registration & Eligibility</h2>
+<h3>3.1 Who Can Create an Account</h3>
+<ul>
+<li><strong>Parents/Guardians</strong>: May create their own account and student accounts for their children.</li>
+<li><strong>Teachers/Administrators</strong>: May create their own accounts and student accounts for students they are authorized to manage.</li>
+<li><strong>Students ages 13–18</strong>: May have individual account access, but the account must be initially created by a parent or teacher.</li>
+<li><strong>Children under 13</strong>: Cannot create accounts. A parent, guardian, or authorized teacher must create and manage the account.</li>
+</ul>
+<h3>3.2 Parental Consent for Children Under 13</h3>
+<p>In compliance with COPPA, we require <strong>verifiable parental consent</strong> before activating any account for a child under 13. The account will not be functional until consent has been obtained and verified. See our <a href="/privacy-policy">Privacy Policy</a> for details on our consent process.
+</p>
+<h3>3.3 Accurate Information</h3>
+<p>You agree to provide accurate, current, and complete information during registration and to update your information as needed. We reserve the right to suspend or terminate accounts with inaccurate or fraudulent information.
+</p>
+<h3>3.4 Account Security</h3>
+<p>You are responsible for maintaining the confidentiality of your account credentials. You agree to notify us immediately at admin@allexapiegroup.com if you suspect unauthorized access to your account.
+</p>
+<h2>4. User Roles</h2>
+<p>A<sup>2</sup> Compass supports the following user roles:
+</p>
+<h3>4.1 Parent/Guardian</h3>
+<ul>
+<li>Creates and manages their own account and their children's student accounts</li>
+<li>Views learning progress and assessment results for their children</li>
+<li>Manages enrollment and billing</li>
+<li>Exercises parental rights over children's data (see Privacy Policy)</li>
+</ul>
+<h3>4.2 Student</h3>
+<ul>
+<li>Accesses assigned learning content and activities</li>
+<li>Completes assessments under supervision (see Section 9)</li>
+<li>Personalizes their profile (e.g., avatar selection)</li>
+<li>Students under 13 have limited account functionality and no direct access to communication features</li>
+</ul>
+<h3>4.3 Teacher/Administrator</h3>
+<ul>
+<li>Creates and manages student accounts for their assigned students</li>
+<li>Assigns content, tracks progress, and reviews assessment results</li>
+<li>Manages class or group rosters</li>
+<li>Administers or supervises assessments</li>
+</ul>
+<h2>5. Acceptable Use</h2>
+<p>You agree to use A<sup>2</sup> Compass only for its intended educational purposes. You agree <strong>not</strong> to:
+</p>
+<ul>
+<li>Share account credentials with unauthorized individuals</li>
+<li>Attempt to access another user's account or data without authorization</li>
+<li>Use the Platform for any unlawful, harmful, or fraudulent purpose</li>
+<li>Interfere with or disrupt the Platform's operation or security</li>
+<li>Attempt to reverse-engineer, decompile, or extract source code from the Platform</li>
+<li>Use automated tools (bots, scrapers, etc.) to access the Platform without our written permission</li>
+<li>Misrepresent your identity or your relationship to a student</li>
+<li>Upload or transmit harmful content, including malware, spam, or inappropriate material</li>
+<li>Allow a child under 13 to use the Platform without proper parental consent</li>
+<li>Use the Platform for any commercial purpose other than your enrollment as a student or family</li>
+</ul>
+<p>We reserve the right to suspend or terminate accounts that violate these terms.
+</p>
+<h2>6. Enrollment & Payment Terms</h2>
+<h3>6.1 Enrollment Plans</h3>
+<p>A<sup>2</sup> Compass offers the following enrollment options:
+</p>
+<div class="table-wrapper"><table>
+<thead><tr>
+<th>Plan</th>
+<th>Pricing</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Full-Time Enrollment</strong></td>
+<td>$175/month or $1,750/year per student</td>
+</tr>
+<tr>
+<td><strong>Tutoring</strong></td>
+<td>$30/hour · 5-hour package: $140 · 10-hour package: $250</td>
+</tr>
+<tr>
+<td><strong>Summer Program</strong> (8 weeks)</td>
+<td>$450 full payment or $125/month</td>
+</tr>
+<tr>
+<td><strong>A La Carte</strong></td>
+<td>$60 per course</td>
+</tr>
+</tbody></table></div>
+<h3>6.2 Family Discounts</h3>
+<ul>
+<li><strong>2nd child</strong>: 25% off their enrollment</li>
+<li><strong>3rd child and beyond</strong>: 50% off each additional child's enrollment</li>
+</ul>
+<p>Family discounts apply to the same household and are based on the highest-priced enrollment tier.
+</p>
+<h3>6.3 Founders' Rate Lock</h3>
+<p>The first <strong>10 families</strong> to enroll are eligible for a <strong>Founders' Rate Lock</strong>, which guarantees their initial pricing for as long as their enrollment remains active and in good standing. This offer is limited and non-transferable.
+</p>
+<h3>6.4 Payment Processing</h3>
+<p>All payments are processed securely through <strong>Stripe</strong>. Achievement Academy does not store credit card numbers or sensitive payment data on its servers. By enrolling, you agree to Stripe's terms of service.
+</p>
+<h3>6.5 Billing</h3>
+<ul>
+<li><strong>Monthly plans</strong> are billed on the same date each month.</li>
+<li><strong>Annual plans</strong> are billed once per year.</li>
+<li><strong>Package purchases</strong> (tutoring hours, summer program full payment, a la carte courses) are billed at the time of purchase.</li>
+</ul>
+<h3>6.6 Refund Policy</h3>
+<ul>
+<li><strong>Monthly subscriptions</strong>: You may cancel at any time. Cancellations take effect at the end of the current billing period. No partial-month refunds.</li>
+<li><strong>Annual subscriptions</strong>: If cancelled within the first 30 days, you may receive a prorated refund minus any months used. After 30 days, no refunds are issued, but you retain access through the end of the annual term.</li>
+<li><strong>Tutoring packages</strong>: Unused hours are non-refundable but do not expire for 12 months from date of purchase.</li>
+<li><strong>Summer program</strong>: Refunds are available if requested at least 14 days before the program start date. No refunds after the program begins.</li>
+<li><strong>A La Carte courses</strong>: Refunds are available within 7 days of purchase if less than 25% of the course content has been accessed.</li>
+</ul>
+<h3>6.7 Late or Failed Payments</h3>
+<p>If a payment fails, we will attempt to notify you and retry the charge. If payment is not resolved within 14 days, the associated account(s) may be suspended until the balance is settled.
+</p>
+<h2>7. Intellectual Property</h2>
+<h3>7.1 Our Content</h3>
+<p>All content on A<sup>2</sup> Compass — including but not limited to curriculum, assessments, graphics, logos, software, and interface design — is the property of Achievement Academy or its licensors and is protected by copyright, trademark, and other intellectual property laws.
+</p>
+<p>You may not copy, reproduce, distribute, modify, or create derivative works from our content without our express written permission.
+</p>
+<h3>7.2 Your Content</h3>
+<p>Any content you submit to the Platform (e.g., student work, messages) remains your property. By submitting content, you grant Achievement Academy a limited, non-exclusive license to use it solely for the purpose of providing and improving the educational services.
+</p>
+<h3>7.3 Feedback</h3>
+<p>If you provide suggestions or feedback about the Platform, we may use it to improve our services without obligation to you.
+</p>
+<h2>8. Student Data & Privacy</h2>
+<p>Protecting student data is a core commitment. Our practices are detailed in our <strong><a href="/privacy-policy">Privacy Policy</a></strong>, which is incorporated into these Terms by reference.
+</p>
+<p>Key points:
+</p>
+<ul>
+<li>We comply with <strong>COPPA</strong> for children under 13 and <strong>FERPA</strong> for student education records.</li>
+<li>We <strong>never sell</strong> personal data.</li>
+<li>We <strong>never show</strong> third-party advertisements.</li>
+<li>Parents may review, request deletion of, or refuse further collection of their child's personal data.</li>
+<li>Data is shared with third-party service providers (Supabase, Stripe, Vercel) only as needed to operate the Platform.</li>
+</ul>
+<h2>9. Assessment Policy</h2>
+<p>Assessments on A<sup>2</sup> Compass are a key part of the learning experience. To ensure integrity and accuracy:
+</p>
+<ul>
+<li><strong>All assessments must be completed in the presence of authorized school staff or an approved proxy</strong> (such as a parent designated by the school).</li>
+<li>Assessments are <strong>not self-serve</strong>. Students cannot initiate or complete assessments without supervision.</li>
+<li>Assessment results are shared with parents/guardians and authorized teachers through the Platform.</li>
+<li>Any attempt to complete assessments without proper supervision may result in the invalidation of results and potential account action.</li>
+</ul>
+<h2>10. Disclaimer of Warranties</h2>
+<p>A<sup>2</sup> Compass is provided <strong>"as is"</strong> and <strong>"as available."</strong> To the fullest extent permitted by law, Achievement Academy disclaims all warranties, express or implied, including but not limited to:
+</p>
+<ul>
+<li>Warranties of merchantability, fitness for a particular purpose, and non-infringement</li>
+<li>That the Platform will be uninterrupted, error-free, or secure</li>
+<li>That learning outcomes or academic results are guaranteed</li>
+</ul>
+<p>A<sup>2</sup> Compass is an educational tool designed to support learning. It is not a substitute for professional educational services, and we do not guarantee specific academic outcomes.
+</p>
+<h2>11. Limitation of Liability</h2>
+<p>To the fullest extent permitted by applicable law:
+</p>
+<ul>
+<li>Achievement Academy's total liability to you for any claims arising from or related to these Terms or the Platform shall not exceed the <strong>total fees you have paid to us in the 12 months preceding the claim</strong>.</li>
+<li>Achievement Academy shall not be liable for any <strong>indirect, incidental, special, consequential, or punitive damages</strong>, including but not limited to loss of data, loss of profits, or interruption of service.</li>
+</ul>
+<p>These limitations apply regardless of the legal theory (contract, tort, or otherwise) and even if we have been advised of the possibility of such damages.
+</p>
+<h2>12. Termination</h2>
+<h3>12.1 By You</h3>
+<p>You may close your account at any time by contacting us at admin@allexapiegroup.com. Closing your account will:
+</p>
+<ul>
+<li>End access to the Platform for you and any associated student accounts</li>
+<li>Trigger our data retention and deletion procedures (see Privacy Policy, Section 9)</li>
+<li>Not entitle you to a refund except as described in Section 6.6</li>
+</ul>
+<h3>12.2 By Us</h3>
+<p>We may suspend or terminate your account if:
+</p>
+<ul>
+<li>You violate these Terms</li>
+<li>Your payment is overdue for more than 14 days</li>
+<li>We are required to do so by law</li>
+<li>We discontinue the Platform (with reasonable notice)</li>
+</ul>
+<p>We will make reasonable efforts to notify you before termination, except where immediate action is necessary for safety or legal compliance.
+</p>
+<h3>12.3 Effect of Termination</h3>
+<p>Upon termination, your right to use the Platform ceases. Sections that by their nature should survive termination (including Intellectual Property, Limitation of Liability, and Governing Law) will continue in effect.
+</p>
+<h2>13. Governing Law</h2>
+<p>These Terms are governed by and construed in accordance with the laws of the <strong>United States</strong> and the state in which Achievement Academy is incorporated, without regard to conflict of law principles.
+</p>
+<p>Any disputes arising from these Terms or your use of the Platform shall be resolved through good-faith negotiation. If negotiation fails, disputes shall be resolved through binding arbitration or in the courts of competent jurisdiction, at Achievement Academy's election.
+</p>
+<h2>14. Changes to Terms</h2>
+<p>We may update these Terms from time to time. When we make material changes:
+</p>
+<ul>
+<li>We will update the "Last Updated" date at the top of this page.</li>
+<li>We will notify registered users via email at least <strong>30 days</strong> before the changes take effect.</li>
+<li>Continued use of the Platform after changes take effect constitutes acceptance of the updated Terms.</li>
+</ul>
+<p>If you do not agree to the updated Terms, you may close your account as described in Section 12.1.
+</p>
+<h2>15. Contact Us</h2>
+<p>If you have questions about these Terms of Service, please contact us:
+</p>
+<p><strong>Achievement Academy — A<sup>2</sup> Compass</strong>
+</p>
+<ul>
+<li><strong>Email</strong>: admin@allexapiegroup.com</li>
+<li><strong>Website</strong>: <a href="https://a2compass.org">https://a2compass.org</a></li>
+<li><strong>Attention</strong>: Sandra Brooks</li>
+</ul>
+<p>We aim to respond to all inquiries within 5 business days.
+</p>
+<p><em>These Terms of Service apply to A<sup>2</sup> Compass at <a href="https://aaacademy.app">https://aaacademy.app</a> and related services operated by Achievement Academy.</em>
+</p>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="logo-footer">🧭 A<sup>2</sup> Compass</div>
+          <p>Adaptive learning technology that maps your child's unique skill profile and creates a personalized path forward.</p>
+          <p style="margin-top: 8px; font-size: 0.85rem; opacity: 0.7;">A product of <a href="https://aaacademy.us" style="color: var(--gold);">Achievement Academy</a></p>
+        </div>
+        <div>
+          <h4>Platform</h4>
+          <ul class="footer-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="https://aaacademy.app">Login</a></li>
+            <li><a href="https://aaacademy.us">Get Started</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Academy</h4>
+          <ul class="footer-links">
+            <li><a href="https://aaacademy.us">aaacademy.us</a></li>
+            <li><a href="https://aaacademy.us/#contact">Enrollment</a></li>
+            <li><a href="https://aaacademy.us/#about">About</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Legal</h4>
+          <ul class="footer-links">
+            <li><a href="/privacy-policy">Privacy Policy</a></li>
+            <li><a href="/terms-of-service">Terms of Service</a></li>
+            <li><a href="mailto:admin@allexapiegroup.com">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 A&sup2; Compass. All rights reserved.</p>
+        <div class="footer-socials">
+          <a href="#" aria-label="Facebook">f</a>
+          <a href="#" aria-label="Instagram">ig</a>
+          <a href="#" aria-label="Twitter">𝕏</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const hamburger = document.getElementById('hamburger');
+    const mobileNav = document.getElementById('mobile-nav');
+    hamburger.addEventListener('click', () => {
+      mobileNav.classList.toggle('active');
+      hamburger.classList.toggle('open');
+    });
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 20);
+    });
+  </script>
+</body>
+</html>

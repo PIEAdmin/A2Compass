@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy — A² Compass</title>
+  <meta name="description" content="Privacy Policy for A² Compass, the adaptive learning platform by Achievement Academy.">
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧭</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy: #1B3A6B;
+      --royal: #2563EB;
+      --royal-light: #3B82F6;
+      --gold: #D4A843;
+      --deep-gold: #B8922D;
+      --light-gold: #FDF6E3;
+      --white: #FFFFFF;
+      --light-gray: #F8FAFC;
+      --dark: #0F172A;
+      --text: #334155;
+      --text-light: #64748B;
+      --border: #E2E8F0;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.1);
+      --radius: 12px;
+      --radius-lg: 20px;
+    }
+
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: var(--text);
+      line-height: 1.7;
+      background: var(--white);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h1, h2, h3, h4 {
+      font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+      color: var(--navy);
+      line-height: 1.2;
+    }
+
+    a { color: var(--royal); text-decoration: none; transition: color 0.2s; }
+    a:hover { color: var(--deep-gold); }
+
+    /* ===================== NAVBAR ===================== */
+    .navbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 1000;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+      transition: box-shadow 0.3s;
+    }
+    .navbar.scrolled { box-shadow: var(--shadow-md); }
+
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 72px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--navy);
+      text-decoration: none;
+    }
+    .logo-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px; height: 38px;
+      background: linear-gradient(135deg, var(--royal), #1D4ED8);
+      color: var(--white);
+      border-radius: 10px;
+      font-size: 1.1rem;
+    }
+    .logo sup { font-size: 0.7em; color: var(--gold); }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      list-style: none;
+    }
+    .nav-links a {
+      font-size: 0.925rem;
+      font-weight: 500;
+      color: var(--text);
+      transition: color 0.2s;
+      padding: 4px 0;
+    }
+    .nav-links a:hover { color: var(--royal); }
+    .nav-links a.nav-active {
+      color: var(--royal);
+      border-bottom: 2px solid var(--royal);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 1rem;
+      padding: 14px 32px;
+      border-radius: 100px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      text-decoration: none;
+    }
+    .btn-primary {
+      background: var(--royal);
+      color: var(--white);
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+    }
+    .btn-primary:hover {
+      background: #1D4ED8;
+      color: var(--white);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+    }
+    .btn-sm { padding: 10px 24px; font-size: 0.9rem; }
+    .btn-login {
+      font-weight: 600;
+      font-size: 0.925rem;
+      color: var(--navy);
+      padding: 8px 16px;
+    }
+
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+    }
+    .hamburger span {
+      display: block;
+      width: 24px; height: 2.5px;
+      background: var(--navy);
+      border-radius: 2px;
+      transition: all 0.3s;
+    }
+
+    .mobile-nav {
+      display: none;
+      position: fixed;
+      top: 72px; left: 0; right: 0; bottom: 0;
+      background: var(--white);
+      z-index: 999;
+      padding: 32px 24px;
+      flex-direction: column;
+      gap: 8px;
+      overflow-y: auto;
+    }
+    .mobile-nav.active { display: flex; }
+    .mobile-nav a {
+      display: block;
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: var(--navy);
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .mobile-nav .mobile-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    .mobile-nav .mobile-actions .btn { justify-content: center; }
+
+    @media (max-width: 900px) {
+      .nav-links, .nav-actions { display: none; }
+      .hamburger { display: flex; }
+    }
+
+    /* ===================== PAGE HEADER ===================== */
+    .page-header {
+      padding-top: 120px;
+      padding-bottom: 48px;
+      background: linear-gradient(165deg, #F0F7FF 0%, var(--white) 60%, var(--light-gold) 100%);
+      text-align: center;
+    }
+    .page-header h1 {
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--navy) 0%, var(--royal) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+    }
+    .page-header .last-updated {
+      font-size: 0.95rem;
+      color: var(--text-light);
+      font-weight: 500;
+    }
+    .page-header .last-updated time {
+      font-weight: 600;
+      color: var(--navy);
+    }
+
+    /* ===================== LEGAL CONTENT ===================== */
+    .legal-content {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 48px 24px 96px;
+    }
+
+    .summary-box {
+      background: linear-gradient(135deg, #EFF6FF, var(--light-gold));
+      border-left: 4px solid var(--gold);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 28px 32px;
+      margin-bottom: 48px;
+    }
+    .summary-box h2 {
+      font-size: 1.25rem;
+      margin-bottom: 16px;
+    }
+    .summary-box ul {
+      margin: 0;
+      padding-left: 0;
+      list-style: none;
+    }
+    .summary-box li {
+      position: relative;
+      padding: 6px 0 6px 28px;
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+    .summary-box li::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      top: 6px;
+      width: 20px; height: 20px;
+      background: var(--royal);
+      color: var(--white);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.6rem;
+      font-weight: 700;
+    }
+
+    .legal-content h2 {
+      font-size: 1.5rem;
+      margin-top: 48px;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .legal-content h3 {
+      font-family: 'Inter', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin-top: 32px;
+      margin-bottom: 12px;
+    }
+
+    .legal-content p {
+      margin-bottom: 16px;
+      font-size: 1rem;
+      line-height: 1.8;
+    }
+
+    .legal-content ul, .legal-content ol {
+      margin: 12px 0 20px 24px;
+    }
+    .legal-content li {
+      margin-bottom: 8px;
+      font-size: 1rem;
+      line-height: 1.7;
+    }
+    .legal-content li ul {
+      margin-top: 8px;
+    }
+
+    .legal-content strong {
+      color: var(--navy);
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+      margin: 20px 0;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .legal-content table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+    .legal-content thead {
+      background: var(--light-gray);
+    }
+    .legal-content th {
+      text-align: left;
+      padding: 14px 18px;
+      font-weight: 700;
+      color: var(--navy);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      border-bottom: 2px solid var(--border);
+    }
+    .legal-content td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    .legal-content tr:last-child td {
+      border-bottom: none;
+    }
+
+    .legal-content code {
+      background: var(--light-gray);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }
+
+    .legal-content sup {
+      font-size: 0.7em;
+    }
+
+    /* ===================== FOOTER ===================== */
+    .footer {
+      background: var(--dark);
+      color: rgba(255,255,255,0.7);
+      padding: 64px 0 32px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 48px;
+      margin-bottom: 48px;
+    }
+    .footer-brand p {
+      margin-top: 16px;
+      font-size: 0.925rem;
+      line-height: 1.7;
+      max-width: 300px;
+    }
+    .footer h4 {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--white);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 20px;
+    }
+    .footer-links { list-style: none; }
+    .footer-links li { margin-bottom: 12px; }
+    .footer-links a {
+      color: rgba(255,255,255,0.6);
+      font-size: 0.925rem;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--gold); }
+    .footer-bottom {
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding-top: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .footer-bottom p { font-size: 0.85rem; }
+    .footer-socials { display: flex; gap: 16px; }
+    .footer-socials a {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255,255,255,0.6);
+      font-size: 1.1rem;
+      transition: all 0.2s;
+    }
+    .footer-socials a:hover {
+      background: var(--royal);
+      color: var(--white);
+    }
+    .logo-footer {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--white);
+    }
+    .logo-footer sup { color: var(--gold); font-size: 0.7em; }
+
+    @media (max-width: 768px) {
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+      .footer-bottom { flex-direction: column; text-align: center; }
+    }
+    @media (max-width: 480px) {
+      .footer-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="/" class="logo">
+        <span class="logo-icon">🧭</span>
+        A<sup>2</sup> Compass
+      </a>
+      <ul class="nav-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="/privacy-policy" class="nav-active">Privacy Policy</a></li>
+        <li><a href="/terms-of-service" class="">Terms of Service</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a href="https://aaacademy.app" class="btn-login">Login</a>
+        <a href="https://aaacademy.us" class="btn btn-primary btn-sm">Get Started</a>
+      </div>
+      <button class="hamburger" id="hamburger" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <div class="mobile-nav" id="mobile-nav">
+      <a href="/">Home</a>
+      <a href="/privacy-policy">Privacy Policy</a>
+      <a href="/terms-of-service">Terms of Service</a>
+      <div class="mobile-actions">
+        <a href="https://aaacademy.app" class="btn" style="border: 2px solid var(--border); color: var(--navy);">Login</a>
+        <a href="https://aaacademy.us" class="btn btn-primary">Get Started</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- PAGE HEADER -->
+  <header class="page-header">
+    <div class="container">
+      <h1>Privacy Policy</h1>
+      <p class="last-updated">Last Updated: <time datetime="2026-04-29">April 29, 2026</time></p>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <main class="legal-content">
+    <div class="summary-box"><h2>Summary — Key Points in Plain Language</h2><ul>
+<li><strong>We collect only what we need</strong> to provide your child's learning experience — names, emails, dates of birth, grade levels, and learning progress.</li>
+<li><strong>We never sell personal data.</strong> Period.</li>
+<li><strong>We never show ads.</strong> There is no third-party advertising on A<sup>2</sup> Compass.</li>
+<li><strong>Children under 13</strong> cannot create their own accounts. A parent or teacher must create the account, and we obtain verifiable parental consent before collecting any child data.</li>
+<li><strong>Parents have full control.</strong> You can review, update, or delete your child's data at any time.</li>
+<li><strong>Payment card data is handled by Stripe</strong> and is never stored on our servers.</li>
+<li><strong>We comply with COPPA and FERPA</strong> to protect children's and students' privacy.</li>
+<li><strong>Questions?</strong> Contact us at admin@allexapiegroup.com.</li>
+</ul></div>
+<h2>1. Introduction</h2>
+<p>Welcome to A<sup>2</sup> Compass ("the Platform," "we," "us," "our"), an adaptive learning platform operated by <strong>Achievement Academy</strong> ("Achievement Academy," "the Company"). This Privacy Policy explains how we collect, use, share, and protect information when you or your child use A<sup>2</sup> Compass at <a href="https://aaacademy.app">https://aaacademy.app</a>.
+</p>
+<p>We take the privacy of all our users seriously — especially children. This policy is written in plain English so parents, guardians, and educators can clearly understand our practices.
+</p>
+<p>By using A<sup>2</sup> Compass, you agree to the practices described in this Privacy Policy. If you do not agree, please do not use the Platform.
+</p>
+<h2>2. Who We Are</h2>
+<p><strong>A<sup>2</sup> Compass</strong> is a product of <strong>Achievement Academy</strong>, operated by Sandra Brooks.
+</p>
+<ul>
+<li><strong>Website</strong>: <a href="https://aaacademy.app">https://aaacademy.app</a> (platform) · <a href="https://a2compass.org">https://a2compass.org</a> (marketing site)</li>
+<li><strong>Parent company website</strong>: <a href="https://aaacademy.us">https://aaacademy.us</a></li>
+<li><strong>Contact email</strong>: admin@allexapiegroup.com</li>
+<li><strong>Location</strong>: United States</li>
+</ul>
+<p>Achievement Academy is the "operator" under COPPA (the Children's Online Privacy Protection Act) responsible for the collection and handling of personal information through the Platform.
+</p>
+<h2>3. Information We Collect</h2>
+<p>We collect different types of information depending on your role in the Platform.
+</p>
+<h3>3.1 From Parents and Guardians</h3>
+<ul>
+<li><strong>Account information</strong>: Full name, email address, and password (authenticated via Supabase Auth)</li>
+<li><strong>Payment information</strong>: Billing details processed through Stripe (we never store credit card numbers on our servers)</li>
+<li><strong>Communication records</strong>: Messages or support requests you send us</li>
+<li><strong>Child information</strong>: Information you provide about your child when creating their student account (see Section 3.2 and 3.3)</li>
+</ul>
+<h3>3.2 From Students Under 13</h3>
+<p>We collect personal information about children under 13 <strong>only with verifiable parental consent</strong> (see Section 5). Information collected includes:
+</p>
+<ul>
+<li><strong>Name</strong> (first and last)</li>
+<li><strong>Date of birth</strong> (to determine age-appropriate content and COPPA applicability)</li>
+<li><strong>Grade level</strong></li>
+<li><strong>Learning progress and assessment data</strong> (scores, completed activities, skill mastery levels)</li>
+<li><strong>Avatar preferences</strong> (chosen display images or characters)</li>
+</ul>
+<p>Children under 13 <strong>do not</strong>:
+</p>
+<ul>
+<li>Create their own accounts (a parent or teacher does this)</li>
+<li>Provide an email address directly</li>
+<li>Make any purchases</li>
+<li>Communicate publicly or with other users on the Platform</li>
+</ul>
+<h3>3.3 From Students Ages 13–18</h3>
+<p>For students ages 13 and older, we collect:
+</p>
+<ul>
+<li><strong>Name, email address, and date of birth</strong></li>
+<li><strong>Grade level</strong></li>
+<li><strong>Learning progress and assessment data</strong></li>
+<li><strong>Avatar preferences</strong></li>
+</ul>
+<p>Accounts for students ages 13–18 are still created by a parent or teacher, though older students may manage some aspects of their own account.
+</p>
+<h3>3.4 From Teachers and Administrators</h3>
+<ul>
+<li><strong>Name and email address</strong></li>
+<li><strong>Role and institutional affiliation</strong></li>
+<li><strong>Account credentials</strong> (authenticated via Supabase Auth)</li>
+<li><strong>Class/group management data</strong> (student rosters, assigned content)</li>
+</ul>
+<h3>3.5 Automatically Collected Information</h3>
+<p>When you use the Platform, we may automatically collect:
+</p>
+<ul>
+<li><strong>Device information</strong>: Browser type, operating system, screen size</li>
+<li><strong>Usage data</strong>: Pages viewed, features used, session duration</li>
+<li><strong>Log data</strong>: IP address, access times, error logs</li>
+</ul>
+<p>We use this data to maintain, improve, and secure the Platform — not for advertising or profiling.
+</p>
+<h2>4. How We Use Information</h2>
+<p>We use the information we collect to:
+</p>
+<div class="table-wrapper"><table>
+<thead><tr>
+<th>Purpose</th>
+<th>Details</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Provide the learning experience</strong></td>
+<td>Deliver adaptive content, track progress, generate assessments, and personalize learning paths</td>
+</tr>
+<tr>
+<td><strong>Create and manage accounts</strong></td>
+<td>Set up parent, student, and teacher accounts</td>
+</tr>
+<tr>
+<td><strong>Process payments</strong></td>
+<td>Handle enrollment fees, subscriptions, and billing through Stripe</td>
+</tr>
+<tr>
+<td><strong>Communicate with parents and teachers</strong></td>
+<td>Send account confirmations, progress updates, and respond to inquiries</td>
+</tr>
+<tr>
+<td><strong>Improve the Platform</strong></td>
+<td>Analyze usage patterns to improve features, content, and performance</td>
+</tr>
+<tr>
+<td><strong>Ensure security</strong></td>
+<td>Detect and prevent fraud, abuse, or unauthorized access</td>
+</tr>
+<tr>
+<td><strong>Comply with legal obligations</strong></td>
+<td>Meet COPPA, FERPA, and other applicable legal requirements</td>
+</tr>
+</tbody></table></div>
+<p><strong>We do NOT use personal information to:</strong>
+</p>
+<ul>
+<li>Serve advertisements of any kind</li>
+<li>Sell or rent data to third parties</li>
+<li>Build marketing profiles of children</li>
+<li>Contact children directly for commercial purposes</li>
+</ul>
+<h2>5. Children's Privacy — COPPA Compliance</h2>
+<p>This section is especially important for parents and guardians of children under 13.
+</p>
+<h3>5.1 Our Commitment</h3>
+<p>A<sup>2</sup> Compass complies with the <strong>Children's Online Privacy Protection Act (COPPA)</strong>. We do not knowingly collect personal information from children under 13 without verifiable parental consent.
+</p>
+<h3>5.2 Parental Consent Process</h3>
+<p>Before any personal information is collected from a child under 13:
+</p>
+<ol>
+<li><strong>A parent or teacher initiates account creation</strong> for the child. Children under 13 cannot sign up on their own.
+</li>
+<li><strong>We obtain verifiable parental consent</strong> before the child's account is activated. Our consent methods include:
+<ul>
+<li><strong>Email-based consent with a follow-up confirmation</strong>: The parent receives an email with details about what data will be collected and how it will be used. The parent must affirmatively respond (e.g., sign and return a consent form, or complete an electronic consent flow) to authorize data collection.</li>
+<li><strong>Signed consent form</strong>: For school-based enrollments, parents may sign a physical or electronic consent form provided by the school or Achievement Academy.</li>
+</ul>
+</li>
+<li><strong>The child's account becomes active</strong> only after consent is verified.
+</li>
+</ol>
+<h3>5.3 What We Collect from Children Under 13</h3>
+<p>As described in Section 3.2, we collect only what is necessary for the educational service:
+</p>
+<ul>
+<li>Name, date of birth, grade level</li>
+<li>Learning progress and assessment results</li>
+<li>Avatar preferences</li>
+</ul>
+<p>We do <strong>not</strong> collect photos, videos, voice recordings, geolocation, or contact information directly from children under 13.
+</p>
+<h3>5.4 How Children's Data Is Used</h3>
+<p>Children's data is used <strong>solely</strong> to:
+</p>
+<ul>
+<li>Deliver age-appropriate, adaptive learning content</li>
+<li>Track academic progress and generate reports for parents and teachers</li>
+<li>Allow children to personalize their avatar within the Platform</li>
+</ul>
+<h3>5.5 Disclosure of Children's Data</h3>
+<p>We do <strong>not</strong> disclose children's personal information to third parties except:
+</p>
+<ul>
+<li>To <strong>service providers</strong> who help us operate the Platform (see Section 11) and who are contractually required to protect the data</li>
+<li>When <strong>required by law</strong> (e.g., court order, legal process)</li>
+<li>To the child's <strong>parent/guardian or authorized teacher/administrator</strong> through the Platform</li>
+</ul>
+<p>We <strong>never</strong> sell, lease, or trade children's personal information.
+</p>
+<h2>6. Parental Rights & Controls</h2>
+<p>Parents and guardians of children under 13 have the following rights under COPPA:
+</p>
+<h3>6.1 Review Your Child's Information</h3>
+<p>You may request to review the personal information we have collected from your child by contacting us at admin@allexapiegroup.com. We will verify your identity before providing access.
+</p>
+<h3>6.2 Request Deletion</h3>
+<p>You may request that we delete your child's personal information. Upon receiving a verified request, we will delete the information within 30 days, unless retention is required by law.
+</p>
+<h3>6.3 Refuse Further Collection</h3>
+<p>You may refuse to allow further collection or use of your child's personal information at any time. If you do so, we will deactivate the child's account. Note that this may prevent the child from continuing to use the Platform.
+</p>
+<h3>6.4 How to Exercise Your Rights</h3>
+<p>To exercise any of these rights, contact us at:
+</p>
+<ul>
+<li><strong>Email</strong>: admin@allexapiegroup.com</li>
+<li><strong>Subject line</strong>: "Parental Rights Request — [Your Name]"</li>
+</ul>
+<p>We will respond to all verified requests within 30 days.
+</p>
+<h2>7. Information Sharing & Disclosure</h2>
+<h3>7.1 We Do Not Sell Data</h3>
+<p>We do <strong>not</strong> sell, rent, lease, or trade personal information to anyone — ever. This applies to data from all users, including children.
+</p>
+<h3>7.2 We Do Not Advertise</h3>
+<p>There are no third-party advertisements on A<sup>2</sup> Compass. We do not share data with ad networks, data brokers, or marketing companies.
+</p>
+<h3>7.3 Limited Sharing</h3>
+<p>We share personal information only in these circumstances:
+</p>
+<ul>
+<li><strong>Service providers</strong>: Third-party services that help us operate the Platform (see Section 11). These providers are contractually obligated to use data only for the services they provide to us and to maintain appropriate security.</li>
+<li><strong>Within the Platform</strong>: Teachers/administrators can view the progress of students in their classes. Parents can view their child's data.</li>
+<li><strong>Legal requirements</strong>: We may disclose information if required by law, regulation, legal process, or governmental request.</li>
+<li><strong>Safety</strong>: We may disclose information if we believe in good faith that it is necessary to protect the safety of a child, user, or the public.</li>
+</ul>
+<h2>8. Data Security</h2>
+<p>We implement reasonable administrative, technical, and physical safeguards to protect personal information, including:
+</p>
+<ul>
+<li><strong>Encryption in transit</strong>: All data is transmitted over HTTPS/TLS.</li>
+<li><strong>Encryption at rest</strong>: Sensitive data is encrypted in our database.</li>
+<li><strong>Authentication security</strong>: User passwords are hashed and salted via Supabase Auth. We never store passwords in plain text.</li>
+<li><strong>Access controls</strong>: Only authorized personnel and systems can access personal data. Role-based access ensures teachers see only their students' data and parents see only their children's data.</li>
+<li><strong>Regular monitoring</strong>: We monitor our systems for unauthorized access and suspicious activity.</li>
+</ul>
+<p>No system is 100% secure. If we discover a data breach that affects your personal information, we will notify affected users and relevant authorities as required by law.
+</p>
+<h2>9. Data Retention & Deletion</h2>
+<div class="table-wrapper"><table>
+<thead><tr>
+<th>Data Type</th>
+<th>Retention Period</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Active student learning data</strong></td>
+<td>Retained while the account is active</td>
+</tr>
+<tr>
+<td><strong>Inactive accounts</strong></td>
+<td>Data is retained for up to 12 months after the last login, then flagged for deletion</td>
+</tr>
+<tr>
+<td><strong>Deleted accounts</strong></td>
+<td>Personal data is deleted within 30 days of a deletion request. Anonymized, aggregated data may be retained for analytics.</td>
+</tr>
+<tr>
+<td><strong>Payment records</strong></td>
+<td>Retained as required by tax and financial regulations (typically 7 years for transaction records). Card details are held only by Stripe.</td>
+</tr>
+<tr>
+<td><strong>Support communications</strong></td>
+<td>Retained for up to 24 months after resolution</td>
+</tr>
+</tbody></table></div>
+<p><strong>To request deletion</strong>: Email admin@allexapiegroup.com with the subject line "Data Deletion Request."
+</p>
+<h2>10. FERPA Compliance</h2>
+<p>For students enrolled through a school or educational program, A<sup>2</sup> Compass may function as a "school official" under the <strong>Family Educational Rights and Privacy Act (FERPA)</strong>.
+</p>
+<h3>10.1 Education Records</h3>
+<p>Learning progress, assessment scores, and other academic data maintained in A<sup>2</sup> Compass may constitute "education records" under FERPA.
+</p>
+<h3>10.2 School Agreements</h3>
+<p>When Achievement Academy contracts with a school, we enter into agreements that:
+</p>
+<ul>
+<li>Limit our use of education records to the educational purposes for which we were engaged</li>
+<li>Prohibit re-disclosure of personally identifiable information from education records except as authorized</li>
+<li>Require us to return or destroy education records when no longer needed</li>
+</ul>
+<h3>10.3 Directory Information</h3>
+<p>We do not treat student names, grade levels, or other basic enrollment information as publicly available "directory information." All student data is treated as confidential.
+</p>
+<h3>10.4 Parental and Eligible Student Rights</h3>
+<p>Under FERPA, parents (or eligible students age 18+) have the right to:
+</p>
+<ul>
+<li>Inspect and review education records</li>
+<li>Request corrections to inaccurate records</li>
+<li>Consent to disclosures of personally identifiable information</li>
+</ul>
+<p>These rights can be exercised by contacting Achievement Academy at admin@allexapiegroup.com.
+</p>
+<h2>11. Third-Party Services</h2>
+<p>A<sup>2</sup> Compass uses the following third-party services to operate the Platform. These providers process data on our behalf and are bound by their own privacy policies and our contractual requirements:
+</p>
+<div class="table-wrapper"><table>
+<thead><tr>
+<th>Service</th>
+<th>Purpose</th>
+<th>Data Shared</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Supabase</strong> (<a href="https://supabase.com">supabase.com</a>)</td>
+<td>Authentication, database hosting</td>
+<td>Account credentials, user data</td>
+</tr>
+<tr>
+<td><strong>Stripe</strong> (<a href="https://stripe.com">stripe.com</a>)</td>
+<td>Payment processing</td>
+<td>Parent/guardian billing information</td>
+</tr>
+<tr>
+<td><strong>Vercel</strong> (<a href="https://vercel.com">vercel.com</a>)</td>
+<td>Website hosting and delivery</td>
+<td>Usage/traffic data, IP addresses</td>
+</tr>
+</tbody></table></div>
+<p>We evaluate all third-party services for their privacy and security practices before integration. None of these providers are authorized to use personal data for their own purposes beyond providing their services to us.
+</p>
+<h2>12. Changes to This Policy</h2>
+<p>We may update this Privacy Policy from time to time. When we make material changes:
+</p>
+<ul>
+<li>We will update the "Last Updated" date at the top of this page.</li>
+<li>We will notify registered users via email.</li>
+<li>For changes affecting children's data collection, we will obtain new parental consent where required by COPPA.</li>
+</ul>
+<p>We encourage you to review this policy periodically.
+</p>
+<h2>13. Contact Us</h2>
+<p>If you have any questions about this Privacy Policy, your data, or your child's data, please contact us:
+</p>
+<p><strong>Achievement Academy — A<sup>2</sup> Compass</strong>
+</p>
+<ul>
+<li><strong>Email</strong>: admin@allexapiegroup.com</li>
+<li><strong>Website</strong>: <a href="https://a2compass.org">https://a2compass.org</a></li>
+<li><strong>Attention</strong>: Sandra Brooks, Privacy Inquiries</li>
+</ul>
+<p>We aim to respond to all inquiries within 5 business days.
+</p>
+<p><em>This Privacy Policy applies to A<sup>2</sup> Compass at <a href="https://aaacademy.app">https://aaacademy.app</a> and related services operated by Achievement Academy.</em>
+</p>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="logo-footer">🧭 A<sup>2</sup> Compass</div>
+          <p>Adaptive learning technology that maps your child's unique skill profile and creates a personalized path forward.</p>
+          <p style="margin-top: 8px; font-size: 0.85rem; opacity: 0.7;">A product of <a href="https://aaacademy.us" style="color: var(--gold);">Achievement Academy</a></p>
+        </div>
+        <div>
+          <h4>Platform</h4>
+          <ul class="footer-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="https://aaacademy.app">Login</a></li>
+            <li><a href="https://aaacademy.us">Get Started</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Academy</h4>
+          <ul class="footer-links">
+            <li><a href="https://aaacademy.us">aaacademy.us</a></li>
+            <li><a href="https://aaacademy.us/#contact">Enrollment</a></li>
+            <li><a href="https://aaacademy.us/#about">About</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Legal</h4>
+          <ul class="footer-links">
+            <li><a href="/privacy-policy">Privacy Policy</a></li>
+            <li><a href="/terms-of-service">Terms of Service</a></li>
+            <li><a href="mailto:admin@allexapiegroup.com">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 A&sup2; Compass. All rights reserved.</p>
+        <div class="footer-socials">
+          <a href="#" aria-label="Facebook">f</a>
+          <a href="#" aria-label="Instagram">ig</a>
+          <a href="#" aria-label="Twitter">𝕏</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const hamburger = document.getElementById('hamburger');
+    const mobileNav = document.getElementById('mobile-nav');
+    hamburger.addEventListener('click', () => {
+      mobileNav.classList.toggle('active');
+      hamburger.classList.toggle('open');
+    });
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 20);
+    });
+  </script>
+</body>
+</html>
