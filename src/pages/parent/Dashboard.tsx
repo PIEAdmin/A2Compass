@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Header } from '../../components/layout'
 import { LoadingSpinner } from '../../components/common'
 import { ChildProgressCard, BillingSummary } from '../../components/parent'
+import CoppaConsentBanner from '../../components/coppa/CoppaConsentBanner'
 import { studentService } from '../../services/students'
 import { flightPlanService } from '../../services/flightPlan'
 import { enrollmentService } from '../../services/enrollment'
@@ -59,6 +60,9 @@ export default function ParentDashboard() {
     <div className="min-h-screen bg-gray-50">
       <Header title="🏠 Family Hub" subtitle={`Welcome, ${user?.fullName?.split(' ')[0] || 'Parent'}`} />
       <div className="p-6 space-y-6">
+        {/* COPPA Consent Banner - shows only if consent is needed */}
+        <CoppaConsentBanner />
+
         {children.length === 0 ? (
           <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
             <div className="text-4xl mb-3">👨‍👩‍👧‍👦</div>

@@ -69,12 +69,21 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Domain branding footer */}
-        <div className="text-center mt-6 space-y-1">
+        {/* Domain branding + legal footer */}
+        <div className="text-center mt-6 space-y-2">
           <p className="text-blue-300/70 text-xs">
             Platform by A² Compass ·{' '}
             <a href="https://a2compass.org" className="text-blue-300 hover:text-white underline" target="_blank" rel="noopener noreferrer">
               a2compass.org
+            </a>
+          </p>
+          <p className="text-blue-300/50 text-xs">
+            <a href="https://a2compass.org/privacy-policy.html" className="hover:text-blue-300 underline" target="_blank" rel="noopener noreferrer">
+              Privacy Policy
+            </a>
+            {' · '}
+            <a href="https://a2compass.org/terms-of-service.html" className="hover:text-blue-300 underline" target="_blank" rel="noopener noreferrer">
+              Terms of Service
             </a>
           </p>
           <p className="text-blue-300/50 text-xs">

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import Sidebar from './Sidebar'
+import AppFooter from './AppFooter'
 import { useAuth } from '../../hooks'
 
 export default function DashboardLayout() {
@@ -30,10 +31,13 @@ export default function DashboardLayout() {
       {/* Sidebar */}
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      {/* Main content */}
-      <main className="flex-1 overflow-auto pt-14 lg:pt-0">
-        <Outlet />
-      </main>
+      {/* Main content + footer */}
+      <div className="flex-1 flex flex-col pt-14 lg:pt-0">
+        <main className="flex-1 overflow-auto">
+          <Outlet />
+        </main>
+        <AppFooter />
+      </div>
     </div>
   )
 }
