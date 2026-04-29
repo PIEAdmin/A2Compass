@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A² Compass — Adaptive Learning That Meets Your Child Where They Are</title>
+  <meta name="description" content="A² Compass is the adaptive learning platform that maps your child's unique skill profile across 94 milestones and creates a personalized learning path forward.">
+  <meta name="keywords" content="adaptive learning, personalized education, skill-based learning, homeschool, learning platform, Achievement Academy">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="A² Compass — Learning That Adapts to Your Child">
+  <meta property="og:description" content="Map 94 individual learning milestones across reading, math, and more — then adapt in real-time. No grade levels. Skill levels.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://a2compass.org">
+  <meta property="og:image" content="https://a2compass.org/images/og-image.png">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="A² Compass — Learning That Adapts to Your Child">
+  <meta name="twitter:description" content="94 skills. 10 domains. One personalized path for every child.">
+
+  <!-- FAVICON: Replace with /favicon.ico -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧭</text></svg>">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* ===================== RESET & BASE ===================== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy: #1B3A6B;
+      --royal: #2563EB;
+      --royal-light: #3B82F6;
+      --gold: #D4A843;
+      --deep-gold: #B8922D;
+      --light-gold: #FDF6E3;
+      --white: #FFFFFF;
+      --light-gray: #F8FAFC;
+      --dark: #0F172A;
+      --text: #334155;
+      --text-light: #64748B;
+      --border: #E2E8F0;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.1);
+      --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+      --radius: 12px;
+      --radius-lg: 20px;
+    }
+
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: var(--text);
+      line-height: 1.7;
+      background: var(--white);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h1, h2, h3, h4 {
+      font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+      color: var(--navy);
+      line-height: 1.2;
+    }
+
+    img { max-width: 100%; display: block; }
+    a { color: var(--royal); text-decoration: none; transition: color 0.2s; }
+    a:hover { color: var(--deep-gold); }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    section { padding: 96px 0; }
+
+    .section-label {
+      display: inline-block;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--royal);
+      background: rgba(37, 99, 235, 0.08);
+      padding: 6px 16px;
+      border-radius: 100px;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: clamp(2rem, 4vw, 2.75rem);
+      margin-bottom: 16px;
+    }
+
+    .section-subtitle {
+      font-size: 1.125rem;
+      color: var(--text-light);
+      max-width: 640px;
+      margin: 0 auto 48px;
+    }
+
+    .text-center { text-align: center; }
+
+    /* ===================== BUTTONS ===================== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 1rem;
+      padding: 14px 32px;
+      border-radius: 100px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--royal);
+      color: var(--white);
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+    }
+    .btn-primary:hover {
+      background: #1D4ED8;
+      color: var(--white);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--navy);
+      border: 2px solid var(--border);
+    }
+    .btn-secondary:hover {
+      border-color: var(--royal);
+      color: var(--royal);
+      transform: translateY(-2px);
+    }
+
+    .btn-gold {
+      background: var(--gold);
+      color: var(--white);
+      box-shadow: 0 4px 14px rgba(212, 168, 67, 0.35);
+    }
+    .btn-gold:hover {
+      background: var(--deep-gold);
+      color: var(--white);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(212, 168, 67, 0.4);
+    }
+
+    .btn-sm { padding: 10px 24px; font-size: 0.9rem; }
+
+    /* ===================== NAVBAR ===================== */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+      transition: box-shadow 0.3s;
+    }
+    .navbar.scrolled { box-shadow: var(--shadow-md); }
+
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 72px;
+    }
+
+    /* LOGO: Replace with /images/logo.png -->  */
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--navy);
+      text-decoration: none;
+    }
+    .logo-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(135deg, var(--royal), #1D4ED8);
+      color: var(--white);
+      border-radius: 10px;
+      font-size: 1.1rem;
+    }
+    .logo sup {
+      font-size: 0.7em;
+      color: var(--gold);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+    .nav-links a {
+      font-size: 0.925rem;
+      font-weight: 500;
+      color: var(--text);
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--royal); }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .nav-actions .btn-login {
+      font-weight: 600;
+      font-size: 0.925rem;
+      color: var(--navy);
+      padding: 8px 16px;
+    }
+
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+    }
+    .hamburger span {
+      display: block;
+      width: 24px;
+      height: 2.5px;
+      background: var(--navy);
+      border-radius: 2px;
+      transition: all 0.3s;
+    }
+
+    /* ===================== MOBILE NAV ===================== */
+    .mobile-nav {
+      display: none;
+      position: fixed;
+      top: 72px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--white);
+      z-index: 999;
+      padding: 32px 24px;
+      flex-direction: column;
+      gap: 8px;
+      overflow-y: auto;
+    }
+    .mobile-nav.active { display: flex; }
+    .mobile-nav a {
+      display: block;
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: var(--navy);
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .mobile-nav .mobile-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    .mobile-nav .mobile-actions .btn { justify-content: center; }
+
+    @media (max-width: 900px) {
+      .nav-links, .nav-actions { display: none; }
+      .hamburger { display: flex; }
+    }
+
+    /* ===================== HERO ===================== */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding-top: 72px;
+      background: linear-gradient(165deg, #F0F7FF 0%, var(--white) 40%, var(--light-gold) 100%);
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(circle at 20% 50%, rgba(37, 99, 235, 0.04) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(212, 168, 67, 0.06) 0%, transparent 40%);
+    }
+
+    /* Subtle grid pattern */
+    .hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(37, 99, 235, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(37, 99, 235, 0.03) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+      -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: center;
+    }
+
+    .hero-text h1 {
+      font-size: clamp(2.5rem, 5vw, 3.75rem);
+      font-weight: 800;
+      margin-bottom: 24px;
+      background: linear-gradient(135deg, var(--navy) 0%, var(--royal) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-text p {
+      font-size: 1.175rem;
+      color: var(--text-light);
+      line-height: 1.8;
+      margin-bottom: 40px;
+      max-width: 540px;
+    }
+
+    .hero-buttons { display: flex; gap: 16px; flex-wrap: wrap; }
+
+    /* Hero visual — compass illustration */
+    .hero-visual {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .compass-graphic {
+      position: relative;
+      width: 400px;
+      height: 400px;
+    }
+
+    .compass-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 2px solid;
+      animation: spin 60s linear infinite;
+    }
+    .compass-ring-1 {
+      inset: 0;
+      border-color: rgba(37, 99, 235, 0.12);
+    }
+    .compass-ring-2 {
+      inset: 40px;
+      border-color: rgba(212, 168, 67, 0.15);
+      animation-direction: reverse;
+      animation-duration: 45s;
+    }
+    .compass-ring-3 {
+      inset: 80px;
+      border-color: rgba(37, 99, 235, 0.1);
+      animation-duration: 30s;
+    }
+
+    .compass-center {
+      position: absolute;
+      inset: 120px;
+      background: linear-gradient(135deg, var(--royal), #1D4ED8);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 40px rgba(37, 99, 235, 0.3);
+    }
+    .compass-center span {
+      font-size: 4rem;
+      filter: brightness(1.1);
+    }
+
+    .compass-dot {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--gold);
+      box-shadow: 0 0 12px rgba(212, 168, 67, 0.4);
+    }
+    .compass-dot:nth-child(5) { top: -6px; left: 50%; transform: translateX(-50%); }
+    .compass-dot:nth-child(6) { bottom: -6px; left: 50%; transform: translateX(-50%); }
+    .compass-dot:nth-child(7) { left: -6px; top: 50%; transform: translateY(-50%); }
+    .compass-dot:nth-child(8) { right: -6px; top: 50%; transform: translateY(-50%); }
+
+    /* Floating stat pills on the compass graphic */
+    .floating-pill {
+      position: absolute;
+      background: var(--white);
+      border-radius: 100px;
+      padding: 10px 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--navy);
+      box-shadow: var(--shadow-md);
+      white-space: nowrap;
+      z-index: 2;
+      animation: float 6s ease-in-out infinite;
+    }
+    .floating-pill .pill-icon {
+      margin-right: 6px;
+    }
+    .pill-1 { top: 10%; right: -20px; animation-delay: 0s; }
+    .pill-2 { bottom: 15%; left: -30px; animation-delay: 2s; }
+    .pill-3 { top: 50%; right: -40px; animation-delay: 4s; }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 900px) {
+      .hero-content { grid-template-columns: 1fr; text-align: center; }
+      .hero-text p { margin-left: auto; margin-right: auto; }
+      .hero-buttons { justify-content: center; }
+      .hero-visual { display: none; }
+    }
+
+    /* ===================== DIFFERENCE ===================== */
+    .difference { background: var(--white); }
+
+    .diff-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: center;
+      margin-top: 48px;
+    }
+
+    .diff-card {
+      padding: 40px;
+      border-radius: var(--radius-lg);
+      position: relative;
+    }
+
+    .diff-traditional {
+      background: var(--light-gray);
+      border: 2px solid var(--border);
+    }
+    .diff-traditional h3 { color: var(--text-light); font-size: 1.3rem; margin-bottom: 16px; }
+    .diff-traditional .diff-visual {
+      display: flex;
+      gap: 8px;
+      margin: 24px 0;
+    }
+    .diff-traditional .diff-bar {
+      flex: 1;
+      height: 10px;
+      background: #CBD5E1;
+      border-radius: 100px;
+    }
+    .diff-traditional p { color: var(--text-light); font-style: italic; }
+
+    .diff-compass {
+      background: linear-gradient(135deg, #EFF6FF, #FDF6E3);
+      border: 2px solid var(--gold);
+      box-shadow: 0 4px 24px rgba(212, 168, 67, 0.12);
+    }
+    .diff-compass h3 { color: var(--navy); font-size: 1.3rem; margin-bottom: 16px; }
+    .diff-compass .diff-visual {
+      display: flex;
+      gap: 8px;
+      margin: 24px 0;
+    }
+    .diff-compass .diff-bar {
+      height: 10px;
+      border-radius: 100px;
+    }
+    .diff-compass .diff-bar:nth-child(1) { flex: 2; background: var(--royal); }
+    .diff-compass .diff-bar:nth-child(2) { flex: 3; background: var(--gold); }
+    .diff-compass .diff-bar:nth-child(3) { flex: 1.5; background: #10B981; }
+    .diff-compass .diff-bar:nth-child(4) { flex: 2.5; background: #8B5CF6; }
+    .diff-compass p { color: var(--navy); font-weight: 500; }
+
+    .diff-badge {
+      position: absolute;
+      top: -14px;
+      right: 24px;
+      background: var(--gold);
+      color: var(--white);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 6px 16px;
+      border-radius: 100px;
+    }
+
+    @media (max-width: 768px) {
+      .diff-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Stats bar */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      margin-top: 64px;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 32px 16px;
+      background: var(--white);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .stat-item:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .stat-number {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--royal);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .stat-label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-light);
+    }
+
+    @media (max-width: 768px) {
+      .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* ===================== HOW IT WORKS ===================== */
+    .how-it-works { background: var(--light-gray); }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 32px;
+      margin-top: 16px;
+    }
+
+    .step-card {
+      position: relative;
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 40px 28px 36px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .step-card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .step-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--royal), #1D4ED8);
+      color: var(--white);
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: 1.3rem;
+      border-radius: 14px;
+      margin-bottom: 20px;
+    }
+
+    .step-icon {
+      font-size: 2rem;
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    .step-card h3 {
+      font-size: 1.2rem;
+      margin-bottom: 12px;
+    }
+
+    .step-card p {
+      font-size: 0.95rem;
+      color: var(--text-light);
+      line-height: 1.7;
+    }
+
+    /* Connector line between steps (desktop only) */
+    .step-card::after {
+      content: '→';
+      position: absolute;
+      right: -24px;
+      top: 60px;
+      font-size: 1.4rem;
+      color: var(--gold);
+      font-weight: 700;
+    }
+    .step-card:last-child::after { display: none; }
+
+    @media (max-width: 1024px) {
+      .steps { grid-template-columns: repeat(2, 1fr); }
+      .step-card::after { display: none; }
+    }
+    @media (max-width: 600px) {
+      .steps { grid-template-columns: 1fr; }
+    }
+
+    /* ===================== FEATURES GRID ===================== */
+    .features { background: var(--white); }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .feature-card {
+      padding: 32px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--white);
+      transition: all 0.3s;
+    }
+    .feature-card:hover {
+      border-color: var(--royal);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-4px);
+    }
+
+    .feature-icon {
+      font-size: 2rem;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    .feature-card h3 {
+      font-family: 'Inter', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 8px;
+    }
+
+    .feature-card p {
+      font-size: 0.925rem;
+      color: var(--text-light);
+      line-height: 1.6;
+    }
+
+    @media (max-width: 900px) {
+      .feature-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 600px) {
+      .feature-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ===================== FOR PARENTS ===================== */
+    .for-parents { background: var(--light-gold); }
+
+    .parent-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: center;
+    }
+
+    .parent-list {
+      list-style: none;
+      margin: 24px 0 32px;
+    }
+    .parent-list li {
+      position: relative;
+      padding: 12px 0 12px 36px;
+      font-size: 1.05rem;
+      color: var(--navy);
+      line-height: 1.6;
+    }
+    .parent-list li::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      top: 12px;
+      width: 24px;
+      height: 24px;
+      background: var(--royal);
+      color: var(--white);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+
+    .testimonial-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 40px;
+      box-shadow: var(--shadow-md);
+      position: relative;
+    }
+    .testimonial-card::before {
+      content: '"';
+      font-family: 'Playfair Display', serif;
+      font-size: 5rem;
+      color: var(--gold);
+      position: absolute;
+      top: 8px;
+      left: 28px;
+      line-height: 1;
+      opacity: 0.4;
+    }
+    .testimonial-card blockquote {
+      font-size: 1.1rem;
+      font-style: italic;
+      color: var(--navy);
+      line-height: 1.7;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 1;
+    }
+    .testimonial-card cite {
+      font-style: normal;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-light);
+    }
+
+    .stars {
+      color: var(--gold);
+      font-size: 1.1rem;
+      letter-spacing: 2px;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 900px) {
+      .parent-content { grid-template-columns: 1fr; }
+    }
+
+    /* ===================== ABOUT / PHILOSOPHY ===================== */
+    .about { background: var(--white); }
+
+    .about-content {
+      max-width: 780px;
+      margin: 0 auto;
+    }
+
+    .about-content p {
+      font-size: 1.1rem;
+      line-height: 1.8;
+      margin-bottom: 20px;
+      color: var(--text);
+    }
+
+    .about-highlight {
+      background: linear-gradient(135deg, #EFF6FF, var(--light-gold));
+      border-left: 4px solid var(--gold);
+      padding: 28px 32px;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      margin: 32px 0;
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: var(--navy);
+      font-style: italic;
+    }
+
+    .about-contact {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 16px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--royal);
+    }
+
+    /* ===================== FOOTER ===================== */
+    .footer {
+      background: var(--dark);
+      color: rgba(255,255,255,0.7);
+      padding: 64px 0 32px;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 48px;
+      margin-bottom: 48px;
+    }
+
+    .footer-brand p {
+      margin-top: 16px;
+      font-size: 0.925rem;
+      line-height: 1.7;
+      max-width: 300px;
+    }
+
+    .footer h4 {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--white);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 20px;
+    }
+
+    .footer-links {
+      list-style: none;
+    }
+    .footer-links li { margin-bottom: 12px; }
+    .footer-links a {
+      color: rgba(255,255,255,0.6);
+      font-size: 0.925rem;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--gold); }
+
+    .footer-bottom {
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding-top: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .footer-bottom p {
+      font-size: 0.85rem;
+    }
+    .footer-socials {
+      display: flex;
+      gap: 16px;
+    }
+    .footer-socials a {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255,255,255,0.6);
+      font-size: 1.1rem;
+      transition: all 0.2s;
+    }
+    .footer-socials a:hover {
+      background: var(--royal);
+      color: var(--white);
+    }
+
+    .logo-footer {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--white);
+    }
+    .logo-footer sup { color: var(--gold); font-size: 0.7em; }
+
+    @media (max-width: 768px) {
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+      .footer-bottom { flex-direction: column; text-align: center; }
+    }
+    @media (max-width: 480px) {
+      .footer-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ===================== SCROLL ANIMATIONS ===================== */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Stagger children */
+    .stagger-children .reveal:nth-child(2) { transition-delay: 0.1s; }
+    .stagger-children .reveal:nth-child(3) { transition-delay: 0.2s; }
+    .stagger-children .reveal:nth-child(4) { transition-delay: 0.3s; }
+    .stagger-children .reveal:nth-child(5) { transition-delay: 0.15s; }
+    .stagger-children .reveal:nth-child(6) { transition-delay: 0.25s; }
+    .stagger-children .reveal:nth-child(7) { transition-delay: 0.35s; }
+    .stagger-children .reveal:nth-child(8) { transition-delay: 0.4s; }
+  </style>
+</head>
+<body>
+
+  <!-- ===================== NAVBAR ===================== -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <!-- LOGO: Replace with /images/logo.png -->
+      <a href="#" class="logo">
+        <span class="logo-icon">🧭</span>
+        A<sup>2</sup> Compass
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="#hero">Home</a></li>
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#for-parents">For Parents</a></li>
+        <li><a href="#about">About</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <a href="https://aaacademy.app" class="btn-login">Login</a>
+        <a href="https://aaacademy.us" class="btn btn-primary btn-sm">Get Started</a>
+      </div>
+
+      <button class="hamburger" id="hamburger" aria-label="Toggle navigation">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+
+    <div class="mobile-nav" id="mobile-nav">
+      <a href="#hero" onclick="closeMobileNav()">Home</a>
+      <a href="#how-it-works" onclick="closeMobileNav()">How It Works</a>
+      <a href="#features" onclick="closeMobileNav()">Features</a>
+      <a href="#for-parents" onclick="closeMobileNav()">For Parents</a>
+      <a href="#about" onclick="closeMobileNav()">About</a>
+      <div class="mobile-actions">
+        <a href="https://aaacademy.app" class="btn btn-secondary">Login</a>
+        <a href="https://aaacademy.us" class="btn btn-primary">Get Started</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ===================== HERO ===================== -->
+  <section class="hero" id="hero">
+    <div class="hero-content">
+      <div class="hero-text">
+        <h1>Learning That Adapts to Your Child</h1>
+        <p>A² Compass is the adaptive learning platform that maps your child's unique skill profile and creates a personalized path forward — so no child is bored by what they've mastered or frustrated by what they haven't learned yet.</p>
+        <div class="hero-buttons">
+          <a href="#how-it-works" class="btn btn-primary">See How It Works</a>
+          <a href="https://aaacademy.us/#contact" class="btn btn-secondary">Talk to an Educator</a>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="compass-graphic">
+          <div class="compass-ring compass-ring-1"></div>
+          <div class="compass-ring compass-ring-2"></div>
+          <div class="compass-ring compass-ring-3"></div>
+          <div class="compass-center"><span>🧭</span></div>
+          <div class="compass-dot"></div>
+          <div class="compass-dot"></div>
+          <div class="compass-dot"></div>
+          <div class="compass-dot"></div>
+          <div class="floating-pill pill-1"><span class="pill-icon">🎯</span> 94 Skills Mapped</div>
+          <div class="floating-pill pill-2"><span class="pill-icon">📊</span> Real-Time Adaptation</div>
+          <div class="floating-pill pill-3"><span class="pill-icon">🏆</span> Visible Growth</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== THE A² DIFFERENCE ===================== -->
+  <section class="difference" id="difference">
+    <div class="container">
+      <div class="text-center">
+        <span class="section-label">The A² Difference</span>
+        <h2 class="section-title">Not Grade Levels. Skill Levels.</h2>
+        <p class="section-subtitle">Traditional education sorts children by age. A² Compass maps 94 individual learning milestones across reading, math, and more — then adapts in real-time.</p>
+      </div>
+
+      <div class="diff-grid reveal">
+        <div class="diff-card diff-traditional">
+          <h3>📕 Traditional Approach</h3>
+          <p style="font-weight:600; margin-bottom: 8px;">Everyone on the same page</p>
+          <div class="diff-visual">
+            <div class="diff-bar"></div>
+            <div class="diff-bar"></div>
+            <div class="diff-bar"></div>
+            <div class="diff-bar"></div>
+            <div class="diff-bar"></div>
+          </div>
+          <p>All students follow the same curriculum at the same pace, regardless of what they already know — or haven't learned yet.</p>
+        </div>
+        <div class="diff-card diff-compass">
+          <span class="diff-badge">✦ Better Way</span>
+          <h3>🧭 A² Compass</h3>
+          <p style="font-weight:600; margin-bottom: 8px;">Every child on THEIR page</p>
+          <div class="diff-visual">
+            <div class="diff-bar"></div>
+            <div class="diff-bar"></div>
+            <div class="diff-bar"></div>
+            <div class="diff-bar"></div>
+          </div>
+          <p>Each student's path is unique — built from their exact skills, adapting as they grow.</p>
+        </div>
+      </div>
+
+      <div class="stats-bar stagger-children">
+        <div class="stat-item reveal">
+          <div class="stat-number">94</div>
+          <div class="stat-label">Skills Mapped</div>
+        </div>
+        <div class="stat-item reveal">
+          <div class="stat-number">10</div>
+          <div class="stat-label">Learning Domains</div>
+        </div>
+        <div class="stat-item reveal">
+          <div class="stat-number">470+</div>
+          <div class="stat-label">Assessment Items</div>
+        </div>
+        <div class="stat-item reveal">
+          <div class="stat-number">∞</div>
+          <div class="stat-label">Real-Time Adaptation</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== HOW IT WORKS ===================== -->
+  <section class="how-it-works" id="how-it-works">
+    <div class="container">
+      <div class="text-center">
+        <span class="section-label">How It Works</span>
+        <h2 class="section-title">Four Steps to Personalized Learning</h2>
+        <p class="section-subtitle">From first login to visible growth — here's how A² Compass creates a learning experience as unique as your child.</p>
+      </div>
+
+      <div class="steps stagger-children">
+        <div class="step-card reveal">
+          <div class="step-number">1</div>
+          <span class="step-icon">👋</span>
+          <h3>Warm Welcome</h3>
+          <p>Students start with a fun orientation — choosing avatars, picking interests, and exploring the platform at their own pace. No pressure, just excitement.</p>
+        </div>
+        <div class="step-card reveal">
+          <div class="step-number">2</div>
+          <span class="step-icon">🔬</span>
+          <h3>Precision Assessment</h3>
+          <p>Our adaptive assessment finds your child's exact skill floor and ceiling across 10 domains. It goes deeper than any standardized test, supervised by a real educator.</p>
+        </div>
+        <div class="step-card reveal">
+          <div class="step-number">3</div>
+          <span class="step-icon">🗺️</span>
+          <h3>Personalized Playlist</h3>
+          <p>Every day, your child sees a Flight Plan — activities perfectly matched to what they need next. As they master skills, new ones appear automatically.</p>
+        </div>
+        <div class="step-card reveal">
+          <div class="step-number">4</div>
+          <span class="step-icon">📈</span>
+          <h3>Visible Growth</h3>
+          <p>Parents get a Growth Timeline, milestone celebrations, shareable progress snapshots, and printable certificates. You'll always know exactly where your child stands.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FEATURES ===================== -->
+  <section class="features" id="features">
+    <div class="container">
+      <div class="text-center">
+        <span class="section-label">Platform Features</span>
+        <h2 class="section-title">Everything Your Child Needs to Thrive</h2>
+        <p class="section-subtitle">Powerful technology guided by real educators — every feature is designed to make learning visible, personal, and celebratory.</p>
+      </div>
+
+      <div class="feature-grid stagger-children">
+        <div class="feature-card reveal">
+          <span class="feature-icon">🎯</span>
+          <h3>Adaptive Assessment</h3>
+          <p>Finds skill floor AND ceiling, not just a grade level. Understands exactly what your child knows and what's next.</p>
+        </div>
+        <div class="feature-card reveal">
+          <span class="feature-icon">📋</span>
+          <h3>Flight Plan</h3>
+          <p>Daily personalized activity playlist, updated in real time as your child progresses through skills.</p>
+        </div>
+        <div class="feature-card reveal">
+          <span class="feature-icon">🌳</span>
+          <h3>Skill Graph</h3>
+          <p>94 skills with prerequisite chains — no gaps left behind. Every skill builds on what came before.</p>
+        </div>
+        <div class="feature-card reveal">
+          <span class="feature-icon">👨‍👩‍👧</span>
+          <h3>Family Hub</h3>
+          <p>Parents see progress, milestones, and get shareable wins they can celebrate with family and friends.</p>
+        </div>
+        <div class="feature-card reveal">
+          <span class="feature-icon">🏆</span>
+          <h3>Badges & Certificates</h3>
+          <p>Celebrate every breakthrough, big or small. Printable certificates make milestones tangible.</p>
+        </div>
+        <div class="feature-card reveal">
+          <span class="feature-icon">🤖</span>
+          <h3>AI-Assisted</h3>
+          <p>Smart diagnostics and practice generation, always teacher-approved. AI suggests, the teacher decides.</p>
+        </div>
+        <div class="feature-card reveal">
+          <span class="feature-icon">📊</span>
+          <h3>Growth Timeline</h3>
+          <p>Visual, screenshot-able journey showing real progress over time. Perfect for sharing with family.</p>
+        </div>
+        <div class="feature-card reveal">
+          <span class="feature-icon">🔔</span>
+          <h3>Share a Win</h3>
+          <p>One-click parent notifications when your child hits a milestone. Celebrate together in real time.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FOR PARENTS ===================== -->
+  <section class="for-parents" id="for-parents">
+    <div class="container">
+      <div class="parent-content">
+        <div class="reveal">
+          <span class="section-label">For Parents</span>
+          <h2 class="section-title">Finally See What Your Child Actually Knows</h2>
+          <p style="font-size: 1.1rem; color: var(--text); margin-top: 16px;">Most parents get report cards with letter grades and vague comments. With A² Compass, you'll see:</p>
+
+          <ul class="parent-list">
+            <li>Exactly which skills your child has mastered</li>
+            <li>What they're working on right now</li>
+            <li>What's coming next in their learning path</li>
+            <li>How they compare to age-appropriate benchmarks (with positive framing)</li>
+            <li>Weekly progress updates you can share with family</li>
+          </ul>
+
+          <a href="https://aaacademy.us" class="btn btn-gold">Start Your Child's Journey →</a>
+        </div>
+
+        <div class="reveal">
+          <div class="testimonial-card">
+            <div class="stars">★★★★★</div>
+            <blockquote>
+              I had no idea she was already solving 2nd grade math problems. Now I can see exactly where she shines and where she needs support.
+            </blockquote>
+            <cite>— A² Compass Parent</cite>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== ABOUT / PHILOSOPHY ===================== -->
+  <section class="about" id="about">
+    <div class="container">
+      <div class="about-content text-center">
+        <span class="section-label">Our Philosophy</span>
+        <h2 class="section-title">Built by Educators, For Educators</h2>
+      </div>
+      <div class="about-content reveal">
+        <p>A² Compass was created by Achievement Academy to power truly personalized education. We believe every child has a unique constellation of skills, strengths, and growth areas — and they deserve a learning platform that sees the whole picture.</p>
+
+        <p>Our philosophy is simple: <strong>AI suggests, the teacher decides.</strong> Technology enhances the human connection — it never replaces it. Every algorithm, every recommendation, every automated action is reviewed and approved by a real educator who knows your child.</p>
+
+        <div class="about-highlight">
+          "Every feature answers one question: <em>Will this give a parent something to tell another parent?</em>"
+        </div>
+
+        <p>When parents can see real progress — when they can share a win, celebrate a milestone, or explain exactly what their child is learning — that's when education transforms from a mystery into a partnership.</p>
+
+        <div style="text-align: center; margin-top: 40px;">
+          <a href="mailto:hello@a2compass.org" class="about-contact">
+            ✉️ hello@a2compass.org
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <!-- LOGO: Replace with /images/logo-white.png -->
+          <div class="logo-footer">🧭 A<sup>2</sup> Compass</div>
+          <p>Adaptive learning technology that maps your child's unique skill profile and creates a personalized path forward.</p>
+          <p style="margin-top: 8px; font-size: 0.85rem; opacity: 0.7;">A product of <a href="https://aaacademy.us" style="color: var(--gold);">Achievement Academy</a></p>
+        </div>
+
+        <div>
+          <h4>Platform</h4>
+          <ul class="footer-links">
+            <li><a href="#how-it-works">How It Works</a></li>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#for-parents">For Parents</a></li>
+            <li><a href="https://aaacademy.app">Login</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4>Academy</h4>
+          <ul class="footer-links">
+            <li><a href="https://aaacademy.us">aaacademy.us</a></li>
+            <li><a href="https://aaacademy.us/#contact">Enrollment</a></li>
+            <li><a href="https://aaacademy.us/#about">About</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4>Legal</h4>
+          <ul class="footer-links">
+            <li><a href="/privacy-policy.html">Privacy Policy</a></li>
+            <li><a href="/terms-of-service.html">Terms of Service</a></li>
+            <li><a href="mailto:hello@a2compass.org">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>© 2026 A² Compass. All rights reserved.</p>
+        <div class="footer-socials">
+          <!-- Social placeholders -->
+          <a href="#" aria-label="Facebook">f</a>
+          <a href="#" aria-label="Instagram">ig</a>
+          <a href="#" aria-label="Twitter">𝕏</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ===================== JAVASCRIPT ===================== -->
+  <script>
+    // --- Mobile Nav Toggle ---
+    const hamburger = document.getElementById('hamburger');
+    const mobileNav = document.getElementById('mobile-nav');
+
+    hamburger.addEventListener('click', () => {
+      mobileNav.classList.toggle('active');
+      hamburger.classList.toggle('open');
+    });
+
+    function closeMobileNav() {
+      mobileNav.classList.remove('active');
+      hamburger.classList.remove('open');
+    }
+
+    // --- Navbar scroll effect ---
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 20);
+    });
+
+    // --- Scroll Reveal Animation ---
+    const revealElements = document.querySelectorAll('.reveal');
+
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, {
+      threshold: 0.15,
+      rootMargin: '0px 0px -40px 0px'
+    });
+
+    revealElements.forEach(el => revealObserver.observe(el));
+
+    // --- Smooth scroll for anchor links (fallback) ---
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          closeMobileNav();
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>
