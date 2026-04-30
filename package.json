@@ -2,15 +2,28 @@
   "name": "a2-compass",
   "private": true,
   "version": "1.0.0",
-  "description": "A\u00b2 Compass - Achievement Academy's adaptive learning platform",
+  "description": "A² Compass - Achievement Academy's adaptive learning platform",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "cap:sync": "npx cap sync",
+    "cap:android": "npx cap open android",
+    "cap:ios": "npx cap open ios",
+    "build:android": "npm run build && npx cap sync android",
+    "build:ios": "npm run build && npx cap sync ios"
   },
   "dependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/app": "^6.0.0",
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/haptics": "^6.0.0",
+    "@capacitor/ios": "^6.0.0",
+    "@capacitor/keyboard": "^6.0.0",
+    "@capacitor/splash-screen": "^6.0.0",
+    "@capacitor/status-bar": "^6.0.0",
     "@reduxjs/toolkit": "^2.5.0",
     "@stripe/stripe-js": "^4.0.0",
     "@supabase/supabase-js": "^2.49.1",
@@ -20,6 +33,7 @@
     "react-router-dom": "^7.1.1"
   },
   "devDependencies": {
+    "@capacitor/cli": "^6.0.0",
     "@eslint/js": "^9.17.0",
     "@tailwindcss/vite": "^4.0.0",
     "@types/react": "^18.3.18",

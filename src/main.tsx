@@ -5,6 +5,11 @@ import { BrowserRouter } from 'react-router-dom'
 import { store } from './store'
 import App from './App'
 import './styles/index.css'
+import './styles/safe-area.css'
+import { initCapacitor } from './capacitor-init'
+
+// Initialize native bridge (no-op on web)
+initCapacitor()
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
