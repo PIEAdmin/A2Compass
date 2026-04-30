@@ -30,6 +30,7 @@ export const stripeService = {
     enrollmentTypeId: string
     studentId: string
     parentId: string
+    mode: 'subscription' | 'payment'
     successUrl?: string
     cancelUrl?: string
   }): Promise<{ sessionId: string; url: string } | null> {
@@ -39,8 +40,9 @@ export const stripeService = {
         enrollment_type_id: params.enrollmentTypeId,
         student_id: params.studentId,
         parent_id: params.parentId,
-        success_url: params.successUrl || `${window.location.origin}/parent/billing?success=true`,
-        cancel_url: params.cancelUrl || `${window.location.origin}/parent/billing?cancelled=true`,
+        mode: params.mode,
+        success_url: params.successUrl || `${window.location.origin}/parent/enroll?success=true`,
+        cancel_url: params.cancelUrl || `${window.location.origin}/parent/enroll?cancelled=true`,
       }
     })
     if (error) { console.error('createCheckoutSession error:', error); return null }

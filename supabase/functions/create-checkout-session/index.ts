@@ -1,6 +1,3 @@
-// Supabase Edge Function: Create Stripe Checkout Session
-// Deploy with: supabase functions deploy create-checkout-session
-
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import Stripe from 'https://esm.sh/stripe@14.14.0?target=deno'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.1'
@@ -11,9 +8,18 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 )
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
 serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
+
   try {
-    const { price_id, enrollment_type_id, student_id, parent_id, success_url, cancel_url } = await req.json()
+    const { price_id, enrollment_type_id, student_id, parent_id, mode, success_url, cancel_url } = await req.json()
 
     // Get or create Stripe customer
     let { data: customer } = await supabase
@@ -23,15 +29,16 @@ serve(async (req) => {
       .single()
 
     if (!customer) {
+      // Look up parent's profile - try profiles table with user_id
       const { data: profile } = await supabase
         .from('profiles')
-        .select('email, full_name')
+        .select('email, first_name, last_name')
         .eq('user_id', parent_id)
         .single()
 
       const stripeCustomer = await stripe.customers.create({
         email: profile?.email,
-        name: profile?.full_name,
+        name: [profile?.first_name, profile?.last_name].filter(Boolean).join(' ') || undefined,
         metadata: { supabase_user_id: parent_id },
       })
 
@@ -43,11 +50,13 @@ serve(async (req) => {
       customer = { stripe_customer_id: stripeCustomer.id }
     }
 
-    // Create checkout session
+    // Determine checkout mode from request (default to payment)
+    const checkoutMode = mode === 'subscription' ? 'subscription' : 'payment'
+
     const session = await stripe.checkout.sessions.create({
       customer: customer.stripe_customer_id,
       line_items: [{ price: price_id, quantity: 1 }],
-      mode: price_id.includes('recurring') ? 'subscription' : 'payment',
+      mode: checkoutMode,
       success_url,
       cancel_url,
       metadata: {
@@ -58,12 +67,12 @@ serve(async (req) => {
     })
 
     return new Response(JSON.stringify({ sessionId: session.id, url: session.url }), {
-      headers: { 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (err) {
     return new Response(JSON.stringify({ error: (err as Error).message }), {
       status: 400,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }
 })
