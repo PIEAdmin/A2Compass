@@ -116,18 +116,6 @@ export const billingService = {
     return data;
   },
 
-  // ---- Stripe Checkout (placeholder until keys provided) ----
-  async createCheckoutSession(params: {
-    packageSlug: string;
-    parentId: string;
-    studentId: string;
-    childOrder?: number;
-  }): Promise<{ url: string }> {
-    // TODO: Implement with Stripe keys once provided by Sandra
-    console.warn('Stripe checkout not yet configured — awaiting API keys');
-    return { url: '/billing/pending-setup' };
-  },
-
   // ---- Payment History ----
   async getPaymentHistory(parentId: string) {
     const { data, error } = await supabase
