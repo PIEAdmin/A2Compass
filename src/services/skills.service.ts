@@ -176,6 +176,39 @@ export async function updateFocusSkills(studentId: string, skillIds: string[]) {
   return updatePlaylistConfig(studentId, { focusSkillIds: skillIds });
 }
 
+// ─── Teacher Overrides ───────────────────────────────────────────────────────
+
+export async function teacherOverrideSkill(
+  studentId: string,
+  skillNodeId: string,
+  newStatus: string,
+  teacherId: string
+) {
+  // Update the playlist item status
+  const { error } = await supabase
+    .from('student_playlist')
+    .update({
+      status: newStatus,
+      teacher_override: true,
+      override_by: teacherId,
+      override_at: new Date().toISOString(),
+    })
+    .eq('student_id', studentId)
+    .eq('skill_node_id', skillNodeId);
+
+  if (error) throw error;
+}
+
+export async function generatePlaylist(studentId: string) {
+  // Call the RPC function to regenerate the student's playlist
+  const { data, error } = await supabase.rpc('generate_student_playlist', {
+    p_student_id: studentId,
+  });
+
+  if (error) throw error;
+  return data;
+}
+
 // ─── Content Library ─────────────────────────────────────────────────────────
 
 export async function getActivityForSkill(skillNodeId: string) {
