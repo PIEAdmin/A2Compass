@@ -9,6 +9,12 @@ import { LoadingSpinner } from './components/common'
 
 // Auth
 import LoginPage from './pages/auth/LoginPage'
+import ForgotPassword from './pages/auth/ForgotPassword'
+import ResetPassword from './pages/auth/ResetPassword'
+import RegisterPage from './pages/auth/RegisterPage'
+
+// Settings
+import DeleteAccount from './pages/settings/DeleteAccount'
 
 // Admin pages
 import AdminDashboard from './pages/admin/Dashboard'
@@ -88,7 +94,11 @@ export default function App() {
 
   return (
     <Routes>
+      {/* Public auth routes */}
       <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
+      <Route path="/register" element={<GuestRoute><RegisterPage /></GuestRoute>} />
+      <Route path="/forgot-password" element={<GuestRoute><ForgotPassword /></GuestRoute>} />
+      <Route path="/reset-password" element={<ResetPassword />} />
 
       <Route path="/" element={
         <ProtectedRoute>
@@ -152,6 +162,9 @@ export default function App() {
         <Route path="student/subjects" element={<StudentSubjects />} />
         <Route path="student/progress" element={<StudentProgress />} />
         <Route path="student/achievements" element={<StudentAchievements />} />
+
+        {/* Settings */}
+        <Route path="settings/delete-account" element={<DeleteAccount />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

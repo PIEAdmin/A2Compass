@@ -1,5 +1,5 @@
 import { useState, useEffect, type FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../../hooks'
 
 export default function LoginPage() {
@@ -49,7 +49,15 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-gray-700">Password</label>
+              <Link
+                to="/forgot-password"
+                className="text-xs text-compass-blue hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
             <input
               type="password"
               value={password}
@@ -67,6 +75,13 @@ export default function LoginPage() {
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
+
+          <div className="text-center pt-1">
+            <span className="text-gray-500 text-sm">New family? </span>
+            <Link to="/register" className="text-compass-blue hover:underline text-sm font-medium">
+              Create an Account
+            </Link>
+          </div>
         </form>
 
         {/* Domain branding + legal footer */}
