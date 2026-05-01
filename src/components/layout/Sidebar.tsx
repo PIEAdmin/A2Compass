@@ -48,6 +48,7 @@ const navItems: Record<string, NavItem[]> = {
     { path: '/parent/billing', label: 'Billing', icon: '💳' },
     { path: '/parent/enroll', label: 'Enroll', icon: '📋' },
     { path: '/parent/messages', label: 'Messages', icon: '✉️' },
+    { path: '/settings/delete-account', label: 'Delete Account', icon: '🗑️', divider: true },
   ],
   student: [
     { path: '/student', label: 'Flight Plan', icon: '🛫' },
@@ -101,7 +102,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
               {item.divider && (
                 <div className="pt-3 pb-1 mt-2 border-t border-white/10">
                   <span className="text-[10px] uppercase tracking-wider text-white/40 px-3">
-                    Content Tools
+                    {item.path.startsWith('/settings') ? 'Account' : 'Content Tools'}
                   </span>
                 </div>
               )}
