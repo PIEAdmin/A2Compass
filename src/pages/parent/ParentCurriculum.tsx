@@ -71,15 +71,6 @@ export default function ParentCurriculum() {
   const studyGuides = filteredResources.filter(r => r.resource_type === 'study_guide')
   const worksheets = filteredResources.filter(r => r.resource_type === 'worksheet')
 
-  // Group scope & sequence by subject
-  const subjectGroups = filteredResources.reduce((acc, r) => {
-    if (r.resource_type === 'scope_sequence' && r.subject) {
-      acc[r.subject] = acc[r.subject] || []
-      acc[r.subject].push(r)
-    }
-    return acc
-  }, {} as Record<string, typeof filteredResources>)
-
   const tabs: { id: Tab; label: string; icon: string }[] = [
     { id: 'overview', label: 'What We Teach', icon: '🎯' },
     { id: 'subjects', label: 'By Subject', icon: '📚' },

@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import { supabase } from './supabase';
 import type { SkillNode, PlaylistItem } from '../types/skills';
 
 // Fetch all skill nodes
