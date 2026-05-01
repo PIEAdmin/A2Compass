@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { PlaylistItem, PlaylistReason, PlaylistItemStatus } from '../../types/skills';
 import { usePlaylist } from '../../hooks/useSkills';
 import { useAuth } from '../../hooks';
@@ -43,6 +44,7 @@ function formatDate(): string {
 
 export default function FlightPlan() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const studentId = user?.id || '';
   const studentName = user?.fullName?.split(' ')[0] || 'Explorer';
   const today = new Date().toISOString().split('T')[0];
@@ -59,20 +61,9 @@ export default function FlightPlan() {
     [items]
   );
 
-  const handleStart = async (itemId: string) => {
-    try {
-      await start(itemId);
-    } catch {
-      // silently fail for now
-    }
-  };
-
-  const handleComplete = async (itemId: string) => {
-    try {
-      await complete(itemId, 85);
-    } catch {
-      // silently fail for now
-    }
+  const handleStartPractice = (item: PlaylistItem) => {
+    // Navigate to the practice page for this playlist item
+    navigate(`/student/practice/${item.id}`);
   };
 
   const handleSkip = async (itemId: string) => {
@@ -147,6 +138,7 @@ export default function FlightPlan() {
             const domainCode = item.skill?.domain?.code || '?';
             const skillName = item.skill?.name || 'Unnamed Skill';
             const minutes = estimateMinutes(item.priority);
+            const score = item.current_score;
 
             return (
               <div
@@ -174,34 +166,33 @@ export default function FlightPlan() {
                       </span>
                     </div>
                     <h3 className="font-semibold text-gray-900 mt-1">{skillName}</h3>
-                    <p className="text-xs text-gray-500 mt-0.5">~{minutes} min</p>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      ~{minutes} min
+                      {score != null && item.status === 'completed' && (
+                        <span className="ml-2 text-green-600 font-medium">Score: {score}%</span>
+                      )}
+                    </p>
                   </div>
 
                   {/* Actions */}
                   <div className="flex-shrink-0 flex gap-2">
-                    {item.status === 'pending' && (
+                    {(item.status === 'pending' || item.status === 'in_progress') && (
                       <>
                         <button
-                          onClick={() => handleStart(item.id)}
+                          onClick={() => handleStartPractice(item)}
                           className="px-3 py-1.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
                         >
-                          Start
+                          {item.status === 'in_progress' ? 'Continue' : 'Start'}
                         </button>
-                        <button
-                          onClick={() => handleSkip(item.id)}
-                          className="px-3 py-1.5 bg-gray-100 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
-                        >
-                          Skip
-                        </button>
+                        {item.status === 'pending' && (
+                          <button
+                            onClick={() => handleSkip(item.id)}
+                            className="px-3 py-1.5 bg-gray-100 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
+                          >
+                            Skip
+                          </button>
+                        )}
                       </>
-                    )}
-                    {item.status === 'in_progress' && (
-                      <button
-                        onClick={() => handleComplete(item.id)}
-                        className="px-3 py-1.5 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"
-                      >
-                        Done ✓
-                      </button>
                     )}
                     {item.status === 'completed' && (
                       <span className="text-green-600 font-medium text-sm">Complete</span>
