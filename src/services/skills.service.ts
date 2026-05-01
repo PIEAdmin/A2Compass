@@ -191,6 +191,20 @@ export async function startPlaylistItem(itemId: string): Promise<void> {
   if (error) throw error;
 }
 
+// --- Content Library ---
+
+export async function getActivityForSkill(skillNodeId: string) {
+  const { data, error } = await supabase
+    .from('content_library')
+    .select('*')
+    .eq('skill_node_id', skillNodeId)
+    .eq('status', 'published')
+    .limit(1)
+    .single();
+  if (error && error.code !== 'PGRST116') throw error;
+  return data || null;
+}
+
 // --- Teacher Overrides ---
 
 export async function teacherOverrideSkill(
