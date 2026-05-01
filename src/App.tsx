@@ -44,6 +44,7 @@ import ParentLetters from './pages/parent/ParentLetters'
 
 // Student pages
 import FlightPlan from './pages/student/FlightPlan'
+import SkillPractice from './pages/student/SkillPractice'
 import StudentSubjects from './pages/student/StudentSubjects'
 import StudentProgress from './pages/student/StudentProgress'
 import StudentAchievements from './pages/student/StudentAchievements'
@@ -147,6 +148,7 @@ export default function App() {
         <Route path="student/activities" element={<WarmActivities />} />
         <Route path="student/assessment" element={<AssessmentPlayer />} />
         <Route path="student/activity/:id" element={<ActivityPlayer />} />
+        <Route path="student/practice/:playlistItemId" element={<SkillPractice />} />
         <Route path="student/subjects" element={<StudentSubjects />} />
         <Route path="student/progress" element={<StudentProgress />} />
         <Route path="student/achievements" element={<StudentAchievements />} />
