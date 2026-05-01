@@ -38,6 +38,7 @@ import ReportCardBuilder from './pages/teacher/ReportCardBuilder'
 import StudentDiscoveryProfile from './pages/teacher/StudentDiscoveryProfile'
 import PacingGuidePage from './pages/teacher/PacingGuidePage'
 import DiscoveryGamesResults from './pages/teacher/DiscoveryGamesResults'
+import TeacherResources from './pages/teacher/TeacherResources'
 
 // Parent pages
 import ParentDashboard from './pages/parent/Dashboard'
@@ -47,6 +48,7 @@ import GrowthTimeline from './pages/parent/GrowthTimeline'
 import AssessmentSummary from './pages/parent/AssessmentSummary'
 import ParentOrientation from './pages/parent/ParentOrientation'
 import ParentLetters from './pages/parent/ParentLetters'
+import ParentCurriculum from './pages/parent/ParentCurriculum'
 
 // Student pages
 import FlightPlan from './pages/student/FlightPlan'
@@ -138,6 +140,7 @@ export default function App() {
         <Route path="teacher/report-cards" element={<ReportCardBuilder />} />
         <Route path="teacher/discovery-profile/:studentId" element={<StudentDiscoveryProfile />} />
         <Route path="teacher/pacing-guide" element={<PacingGuidePage />} />
+        <Route path="teacher/resources" element={<TeacherResources />} />
 
         {/* Parent Routes */}
         <Route path="parent" element={<ParentDashboard />} />
@@ -145,6 +148,7 @@ export default function App() {
         <Route path="parent/progress" element={<ParentDashboard />} />
         <Route path="parent/growth" element={<GrowthTimeline />} />
         <Route path="parent/assessments" element={<AssessmentSummary />} />
+        <Route path="parent/curriculum" element={<ParentCurriculum />} />
         <Route path="parent/milestones" element={<ParentDashboard />} />
         <Route path="parent/certificates" element={<ParentDashboard />} />
         <Route path="parent/billing" element={<ParentBillingPage />} />
