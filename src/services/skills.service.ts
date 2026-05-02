@@ -7,7 +7,9 @@ export async function getSkillNodes(): Promise<SkillNode[]> {
   const { data, error } = await supabase
     .from('skill_nodes')
     .select('*')
-    .order('domain_id, grade_level, code');
+    .order('domain_id')
+    .order('grade_level_approx')
+    .order('code');
 
   if (error) throw error;
   return data || [];
@@ -39,12 +41,20 @@ export async function getStudentSkillSummary(studentId: string) {
 
   if (error) throw error;
 
-  // Group by domain
+  // Group by domain and transform to match DomainSkillGroup shape
   const domainMap: Record<string, {
-    domain: { id: string; name: string; icon: string };
-    skills: typeof data;
-    mastered: number;
-    total: number;
+    domain: { id: string; code: string; name: string; category: string };
+    skills: {
+      skill_code: string;
+      skill_name: string;
+      status: string;
+      current_score: number;
+      mastered_at: string | null;
+      domain_name: string;
+      domain_code: string;
+    }[];
+    masteredCount: number;
+    totalCount: number;
   }> = {};
 
   for (const item of data || []) {
@@ -52,18 +62,35 @@ export async function getStudentSkillSummary(studentId: string) {
     if (!domain) continue;
     if (!domainMap[domain.id]) {
       domainMap[domain.id] = {
-        domain,
+        domain: {
+          id: domain.id,
+          code: domain.code || '',
+          name: domain.name || '',
+          category: domain.category || 'literacy',
+        },
         skills: [],
-        mastered: 0,
-        total: 0,
+        masteredCount: 0,
+        totalCount: 0,
       };
     }
-    domainMap[domain.id].skills.push(item);
-    domainMap[domain.id].total++;
-    if (item.status === 'mastered') domainMap[domain.id].mastered++;
+    const group = domainMap[domain.id];
+    group.skills.push({
+      skill_code: item.skill?.code || '',
+      skill_name: item.skill?.name || '',
+      status: item.status || 'not_started',
+      current_score: item.current_score || 0,
+      mastered_at: item.status === 'mastered' ? (item.last_attempted_at || item.updated_at) : null,
+      domain_name: domain.name || '',
+      domain_code: domain.code || '',
+    });
+    group.totalCount++;
+    if (item.status === 'mastered') group.masteredCount++;
   }
 
-  return Object.values(domainMap);
+  return Object.values(domainMap).map((g) => ({
+    ...g,
+    percentComplete: g.totalCount > 0 ? Math.round((g.masteredCount / g.totalCount) * 100) : 0,
+  }));
 }
 
 // ─── Playlist ────────────────────────────────────────────────────────────────
@@ -133,17 +160,21 @@ export async function startPlaylistItem(playlistItemId: string): Promise<void> {
 // ─── Playlist Config ─────────────────────────────────────────────────────────
 
 export async function getPlaylistConfig(studentId: string) {
+  // student_profiles uses row UUID, but we receive auth UUID
+  // Query by user_id instead of id
   const { data, error } = await supabase
     .from('student_profiles')
-    .select('daily_skill_cap, day_mode, focus_skill_ids')
-    .eq('id', studentId)
+    .select('*')
+    .eq('user_id', studentId)
     .single();
 
-  if (error) throw error;
+  if (error && error.code !== 'PGRST116') throw error;
+
+  // These columns may not exist yet on student_profiles — use safe defaults
   return {
-    dailySkillCap: data?.daily_skill_cap ?? 5,
-    dayMode: data?.day_mode ?? 'standard',
-    focusSkillIds: data?.focus_skill_ids ?? [],
+    dailySkillCap: (data as any)?.daily_skill_cap ?? 5,
+    dayMode: (data as any)?.day_mode ?? 'standard',
+    focusSkillIds: (data as any)?.focus_skill_ids ?? [],
   };
 }
 
@@ -159,7 +190,7 @@ export async function updatePlaylistConfig(
   const { error } = await supabase
     .from('student_profiles')
     .update(updates)
-    .eq('id', studentId);
+    .eq('user_id', studentId);
 
   if (error) throw error;
 }

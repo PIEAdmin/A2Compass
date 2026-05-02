@@ -3,6 +3,7 @@
 // ============================================================
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { assessmentService } from '../services/assessment.service';
+import { getStudentProfileId } from '../services/students';
 import type {
   PlayerState,
   SessionType,
@@ -32,11 +33,22 @@ const INITIAL_PLAYER_STATE: PlayerState = {
 // ==========================================================
 // useAssessmentPlayer — full player lifecycle
 // ==========================================================
-export function useAssessmentPlayer(studentId: string) {
+export function useAssessmentPlayer(authUserId: string) {
   const [state, setState] = useState<PlayerState>(INITIAL_PLAYER_STATE);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const previousDomain = useRef<string | null>(null);
+  // Cache the resolved student_profiles.id
+  const resolvedId = useRef<string | null>(null);
+
+  /** Resolve auth UUID → student_profiles.id (assessment tables use this FK) */
+  async function resolveStudentId(): Promise<string> {
+    if (resolvedId.current) return resolvedId.current;
+    const profileId = await getStudentProfileId(authUserId);
+    if (!profileId) throw new Error('Student profile not found. Please contact your teacher.');
+    resolvedId.current = profileId;
+    return profileId;
+  }
 
   /** Start a brand-new assessment session */
   const startSession = useCallback(
@@ -44,6 +56,8 @@ export function useAssessmentPlayer(studentId: string) {
       setLoading(true);
       setError(null);
       try {
+        const studentId = await resolveStudentId();
+
         const result = await assessmentService.startAssessmentSession(
           studentId,
           type,
@@ -78,7 +92,7 @@ export function useAssessmentPlayer(studentId: string) {
         setLoading(false);
       }
     },
-    [studentId]
+    [authUserId]
   );
 
   /** Submit the student's answer and auto-advance */
@@ -264,9 +278,13 @@ export function useAssessmentDashboard(studentId?: string) {
     setLoading(true);
     setError(null);
     try {
+      // Resolve to student_profiles.id for assessment tables
+      const profileId = await getStudentProfileId(sid);
+      const effectiveId = profileId || sid;
+
       const [sessionsData, summaryData] = await Promise.all([
-        assessmentService.getStudentSessions(sid),
-        assessmentService.getAssessmentSummary(sid),
+        assessmentService.getStudentSessions(effectiveId),
+        assessmentService.getAssessmentSummary(effectiveId),
       ]);
       setSessions(sessionsData);
       setSummary(summaryData);
