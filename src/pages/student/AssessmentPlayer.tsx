@@ -83,6 +83,25 @@ export default function AssessmentPlayer() {
     }
   }, [lastResponse]);
 
+  // ---------- Error State (check BEFORE start screen so errors are visible) ----------
+  if (error && !session) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center p-6">
+        <div className="bg-white rounded-3xl shadow-xl p-10 max-w-md w-full text-center">
+          <div className="text-5xl mb-4">😕</div>
+          <h2 className="text-xl font-bold text-red-600 mb-2">Oops!</h2>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="py-3 px-6 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   // ---------- Start Screen ----------
   if (!session && !loading && !isComplete) {
     return (

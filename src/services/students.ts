@@ -1,6 +1,26 @@
 import { supabase } from './supabase'
 import type { StudentProfile, StudentEnrollment, MasterySummary, Subject, MasteryLevel } from '../types'
 
+// ─── ID Resolution ───────────────────────────────────────────────────────────
+// Many tables reference student_profiles(id) as FK, but the client only has
+// the auth UUID (profiles.id / user_id). This helper resolves it.
+// Cache to avoid repeated lookups within a session.
+const profileIdCache = new Map<string, string>();
+
+export async function getStudentProfileId(authUserId: string): Promise<string | null> {
+  if (profileIdCache.has(authUserId)) return profileIdCache.get(authUserId)!;
+
+  const { data, error } = await supabase
+    .from('student_profiles')
+    .select('id')
+    .eq('user_id', authUserId)
+    .single();
+
+  if (error || !data) return null;
+  profileIdCache.set(authUserId, data.id);
+  return data.id;
+}
+
 export const studentService = {
   async getStudentProfile(userId: string): Promise<StudentProfile | null> {
     const { data, error } = await supabase
@@ -40,14 +60,18 @@ export const studentService = {
     return data || []
   },
 
-  async getMasterySummaries(studentId: string): Promise<MasterySummary[]> {
+  async getMasterySummaries(userId: string): Promise<MasterySummary[]> {
+    // student_mastery.student_id FK → student_profiles(id), so resolve first
+    const studentProfileId = await getStudentProfileId(userId);
+    if (!studentProfileId) return [];
+
     const { data: subjects } = await supabase.from('subjects').select('*').order('name')
     if (!subjects) return []
 
     const { data: mastery } = await supabase
       .from('student_mastery')
       .select('*, standard:learning_standards(*)')
-      .eq('student_id', studentId)
+      .eq('student_id', studentProfileId)
 
     return subjects.map((subject: Subject) => {
       const subjectMastery = (mastery || []).filter(
@@ -68,11 +92,15 @@ export const studentService = {
     })
   },
 
-  async getStreak(studentId: string): Promise<number> {
+  async getStreak(userId: string): Promise<number> {
+    // flight_plan_items.student_id FK → student_profiles(id), so resolve first
+    const studentProfileId = await getStudentProfileId(userId);
+    if (!studentProfileId) return 0;
+
     const { data } = await supabase
       .from('flight_plan_items')
       .select('date')
-      .eq('student_id', studentId)
+      .eq('student_id', studentProfileId)
       .eq('status', 'completed')
       .order('date', { ascending: false })
       .limit(30)
