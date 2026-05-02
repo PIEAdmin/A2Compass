@@ -1,8 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { PlaylistItem, PlaylistReason, PlaylistItemStatus } from '../../types/skills';
 import { usePlaylist } from '../../hooks/useSkills';
 import { useAuth } from '../../hooks';
+import { getOnboardingState } from '../../services/onboarding.service';
 
 const REASON_COLORS: Record<PlaylistReason, { bg: string; text: string; label: string }> = {
   needs_practice: { bg: 'bg-orange-100', text: 'text-orange-700', label: 'Needs Practice' },
@@ -50,6 +51,31 @@ export default function FlightPlan() {
   const today = new Date().toISOString().split('T')[0];
   const { items, loading, error, complete, skip, start } = usePlaylist(studentId, today);
   const [showMastered, setShowMastered] = useState(false);
+  const [checkingOnboarding, setCheckingOnboarding] = useState(true);
+
+  // Check onboarding status — redirect to orientation if not complete
+  useEffect(() => {
+    if (!user?.id) return;
+
+    (async () => {
+      try {
+        const state = await getOnboardingState(user.id);
+        if (!state.orientation_complete) {
+          navigate('/student/orientation', { replace: true });
+          return;
+        }
+        // If orientation is done but warm activities not yet completed, go there
+        if (!state.warm_activities_unlocked && !state.assessment_completed) {
+          // Orientation is done, warm activities should be unlocked by completeOrientation
+          // but if not, still let them proceed to flight plan
+        }
+      } catch (err) {
+        console.error('Failed to check onboarding status:', err);
+      } finally {
+        setCheckingOnboarding(false);
+      }
+    })();
+  }, [user?.id, navigate]);
 
   const completedCount = useMemo(() => items.filter((i) => i.status === 'completed').length, [items]);
   const activeItems = useMemo(() => items.filter((i) => i.status !== 'skipped'), [items]);
@@ -62,7 +88,6 @@ export default function FlightPlan() {
   );
 
   const handleStartPractice = (item: PlaylistItem) => {
-    // Navigate to the practice page for this playlist item
     navigate(`/student/practice/${item.id}`);
   };
 
@@ -74,7 +99,7 @@ export default function FlightPlan() {
     }
   };
 
-  if (loading) {
+  if (checkingOnboarding || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600" />
