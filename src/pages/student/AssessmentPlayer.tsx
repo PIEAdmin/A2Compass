@@ -422,6 +422,137 @@ function FeedbackOverlay({ response }: { response: ProcessResponseResult }) {
   );
 }
 
+
+// ==========================================================
+// Data Normalizer — transforms DB question_data to renderer format
+// ==========================================================
+function normalizeQuestionData(qd: Record<string, any>, questionType: string): Record<string, any> {
+  const prompt = qd.prompt || qd.questionText || '';
+
+  switch (questionType) {
+    case 'multiple_choice': {
+      // DB: options: [{text, isCorrect}] → flat options[] + correctAnswer
+      const rawOpts = qd.options || [];
+      if (rawOpts.length > 0 && typeof rawOpts[0] === 'object') {
+        return {
+          ...qd,
+          questionText: prompt,
+          options: rawOpts.map((o: any) => o.text || o.label || o),
+          correctAnswer: (rawOpts.find((o: any) => o.isCorrect) || {}).text || 
+                         (rawOpts.find((o: any) => o.isCorrect) || {}).label || '',
+        };
+      }
+      return { ...qd, questionText: prompt };
+    }
+    case 'tap_select': {
+      // DB: items: [{id, label, isCorrect}] → options[] + correctAnswers[]
+      const items = qd.items || [];
+      return {
+        ...qd,
+        questionText: prompt,
+        options: items.map((i: any) => i.label || i.text || i.id),
+        correctAnswers: items.filter((i: any) => i.isCorrect).map((i: any) => i.label || i.text || i.id),
+      };
+    }
+    case 'counting': {
+      // DB: {objectDescription, correctCount, maxCount} → {objects: emoji[], correctCount}
+      const desc = qd.objectDescription || '';
+      const count = qd.correctCount || 0;
+      // Generate emoji objects based on description
+      let emoji = '🔵';
+      if (desc.toLowerCase().includes('ball')) emoji = '⚽';
+      else if (desc.toLowerCase().includes('star')) emoji = '⭐';
+      else if (desc.toLowerCase().includes('apple')) emoji = '🍎';
+      else if (desc.toLowerCase().includes('flower')) emoji = '🌸';
+      else if (desc.toLowerCase().includes('fish')) emoji = '🐟';
+      else if (desc.toLowerCase().includes('bird')) emoji = '🐦';
+      else if (desc.toLowerCase().includes('cat')) emoji = '🐱';
+      else if (desc.toLowerCase().includes('heart')) emoji = '❤️';
+      else if (desc.toLowerCase().includes('block')) emoji = '🧱';
+      else if (desc.toLowerCase().includes('cookie')) emoji = '🍪';
+      else if (desc.toLowerCase().includes('pencil')) emoji = '✏️';
+      else if (desc.toLowerCase().includes('book')) emoji = '📚';
+      else if (desc.toLowerCase().includes('leaf')) emoji = '🍃';
+      else if (desc.toLowerCase().includes('button')) emoji = '🔘';
+      const objects = Array.from({ length: count }, () => emoji);
+      return {
+        ...qd,
+        questionText: prompt,
+        objects,
+        correctCount: count,
+      };
+    }
+    case 'sequence': {
+      // DB: items: [{id, label, correctPosition}] → items[] + correctOrder[]
+      const seqItems = qd.items || [];
+      const sorted = [...seqItems].sort((a: any, b: any) => 
+        (a.correctPosition ?? 0) - (b.correctPosition ?? 0)
+      );
+      return {
+        ...qd,
+        questionText: prompt,
+        items: seqItems.map((i: any) => i.label || i.text || i.id),
+        correctOrder: sorted.map((i: any) => i.label || i.text || i.id),
+      };
+    }
+    case 'fill_blank': {
+      // DB: {blanks: [{options, position, correctAnswer}], prompt} → {sentence, options, correctAnswer}
+      const blanks = qd.blanks || [];
+      const firstBlank = blanks[0] || {};
+      return {
+        ...qd,
+        questionText: prompt,
+        sentence: prompt,
+        options: firstBlank.options || [],
+        correctAnswer: firstBlank.correctAnswer || '',
+      };
+    }
+    case 'matching': {
+      // DB format already matches: {pairs: [{left, right}]}
+      return { ...qd, questionText: prompt };
+    }
+    case 'drag_drop': {
+      // DB: draggables: [{id, label}], targets: [{id, label, accepts}]
+      const drags = (qd.draggables || []).map((d: any) => d.label || d.id);
+      const tgts = (qd.targets || []).map((t: any) => t.label || t.id);
+      // Build correct mapping
+      const correctMapping: Record<string, string> = {};
+      for (const target of (qd.targets || [])) {
+        for (const accepted of (target.accepts || [])) {
+          const drag = (qd.draggables || []).find((d: any) => d.id === accepted);
+          if (drag) {
+            correctMapping[drag.label || drag.id] = target.label || target.id;
+          }
+        }
+      }
+      return {
+        ...qd,
+        questionText: prompt,
+        draggables: drags,
+        targets: tgts,
+        correctMapping,
+      };
+    }
+    case 'teacher_observed': {
+      return {
+        ...qd,
+        questionText: prompt,
+        instructions: prompt,
+      };
+    }
+    case 'audio_response': {
+      return {
+        ...qd,
+        questionText: prompt,
+        instructions: prompt,
+        audioPrompt: prompt,
+      };
+    }
+    default:
+      return { ...qd, questionText: prompt };
+  }
+}
+
 // ==========================================================
 // Question Renderer Router
 // ==========================================================
@@ -434,27 +565,34 @@ interface RendererProps {
 }
 
 function QuestionRenderer({ item, questionType, onAnswer, showHint, disabled }: RendererProps) {
+  // Normalize the DB data format to what renderers expect
+  const normalizedItem = {
+    ...item,
+    questionData: normalizeQuestionData(item.questionData || {}, questionType),
+  };
+  const nItem = normalizedItem as typeof item;
+
   switch (questionType) {
     case 'multiple_choice':
-      return <MultipleChoiceRenderer item={item} onAnswer={onAnswer} disabled={disabled} />;
+      return <MultipleChoiceRenderer item={nItem} onAnswer={onAnswer} disabled={disabled} />;
     case 'tap_select':
-      return <TapSelectRenderer item={item} onAnswer={onAnswer} disabled={disabled} />;
+      return <TapSelectRenderer item={nItem} onAnswer={onAnswer} disabled={disabled} />;
     case 'counting':
-      return <CountingRenderer item={item} onAnswer={onAnswer} disabled={disabled} />;
+      return <CountingRenderer item={nItem} onAnswer={onAnswer} disabled={disabled} />;
     case 'fill_blank':
-      return <FillBlankRenderer item={item} onAnswer={onAnswer} disabled={disabled} />;
+      return <FillBlankRenderer item={nItem} onAnswer={onAnswer} disabled={disabled} />;
     case 'matching':
-      return <MatchingRenderer item={item} onAnswer={onAnswer} disabled={disabled} />;
+      return <MatchingRenderer item={nItem} onAnswer={onAnswer} disabled={disabled} />;
     case 'sequence':
-      return <SequenceRenderer item={item} onAnswer={onAnswer} disabled={disabled} />;
+      return <SequenceRenderer item={nItem} onAnswer={onAnswer} disabled={disabled} />;
     case 'drag_drop':
-      return <DragDropRenderer item={item} onAnswer={onAnswer} disabled={disabled} />;
+      return <DragDropRenderer item={nItem} onAnswer={onAnswer} disabled={disabled} />;
     case 'teacher_observed':
-      return <TeacherObservedRenderer item={item} onAnswer={onAnswer} disabled={disabled} />;
+      return <TeacherObservedRenderer item={nItem} onAnswer={onAnswer} disabled={disabled} />;
     case 'audio_response':
-      return <AudioResponseRenderer item={item} onAnswer={onAnswer} disabled={disabled} />;
+      return <AudioResponseRenderer item={nItem} onAnswer={onAnswer} disabled={disabled} />;
     default:
-      return <MultipleChoiceRenderer item={item} onAnswer={onAnswer} disabled={disabled} />;
+      return <MultipleChoiceRenderer item={nItem} onAnswer={onAnswer} disabled={disabled} />;
   }
 }
 
