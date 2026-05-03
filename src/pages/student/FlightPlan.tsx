@@ -48,8 +48,7 @@ export default function FlightPlan() {
   const navigate = useNavigate();
   const studentId = user?.id || '';
   const studentName = user?.fullName?.split(' ')[0] || 'Explorer';
-  const today = new Date().toISOString().split('T')[0];
-  const { items, loading, error, complete, skip, start } = usePlaylist(studentId, today);
+  const { items, loading, error, complete, skip, start } = usePlaylist(studentId);
   const [showMastered, setShowMastered] = useState(false);
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
 
