@@ -22,8 +22,9 @@ const REASON_COLORS: Record<PlaylistReason, { bg: string; text: string; label: s
   teacher_added: { bg: 'bg-pink-100', text: 'text-pink-700', label: 'Teacher Added', icon: '📌' },
 };
 
-const STATUS_ICONS: Record<PlaylistItemStatus, string> = {
+const STATUS_ICONS: Record<string, string> = {
   pending: '○',
+  active: '○',
   in_progress: '◐',
   completed: '✅',
   skipped: '⏭️',
@@ -245,7 +246,7 @@ export default function FlightPlan() {
 
                   {/* Actions */}
                   <div className="flex-shrink-0 flex gap-2">
-                    {(item.status === 'pending' || item.status === 'in_progress') && (
+                    {(item.status === 'pending' || item.status === 'active' || item.status === 'in_progress') && (
                       <>
                         <button
                           onClick={() => handleStartPractice(item)}
@@ -253,7 +254,7 @@ export default function FlightPlan() {
                         >
                           {item.status === 'in_progress' ? '▶ Continue' : '🚀 Start'}
                         </button>
-                        {item.status === 'pending' && (
+                        {(item.status === 'pending' || item.status === 'active') && (
                           <button
                             onClick={() => handleSkip(item.id)}
                             className="px-3 py-2 bg-gray-100 text-gray-500 text-sm font-medium rounded-xl hover:bg-gray-200 transition-colors"
