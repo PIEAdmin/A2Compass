@@ -5,7 +5,7 @@ import { studentService } from '../../services/students';
 import type { MasterySummary } from '../../types';
 import {
   GrowthPlant,
-  CompassBuddy,
+  PepperPenguin,
   FloatingStars,
   DomainIllustration,
   EmptyState,
@@ -94,7 +94,7 @@ export default function StudentProgress() {
     return (
       <div className="max-w-2xl mx-auto p-6">
         <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-center">
-          <CompassBuddy size={70} mood="thinking" className="mx-auto mb-3" />
+          <PepperPenguin size={90} mood="thinking" className="mx-auto mb-3" />
           <p className="text-red-700 font-medium">Oops! Something went wrong.</p>
           <p className="text-red-500 text-sm mt-1">{skillsError}</p>
         </div>

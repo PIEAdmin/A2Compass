@@ -7,6 +7,7 @@ import App from './App'
 import './styles/index.css'
 import './styles/safe-area.css'
 import './styles/illustrations.css'
+import './styles/penguin.css'
 import { initCapacitor } from './capacitor-init'
 
 // Initialize native bridge (no-op on web)

@@ -1,4 +1,6 @@
 import React from 'react';
+// Re-export Pepper the Penguin (Academy mascot)
+export { PepperPenguin, PenguinLineDance } from './PepperPenguin';
 
 /* ────────────────────────────────────────────
    A² Compass — Illustration Component Library

@@ -26,6 +26,7 @@ const navItems: Record<string, NavItem[]> = {
     { path: '/teacher', label: 'Dashboard', icon: '🏠' },
     { path: '/teacher/mission-control', label: 'Mission Control', icon: '🎯' },
     { path: '/teacher/students', label: 'My Students', icon: '👩‍🎓' },
+    { path: '/teacher/subjects', label: 'Subject Manager', icon: '📚' },
     { path: '/teacher/skill-map', label: 'Skill Map', icon: '🧠' },
     { path: '/teacher/assessments', label: 'Assessments', icon: '📋' },
     { path: '/teacher/discovery-results', label: 'Discovery Results', icon: '🎮' },

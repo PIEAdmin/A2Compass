@@ -39,6 +39,7 @@ import StudentDiscoveryProfile from './pages/teacher/StudentDiscoveryProfile'
 import PacingGuidePage from './pages/teacher/PacingGuidePage'
 import DiscoveryGamesResults from './pages/teacher/DiscoveryGamesResults'
 import TeacherResources from './pages/teacher/TeacherResources'
+import SubjectManager from './pages/teacher/SubjectManager'
 
 // Parent pages
 import ParentDashboard from './pages/parent/Dashboard'
@@ -114,7 +115,7 @@ export default function App() {
         <Route path="admin/students" element={<AdminDashboard />} />
         <Route path="admin/enrollment" element={<AdminDashboard />} />
         <Route path="admin/billing" element={<AdminBillingPage />} />
-        <Route path="admin/subjects" element={<AdminDashboard />} />
+        <Route path="admin/subjects" element={<SubjectManager />} />
         <Route path="admin/reports" element={<AdminDashboard />} />
 
         {/* Teacher Routes */}
@@ -141,6 +142,7 @@ export default function App() {
         <Route path="teacher/discovery-profile/:studentId" element={<StudentDiscoveryProfile />} />
         <Route path="teacher/pacing-guide" element={<PacingGuidePage />} />
         <Route path="teacher/resources" element={<TeacherResources />} />
+        <Route path="teacher/subjects" element={<SubjectManager />} />
 
         {/* Parent Routes */}
         <Route path="parent" element={<ParentDashboard />} />

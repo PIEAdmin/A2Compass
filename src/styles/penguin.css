@@ -1,0 +1,217 @@
+/* ═══════════════════════════════════════════════════════════
+   🐧  PEPPER THE PENGUIN — Animation Styles
+   ═══════════════════════════════════════════════════════════ */
+
+/* === BASE PENGUIN === */
+.penguin-mascot {
+  transition: transform 0.3s ease;
+}
+
+.penguin-mascot:hover {
+  transform: scale(1.05);
+}
+
+/* === IDLE — gentle breathing/sway === */
+.penguin-idle svg {
+  animation: penguin-breathe 3s ease-in-out infinite;
+}
+
+@keyframes penguin-breathe {
+  0%, 100% { transform: scaleY(1) translateY(0); }
+  50% { transform: scaleY(1.02) translateY(-1px); }
+}
+
+/* === WAVING === */
+.penguin-waving svg {
+  animation: penguin-sway 1.5s ease-in-out infinite;
+}
+
+@keyframes penguin-sway {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-3deg); }
+  75% { transform: rotate(3deg); }
+}
+
+/* === THINKING === */
+.penguin-thinking svg {
+  animation: penguin-think 2s ease-in-out infinite;
+}
+
+@keyframes penguin-think {
+  0%, 100% { transform: translateX(0); }
+  30% { transform: translateX(-3px); }
+  70% { transform: translateX(3px); }
+}
+
+/* === CELEBRATING === */
+.penguin-celebrating svg {
+  animation: penguin-jump 0.5s ease-in-out infinite;
+}
+
+@keyframes penguin-jump {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-12px) rotate(3deg); }
+}
+
+/* === DANCING — main solo dance === */
+.penguin-dancing svg {
+  animation: penguin-dance 0.8s ease-in-out infinite;
+}
+
+@keyframes penguin-dance {
+  0% { transform: translateY(0) rotate(0deg) scaleX(1); }
+  15% { transform: translateY(-10px) rotate(-5deg) scaleX(1.03); }
+  30% { transform: translateY(0) rotate(0deg) scaleX(1); }
+  50% { transform: translateY(-6px) rotate(5deg) scaleX(0.97); }
+  65% { transform: translateY(0) rotate(0deg) scaleX(1); }
+  80% { transform: translateY(-10px) rotate(-3deg) scaleX(1.03); }
+  100% { transform: translateY(0) rotate(0deg) scaleX(1); }
+}
+
+/* === LINE DANCE — synchronized group dance === */
+.penguin-line-dance svg {
+  animation: penguin-line-step 3.2s ease-in-out infinite;
+}
+
+/* 8-count line dance: step-step-step-step-kick-clap-turn-stomp
+   Each beat = 0.4s, total = 3.2s */
+@keyframes penguin-line-step {
+  /* 1: Step Right */
+  0%    { transform: translateX(0) translateY(0) rotate(0deg); }
+  6%    { transform: translateX(12px) translateY(-4px) rotate(2deg); }
+  12.5% { transform: translateX(12px) translateY(0) rotate(0deg); }
+  /* 2: Step Right again */
+  18%   { transform: translateX(22px) translateY(-4px) rotate(2deg); }
+  25%   { transform: translateX(22px) translateY(0) rotate(0deg); }
+  /* 3: Step Left */
+  31%   { transform: translateX(12px) translateY(-4px) rotate(-2deg); }
+  37.5% { transform: translateX(12px) translateY(0) rotate(0deg); }
+  /* 4: Step Left again */
+  43%   { transform: translateX(0) translateY(-4px) rotate(-2deg); }
+  50%   { transform: translateX(0) translateY(0) rotate(0deg); }
+  /* 5: Kick forward */
+  56%   { transform: translateX(0) translateY(-14px) rotate(-4deg); }
+  62.5% { transform: translateX(0) translateY(0) rotate(0deg); }
+  /* 6: Clap */
+  68%   { transform: translateX(0) translateY(-6px) scaleX(0.92); }
+  75%   { transform: translateX(0) translateY(0) scaleX(1); }
+  /* 7: Quarter turn */
+  81%   { transform: translateX(0) translateY(-4px) rotate(15deg); }
+  87.5% { transform: translateX(0) translateY(0) rotate(0deg); }
+  /* 8: Stomp */
+  93%   { transform: translateX(0) translateY(-10px) scaleY(1.05); }
+  100%  { transform: translateX(0) translateY(0) scaleY(1); }
+}
+
+/* Line dance penguins — stagger the delay for wave effect */
+.line-dance-penguin {
+  display: inline-block;
+  animation: dancer-entrance 0.5s ease-out both;
+}
+
+.line-dance-penguin:nth-child(1) { animation-delay: 0s; }
+.line-dance-penguin:nth-child(2) { animation-delay: 0.1s; }
+.line-dance-penguin:nth-child(3) { animation-delay: 0.2s; }
+.line-dance-penguin:nth-child(4) { animation-delay: 0.3s; }
+.line-dance-penguin:nth-child(5) { animation-delay: 0.4s; }
+
+@keyframes dancer-entrance {
+  0% { transform: translateY(30px) scale(0.5); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+/* === SPEECH BUBBLE POP === */
+@keyframes speech-pop {
+  0% { transform: translate(-50%, -100%) scale(0.5); opacity: 0; }
+  60% { transform: translate(-50%, -100%) scale(1.1); opacity: 1; }
+  100% { transform: translate(-50%, -100%) scale(1); opacity: 1; }
+}
+
+/* === INTERACTIVE HOVER EFFECTS === */
+.penguin-idle:hover svg {
+  animation: penguin-wave-hello 0.6s ease-in-out;
+}
+
+@keyframes penguin-wave-hello {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-8deg); }
+  75% { transform: rotate(8deg); }
+}
+
+/* === STAGE / DANCE FLOOR === */
+.penguin-dance-floor {
+  background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  border-radius: 20px;
+  padding: 24px 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.penguin-dance-floor::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(circle at 20% 80%, rgba(102,126,234,0.15) 0%, transparent 40%),
+    radial-gradient(circle at 80% 80%, rgba(236,72,153,0.15) 0%, transparent 40%),
+    radial-gradient(circle at 50% 20%, rgba(251,191,36,0.1) 0%, transparent 40%);
+  pointer-events: none;
+}
+
+/* Disco lights */
+.penguin-dance-floor::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background:
+    conic-gradient(
+      from 0deg at 50% 50%,
+      rgba(255,0,128,0.03) 0deg,
+      rgba(0,128,255,0.03) 90deg,
+      rgba(128,255,0,0.03) 180deg,
+      rgba(255,128,0,0.03) 270deg
+    );
+  animation: disco-spin 8s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes disco-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Music notes floating */
+.music-notes {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.music-note {
+  position: absolute;
+  font-size: 20px;
+  opacity: 0;
+  animation: float-note 3s ease-in-out infinite;
+}
+
+.music-note:nth-child(1) { left: 10%; animation-delay: 0s; }
+.music-note:nth-child(2) { left: 30%; animation-delay: 0.8s; }
+.music-note:nth-child(3) { left: 50%; animation-delay: 1.6s; }
+.music-note:nth-child(4) { left: 70%; animation-delay: 0.4s; }
+.music-note:nth-child(5) { left: 90%; animation-delay: 1.2s; }
+
+@keyframes float-note {
+  0% { transform: translateY(100%) rotate(0deg); opacity: 0; }
+  20% { opacity: 0.8; }
+  80% { opacity: 0.6; }
+  100% { transform: translateY(-100px) rotate(20deg); opacity: 0; }
+}

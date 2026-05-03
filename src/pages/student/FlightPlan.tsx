@@ -6,7 +6,7 @@ import { useAuth } from '../../hooks';
 import { getOnboardingState } from '../../services/onboarding.service';
 import {
   RocketShip,
-  CompassBuddy,
+  PepperPenguin,
   FloatingStars,
   DomainIllustration,
   EmptyState,
@@ -115,7 +115,7 @@ export default function FlightPlan() {
   if (checkingOnboarding || loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50">
-        <CompassBuddy size={80} mood="thinking" className="mb-4 illust-bob" />
+        <PepperPenguin size={100} mood="thinking" className="mb-4 illust-bob" />
         <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600" />
         <p className="text-indigo-600 mt-3 text-sm font-medium">Loading your adventure...</p>
       </div>
@@ -126,7 +126,7 @@ export default function FlightPlan() {
     return (
       <div className="max-w-2xl mx-auto p-6">
         <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-center">
-          <CompassBuddy size={70} mood="thinking" className="mx-auto mb-3" />
+          <PepperPenguin size={90} mood="thinking" className="mx-auto mb-3" />
           <p className="text-red-700 font-medium">Oops! Something went wrong.</p>
           <p className="text-red-500 text-sm mt-1">{error}</p>
         </div>
@@ -183,7 +183,7 @@ export default function FlightPlan() {
         <div className="relative overflow-hidden bg-gradient-to-r from-yellow-50 to-green-50 rounded-2xl shadow-sm border border-yellow-200 p-6 text-center illust-bounce-in">
           <ConfettiBurst />
           <div className="relative z-10">
-            <CompassBuddy size={80} mood="celebrating" className="mx-auto mb-3" />
+            <PepperPenguin size={100} mood="celebrating" className="mx-auto mb-3" />
             <h2 className="text-xl font-bold text-gray-900">Amazing work today! 🎉</h2>
             <p className="text-gray-600 mt-1">You've completed all your skills for the day. Way to go!</p>
           </div>

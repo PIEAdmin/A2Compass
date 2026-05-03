@@ -1,7 +1,7 @@
 import { useState, useEffect, type FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../../hooks'
-import { CompassBuddy, FloatingStars, FloatingClouds } from '../../components/shared/Illustrations'
+import { PepperPenguin, FloatingStars, FloatingClouds } from '../../components/shared/Illustrations'
 
 export default function LoginPage() {
   const { signIn, loading, error, clearError, isAuthenticated } = useAuth()
@@ -34,7 +34,7 @@ export default function LoginPage() {
         {/* Header with mascot */}
         <div className="text-center mb-6 illust-slide-up">
           <div className="flex justify-center mb-3">
-            <CompassBuddy size={100} mood="waving" className="illust-bob" />
+            <PepperPenguin size={120} mood="waving" className="illust-bob" />
           </div>
           <h1 className="font-display text-4xl font-bold text-white tracking-tight">A² Compass</h1>
           <p className="text-blue-200/80 mt-1 text-sm">Achievement Academy — aaacademy.us</p>

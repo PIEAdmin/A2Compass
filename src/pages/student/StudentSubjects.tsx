@@ -5,7 +5,7 @@ import type { DomainSkillGroup } from '../../types/skills';
 import {
   BookStack,
   NumberBlocks,
-  CompassBuddy,
+  PepperPenguin,
   FloatingStars,
   DomainIllustration,
   EmptyState,
@@ -43,7 +43,7 @@ const CATEGORY_THEMES: Record<string, { gradient: string; headerBg: string; labe
     gradient: 'from-green-400 to-emerald-500',
     headerBg: 'bg-green-50',
     label: '🏠 Daily Living',
-    icon: <CompassBuddy size={36} mood="happy" />,
+    icon: <PepperPenguin size={40} mood="happy" />,
   },
 };
 
@@ -72,7 +72,7 @@ export default function StudentSubjects() {
     return (
       <div className="max-w-2xl mx-auto p-6">
         <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-center">
-          <CompassBuddy size={70} mood="thinking" className="mx-auto mb-3" />
+          <PepperPenguin size={90} mood="thinking" className="mx-auto mb-3" />
           <p className="text-red-700 font-medium">Oops! Something went wrong.</p>
           <p className="text-red-500 text-sm mt-1">{error}</p>
         </div>

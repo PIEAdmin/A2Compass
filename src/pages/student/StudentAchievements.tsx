@@ -4,7 +4,7 @@ import { getCertificates, getMilestones } from '../../services/milestones.servic
 import type { Certificate, MilestoneNotification } from '../../types/milestones';
 import {
   Trophy,
-  CompassBuddy,
+  PepperPenguin,
   FloatingStars,
   EmptyState,
 } from '../../components/shared/Illustrations';
@@ -80,7 +80,7 @@ export default function StudentAchievements() {
     return (
       <div className="max-w-2xl mx-auto p-6">
         <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-center">
-          <CompassBuddy size={70} mood="thinking" className="mx-auto mb-3" />
+          <PepperPenguin size={90} mood="thinking" className="mx-auto mb-3" />
           <p className="text-red-700 font-medium">Oops! Something went wrong.</p>
           <p className="text-red-500 text-sm mt-1">{error}</p>
         </div>
