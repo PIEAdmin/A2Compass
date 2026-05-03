@@ -51,7 +51,7 @@ export const assessmentService = {
       p_student_response: response,
       p_is_correct: isCorrect,
       p_score: score ?? (isCorrect ? 1 : 0),
-      p_time_spent_seconds: timeSpent ?? 0,
+      p_time_spent: timeSpent ?? 0,
       p_hint_used: hintUsed ?? false,
     });
     if (error) throw error;
