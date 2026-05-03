@@ -340,8 +340,9 @@ export default function AssessmentPlayer() {
               <span className="text-sm font-medium">Play Question</span>
             </button>
 
-            {/* Render the appropriate question type */}
+            {/* Render the appropriate question type — key forces fresh state per question */}
             <QuestionRenderer
+              key={item.id}
               item={item}
               questionType={item.questionType}
               onAnswer={(response, isCorrect) => submitAnswer(response, isCorrect)}
