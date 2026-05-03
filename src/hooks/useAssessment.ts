@@ -124,10 +124,19 @@ export function useAssessmentPlayer(authUserId: string) {
           showHint: false,
         }));
 
-        // Auto-advance after a delay (caller can also call advance())
+        // Auto-advance after TTS has time to finish reading feedback + explanation.
+        // Base 3.5 s for the congrats phrase; add ~55 ms per character of explanation.
+        const explanationLen = (result as any).explanation?.length || 0;
+        const feedbackDelay = explanationLen > 0
+          ? Math.min(3500 + explanationLen * 55, 12000)
+          : 3500;
         setTimeout(async () => {
+          // Stop any lingering TTS before loading the next question
+          if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+          }
           await advance(result);
-        }, 2000);
+        }, feedbackDelay);
       } catch (err: any) {
         setError(err.message || 'Failed to process response');
       }

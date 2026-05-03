@@ -18,10 +18,52 @@ const speak = (text: string) => {
   if ('speechSynthesis' in window) {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 0.9;
+    utterance.rate = 0.85;
     utterance.pitch = 1.1;
     window.speechSynthesis.speak(utterance);
   }
+};
+
+/** Read question text AND all answer choices aloud */
+const speakWithChoices = (questionText: string, questionData: Record<string, any>, questionType: string) => {
+  let fullText = questionText;
+  // Collect choices based on question type
+  const opts: string[] = questionData?.options || [];
+  const items: any[] = questionData?.items || [];
+  const pairs: any[] = questionData?.pairs || [];
+  const draggables: any[] = questionData?.draggables || [];
+  const targets: any[] = questionData?.targets || [];
+
+  if (opts.length > 0) {
+    const labels = opts.map((o: any) => typeof o === 'object' ? (o.text || o.label || String(o)) : String(o));
+    fullText += '. The choices are: ' + labels.map((l: string, i: number) => String.fromCharCode(65 + i) + ', ' + l).join('. ') + '.';
+  } else if (items.length > 0 && questionType !== 'sequence') {
+    const labels = items.map((it: any) => it.label || it.text || String(it));
+    fullText += '. The choices are: ' + labels.join(', ') + '.';
+  } else if (questionType === 'counting') {
+    const count = questionData?.correctCount || questionData?.objects?.length || 0;
+    fullText += '. Count the objects you see and tap the right number.';
+  } else if (pairs.length > 0) {
+    fullText += '. Match each item on the left with its pair on the right.';
+  } else if (draggables.length > 0) {
+    const dragLabels = draggables.map((d: any) => typeof d === 'object' ? (d.label || d.id) : d);
+    fullText += '. Put these items where they belong: ' + dragLabels.join(', ') + '.';
+  }
+  speak(fullText);
+};
+
+// ---------- Domain-themed emojis ----------
+const getDomainEmojis = (domainName: string): string[] => {
+  const d = (domainName || '').toLowerCase();
+  if (d.includes('liter') || d.includes('print') || d.includes('read') || d.includes('phon'))
+    return ['📚', '📖', '✏️', '🔤', '📝', '🦋'];
+  if (d.includes('math') || d.includes('numer') || d.includes('count'))
+    return ['🔢', '➕', '🎲', '⭐', '🧮', '🌟'];
+  if (d.includes('daily') || d.includes('living'))
+    return ['🏠', '⏰', '🍎', '👕', '🌈', '🧹'];
+  if (d.includes('social') || d.includes('sel') || d.includes('emotion'))
+    return ['💛', '🤝', '😊', '🌈', '🦄', '💫'];
+  return ['⭐', '🌟', '✨', '🎯', '🚀', '💫'];
 };
 
 // ---------- Encouraging messages ----------
@@ -46,6 +88,67 @@ function randomMessage(arr: string[]) {
 // ==========================================================
 // Main Assessment Player Page
 // ==========================================================
+// ---------- Floating Decorations ----------
+function FloatingDecorations({ emojis }: { emojis: string[] }) {
+  return (
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" aria-hidden="true">
+      {emojis.map((emoji, i) => (
+        <span
+          key={i}
+          className="absolute text-2xl sm:text-3xl opacity-15"
+          style={{
+            left: `${10 + (i * 16) % 85}%`,
+            top: `${8 + (i * 23) % 80}%`,
+            animation: `float ${3 + (i % 3)}s ease-in-out infinite`,
+            animationDelay: `${i * 0.5}s`,
+          }}
+        >
+          {emoji}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+// ---------- Animation Styles ----------
+function AnimationStyles() {
+  return (
+    <style>{`
+      @keyframes float {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-12px) rotate(3deg); }
+      }
+      @keyframes slide-up {
+        from { transform: translateY(20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+      }
+      @keyframes bounce-in {
+        0% { transform: scale(0.5); opacity: 0; }
+        60% { transform: scale(1.1); }
+        100% { transform: scale(1); opacity: 1; }
+      }
+      @keyframes pulse-soft {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+      }
+      @keyframes shimmer {
+        0% { background-position: -200% center; }
+        100% { background-position: 200% center; }
+      }
+      .slide-up { animation: slide-up 0.4s ease-out; }
+      .bounce-in { animation: bounce-in 0.5s ease-out; }
+      .pulse-soft { animation: pulse-soft 2s ease-in-out infinite; }
+      .shimmer-bar {
+        background: linear-gradient(90deg, #818cf8, #c084fc, #818cf8);
+        background-size: 200% 100%;
+        animation: shimmer 2s linear infinite;
+      }
+      .hover-grow { transition: transform 0.2s, box-shadow 0.2s; }
+      .hover-grow:hover { transform: scale(1.03); box-shadow: 0 4px 20px rgba(99,102,241,0.2); }
+    `}</style>
+  );
+}
+
 export default function AssessmentPlayer() {
   const { user } = useAuth();
   const studentId = user?.id ?? '';
@@ -106,8 +209,10 @@ export default function AssessmentPlayer() {
   if (!session && !loading && !isComplete) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center p-6">
-        <div className="bg-white rounded-3xl shadow-xl p-10 max-w-md w-full text-center">
-          <div className="text-6xl mb-4">🌟</div>
+        <AnimationStyles />
+        <FloatingDecorations emojis={['⭐', '🌟', '🦋', '🌈', '🚀', '📚']} />
+        <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-xl p-10 max-w-md w-full text-center relative z-10 bounce-in">
+          <div className="text-6xl mb-4 pulse-soft">🌟</div>
           <h1 className="text-3xl font-bold text-indigo-700 mb-2">
             My Learning Adventure
           </h1>
@@ -138,7 +243,9 @@ export default function AssessmentPlayer() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center">
-        <div className="text-center">
+        <AnimationStyles />
+        <div className="text-center bounce-in">
+          <div className="text-6xl mb-4 pulse-soft">🧭</div>
           <LoadingSpinner size="lg" />
           <p className="mt-4 text-indigo-600 text-lg font-medium">
             Getting your adventure ready...
@@ -152,8 +259,10 @@ export default function AssessmentPlayer() {
   if (domainTransition) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-orange-50 to-pink-50 flex items-center justify-center p-6">
-        <div className="text-center animate-bounce-slow">
-          <div className="text-7xl mb-6">🎉</div>
+        <AnimationStyles />
+        <FloatingDecorations emojis={['🎉', '🌟', '✨', '🎊', '💫', '🌈']} />
+        <div className="text-center bounce-in relative z-10">
+          <div className="text-7xl mb-6 pulse-soft">🎉</div>
           <h2 className="text-3xl font-bold text-orange-600 mb-3">
             Great work!
           </h2>
@@ -173,8 +282,10 @@ export default function AssessmentPlayer() {
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-green-50 to-teal-50 flex items-center justify-center p-6">
-        <div className="bg-white rounded-3xl shadow-xl p-10 max-w-lg w-full text-center">
-          <div className="text-7xl mb-4">🏆</div>
+        <AnimationStyles />
+        <FloatingDecorations emojis={['🌟', '⭐', '🏆', '🎉', '✨', '🦄', '🌈', '💫']} />
+        <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-xl p-10 max-w-lg w-full text-center relative z-10 bounce-in">
+          <div className="text-7xl mb-4 pulse-soft">🏆</div>
           <h1 className="text-3xl font-bold text-green-700 mb-2">
             You did it!
           </h1>
@@ -272,6 +383,8 @@ export default function AssessmentPlayer() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+      <AnimationStyles />
+      <FloatingDecorations emojis={getDomainEmojis(currentSkill?.domainName || '')} />
       {/* Top Bar */}
       <div className="bg-white/80 backdrop-blur-sm shadow-sm px-4 py-3">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
@@ -324,19 +437,23 @@ export default function AssessmentPlayer() {
 
         {/* Question Content */}
         {item && !showFeedback && (
-          <div className="bg-white rounded-3xl shadow-lg p-8">
-            {/* Audio button */}
+          <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-lg p-8 relative z-10 slide-up">
+            {/* Audio button — reads question AND choices */}
             <button
               onClick={() => {
                 const questionText =
                   item.questionData?.questionText ||
                   item.questionData?.prompt ||
                   'Listen to the question';
-                speak(item.audioPrompt || questionText);
+                speakWithChoices(
+                  item.audioPrompt || questionText,
+                  item.questionData || {},
+                  item.questionType || 'multiple_choice'
+                );
               }}
-              className="mb-6 flex items-center gap-2 text-indigo-500 hover:text-indigo-700 transition-colors"
+              className="mb-6 flex items-center gap-2 text-indigo-500 hover:text-indigo-700 transition-colors group"
             >
-              <span className="text-3xl">🔊</span>
+              <span className="text-3xl group-hover:scale-110 transition-transform">🔊</span>
               <span className="text-sm font-medium">Play Question</span>
             </button>
 
@@ -369,7 +486,7 @@ export default function AssessmentPlayer() {
       </div>
 
       {/* Star Counter */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-sm border-t border-gray-200 py-3 px-4">
+      <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-sm border-t border-gray-200 py-3 px-4 z-20">
         <div className="max-w-2xl mx-auto flex items-center justify-center gap-2">
           <span
             className={`text-2xl transition-transform ${
@@ -381,6 +498,9 @@ export default function AssessmentPlayer() {
           <span className="text-lg font-bold text-yellow-600">
             Stars earned: {starsEarned}
           </span>
+          {starsEarned >= 3 && (
+            <span className="text-orange-500 font-bold ml-1">🔥</span>
+          )}
         </div>
       </div>
     </div>
@@ -394,9 +514,16 @@ function FeedbackOverlay({ response }: { response: ProcessResponseResult }) {
   const isCorrect = response.isCorrect;
 
   useEffect(() => {
+    // Read the congrats/encourage message AND the explanation so the child hears the full answer
     const msg = isCorrect ? randomMessage(CORRECT_MESSAGES) : randomMessage(INCORRECT_MESSAGES);
-    speak(msg);
-  }, [isCorrect]);
+    let fullMsg = msg;
+    if (response.explanation) {
+      fullMsg += '. ' + response.explanation;
+    }
+    // Cancel any lingering speech, then read the full feedback
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    speak(fullMsg);
+  }, [isCorrect, response.explanation]);
 
   return (
     <div
@@ -634,9 +761,9 @@ function MultipleChoiceRenderer({ item, onAnswer, disabled }: QProps) {
             }}
             disabled={disabled}
             className="min-h-[64px] p-4 text-lg font-bold rounded-2xl border-2 border-gray-200
-                       bg-white hover:bg-indigo-50 hover:border-indigo-400
+                       bg-white hover:bg-indigo-50 hover:border-indigo-400 hover:shadow-md
                        active:scale-95 transition-all disabled:opacity-50
-                       text-gray-800 shadow-sm"
+                       text-gray-800 shadow-sm hover-grow"
           >
             {opt}
           </button>
