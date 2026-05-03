@@ -1,0 +1,175 @@
+/* ────────────────────────────────────────────
+   A² Compass — Illustration Animations
+   ──────────────────────────────────────────── */
+
+/* Twinkling stars */
+@keyframes illust-twinkle {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+.illust-twinkle {
+  animation: illust-twinkle 2s ease-in-out infinite;
+}
+
+/* Gentle floating */
+@keyframes illust-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.illust-float {
+  animation: illust-float 3s ease-in-out infinite;
+}
+
+/* Wobble (for compass needle) */
+@keyframes illust-wobble {
+  0%, 100% { transform: rotate(-8deg); }
+  50% { transform: rotate(8deg); }
+}
+.illust-wobble {
+  animation: illust-wobble 4s ease-in-out infinite;
+}
+
+/* Slow spin (for compass ring) */
+@keyframes illust-spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.illust-spin-slow {
+  animation: illust-spin-slow 20s linear infinite;
+}
+
+/* Waving hand */
+@keyframes illust-wave {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(20deg); }
+  50% { transform: rotate(-10deg); }
+  75% { transform: rotate(15deg); }
+}
+.illust-wave {
+  animation: illust-wave 1.5s ease-in-out infinite;
+}
+
+/* Gentle sway (for leaves) */
+@keyframes illust-sway {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(5deg); }
+}
+.illust-sway {
+  animation: illust-sway 3s ease-in-out infinite;
+}
+
+/* Pulse glow */
+@keyframes illust-pulse {
+  0%, 100% { opacity: 0.8; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+.illust-pulse {
+  animation: illust-pulse 2s ease-in-out infinite;
+}
+
+/* Flame flicker */
+@keyframes illust-flicker {
+  0%, 100% { transform: scaleY(1) scaleX(1); }
+  25% { transform: scaleY(1.15) scaleX(0.9); }
+  50% { transform: scaleY(0.9) scaleX(1.1); }
+  75% { transform: scaleY(1.1) scaleX(0.95); }
+}
+.illust-flicker {
+  animation: illust-flicker 0.8s ease-in-out infinite;
+}
+
+/* Cloud drift */
+@keyframes illust-drift {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(calc(100vw + 100%)); }
+}
+.illust-drift {
+  animation: illust-drift 20s linear infinite;
+}
+
+/* Confetti fall */
+@keyframes illust-confetti-fall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+.illust-confetti-fall {
+  animation: illust-confetti-fall 3s ease-in forwards;
+}
+
+/* Entrance slide up */
+@keyframes illust-slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.illust-slide-up {
+  animation: illust-slide-up 0.5s ease-out forwards;
+}
+
+/* Entrance scale in */
+@keyframes illust-scale-in {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+.illust-scale-in {
+  animation: illust-scale-in 0.4s ease-out forwards;
+}
+
+/* Bounce in */
+@keyframes illust-bounce-in {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.15); }
+  70% { transform: scale(0.95); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.illust-bounce-in {
+  animation: illust-bounce-in 0.6s ease-out forwards;
+}
+
+/* Gentle bob (for headers with illustrations) */
+@keyframes illust-bob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-4px) rotate(-2deg); }
+  75% { transform: translateY(-2px) rotate(2deg); }
+}
+.illust-bob {
+  animation: illust-bob 4s ease-in-out infinite;
+}
+
+/* Card hover lift */
+.illust-card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.illust-card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Staggered entrance for lists */
+.illust-stagger > * {
+  animation: illust-slide-up 0.5s ease-out forwards;
+  opacity: 0;
+}
+.illust-stagger > *:nth-child(1) { animation-delay: 0.05s; }
+.illust-stagger > *:nth-child(2) { animation-delay: 0.1s; }
+.illust-stagger > *:nth-child(3) { animation-delay: 0.15s; }
+.illust-stagger > *:nth-child(4) { animation-delay: 0.2s; }
+.illust-stagger > *:nth-child(5) { animation-delay: 0.25s; }
+.illust-stagger > *:nth-child(6) { animation-delay: 0.3s; }
+.illust-stagger > *:nth-child(7) { animation-delay: 0.35s; }
+.illust-stagger > *:nth-child(8) { animation-delay: 0.4s; }
+.illust-stagger > *:nth-child(9) { animation-delay: 0.45s; }
+.illust-stagger > *:nth-child(10) { animation-delay: 0.5s; }
+
+/* Rainbow shimmer for headers */
+@keyframes illust-shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.illust-shimmer {
+  background: linear-gradient(90deg, currentColor 40%, #f472b6, #fbbf24, #34d399, currentColor 60%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: illust-shimmer 4s linear infinite;
+}
