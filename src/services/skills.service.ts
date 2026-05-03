@@ -100,7 +100,7 @@ export async function getPlaylistItems(studentId: string, status?: string): Prom
     .from('student_playlist')
     .select(`
       *,
-      skill:skill_nodes(*)
+      skill:skill_nodes(*, domain:skill_domains(*))
     `)
     .eq('student_id', studentId);
 
