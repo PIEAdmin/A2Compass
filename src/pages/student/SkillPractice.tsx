@@ -66,7 +66,7 @@ export default function SkillPractice() {
 
         // 1. Load the playlist item to get skill_node_id
         const { data: item, error: itemError } = await supabase
-          .from('playlist_items')
+          .from('student_playlist')
           .select('id, skill_node_id, skill:skill_nodes(id, name, code, domain:skill_domains(name, code))')
           .eq('id', playlistItemId)
           .single();
@@ -74,11 +74,12 @@ export default function SkillPractice() {
         if (itemError) throw new Error('Could not find this skill assignment.');
         setPlaylistItem(item as any);
 
-        // 2. Load the activity for this skill
+        // 2. Load the practice_arena activity for this skill
         const { data: act, error: actError } = await supabase
           .from('content_library')
           .select('id, title, content, skill_node_id')
           .eq('skill_node_id', item.skill_node_id)
+          .eq('activity_type', 'practice_arena')
           .eq('status', 'published')
           .limit(1)
           .single();
@@ -126,14 +127,12 @@ export default function SkillPractice() {
     } else {
       // Quiz complete!
       setFinished(true);
-      const score = Math.round(((correctCount + (selectedAnswer === current?.correct ? 1 : 0)) / totalQuestions) * 100);
-      // Use the corrected count (the last answer might not be counted yet)
+      // Calculate the final correct count (include the last answer)
       const finalCorrect = correctCount + (selectedAnswer === current?.correct ? 1 : 0);
-      const finalScore = Math.round((finalCorrect / totalQuestions) * 100);
 
       try {
         setSubmitting(true);
-        await completePlaylistItem(playlistItemId!, finalScore);
+        await completePlaylistItem(playlistItemId!, finalCorrect, totalQuestions);
       } catch (err) {
         console.error('Failed to save score:', err);
         // Still show results even if save fails
