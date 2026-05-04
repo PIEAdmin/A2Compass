@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../../services/supabase';
 import { useAuth } from '../../hooks';
 import AvatarCreator, { PenguinSVG } from '../../components/shared/AvatarCreator';
 import type { AvatarData } from '../../components/shared/AvatarCreator';

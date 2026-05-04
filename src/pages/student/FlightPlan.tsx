@@ -4,7 +4,7 @@ import type { PlaylistItem, PlaylistReason, PlaylistItemStatus } from '../../typ
 import { usePlaylist } from '../../hooks/useSkills';
 import { useAuth } from '../../hooks';
 import { getOnboardingState } from '../../services/onboarding.service';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../../services/supabase';
 import {
   RocketShip,
   PepperPenguin,
