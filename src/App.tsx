@@ -60,6 +60,7 @@ import StudentAchievements from './pages/student/StudentAchievements'
 import ActivityPlayer from './pages/student/activity-player/ActivityPlayer'
 import AssessmentPlayer from './pages/student/AssessmentPlayer'
 import OrientationWizard from './pages/student/OrientationWizard'
+import StudentWelcome from './pages/student/StudentWelcome'
 import WarmActivities from './pages/student/WarmActivities'
 
 function GuestRoute({ children }: { children: React.ReactNode }) {
@@ -160,6 +161,7 @@ export default function App() {
 
         {/* Student Routes */}
         <Route path="student" element={<FlightPlan />} />
+        <Route path="student/welcome" element={<StudentWelcome />} />
         <Route path="student/orientation" element={<OrientationWizard />} />
         <Route path="student/activities" element={<WarmActivities />} />
         <Route path="student/assessment" element={<AssessmentPlayer />} />

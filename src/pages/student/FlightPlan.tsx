@@ -4,6 +4,7 @@ import type { PlaylistItem, PlaylistReason, PlaylistItemStatus } from '../../typ
 import { usePlaylist } from '../../hooks/useSkills';
 import { useAuth } from '../../hooks';
 import { getOnboardingState } from '../../services/onboarding.service';
+import { supabase } from '../../lib/supabase';
 import {
   RocketShip,
   PepperPenguin,
@@ -78,8 +79,15 @@ export default function FlightPlan() {
           navigate('/student/orientation', { replace: true });
           return;
         }
-        if (!state.warm_activities_unlocked && !state.assessment_completed) {
-          // Orientation done, let them proceed
+        // Check if welcome wizard (avatar/interests) is completed
+        const { data: profile } = await supabase
+          .from('student_profiles')
+          .select('welcome_completed')
+          .eq('user_id', user.id)
+          .single();
+        if (profile && !profile.welcome_completed) {
+          navigate('/student/welcome', { replace: true });
+          return;
         }
       } catch (err) {
         console.error('Failed to check onboarding status:', err);
