@@ -22,6 +22,7 @@ const navItems: Record<string, NavItem[]> = {
     { path: '/admin/billing', label: 'Billing', icon: '💳' },
     { path: '/admin/subjects', label: 'Subjects', icon: '📚' },
     { path: '/admin/reports', label: 'Reports', icon: '📈' },
+    { path: '/admin/report-card', label: 'Report Card', icon: '📊' },
     { path: '/admin/api-settings', label: 'API Settings', icon: '🔌' },
   ],
   teacher: [
@@ -49,6 +50,7 @@ const navItems: Record<string, NavItem[]> = {
     { path: '/parent/assessments', label: 'Assessments', icon: '📋' },
     { path: '/parent/curriculum', label: 'Curriculum Guide', icon: '📚' },
     { path: '/parent/milestones', label: 'Milestones', icon: '🎉' },
+    { path: '/parent/report-card', label: 'Report Card', icon: '📊' },
     { path: '/parent/certificates', label: 'Certificates', icon: '🏆' },
     { path: '/parent/billing', label: 'Billing', icon: '💳' },
     { path: '/parent/enroll', label: 'Enroll', icon: '📋' },
@@ -69,12 +71,33 @@ const navItems: Record<string, NavItem[]> = {
 
 export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const { user, signOut } = useAuth()
+  const [viewAs, setViewAs] = useState<string | null>(null)
+
+  // On mount, check if we have a saved viewAs preference
+  useEffect(() => {
+    if (user?.role === 'admin') {
+      const saved = localStorage.getItem('a2c_viewAs')
+      if (saved && saved !== 'admin') setViewAs(saved)
+    }
+  }, [user?.role])
+
   if (!user) return null
 
-  const items = navItems[user.role] || []
+  const effectiveRole = (user.role === 'admin' && viewAs) ? viewAs : user.role
+  const items = navItems[effectiveRole] || navItems[user.role] || []
 
   const handleNavClick = () => {
     if (onClose) onClose()
+  }
+
+  const handleViewAs = (role: string) => {
+    if (role === 'admin' || role === user.role) {
+      setViewAs(null)
+      localStorage.removeItem('a2c_viewAs')
+    } else {
+      setViewAs(role)
+      localStorage.setItem('a2c_viewAs', role)
+    }
   }
 
   return (
@@ -134,13 +157,35 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         </nav>
 
         <div className="p-4 border-t border-white/10">
+          {/* View As Dropdown — Admin only */}
+          {user.role === 'admin' && (
+            <div className="mb-3">
+              <label className="text-[10px] uppercase tracking-wider text-white/40 mb-1 block">View As</label>
+              <select
+                value={viewAs || 'admin'}
+                onChange={(e) => handleViewAs(e.target.value)}
+                className="w-full px-2 py-1.5 bg-white/10 border border-white/20 rounded-lg text-xs text-white/80 focus:outline-none focus:ring-1 focus:ring-compass-gold appearance-none cursor-pointer"
+              >
+                <option value="admin" className="bg-compass-navy text-white">👑 Admin View</option>
+                <option value="teacher" className="bg-compass-navy text-white">👩‍🏫 Teacher View</option>
+                <option value="parent" className="bg-compass-navy text-white">👪 Parent View</option>
+                <option value="student" className="bg-compass-navy text-white">🎒 Student View</option>
+              </select>
+              {viewAs && (
+                <p className="text-[10px] text-compass-gold mt-1 flex items-center gap-1">
+                  👁️ Viewing as {viewAs} · <button onClick={() => handleViewAs('admin')} className="underline hover:text-white">Reset</button>
+                </p>
+              )}
+            </div>
+          )}
+
           <div className="flex items-center gap-3 mb-3">
             <div className="w-8 h-8 rounded-full bg-compass-blue flex items-center justify-center text-sm font-medium">
               {user.fullName?.charAt(0)?.toUpperCase() || '?'}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate">{user.fullName}</p>
-              <p className="text-xs text-white/50 capitalize">{user.role}</p>
+              <p className="text-xs text-white/50 capitalize">{user.role}{viewAs ? ` (viewing ${viewAs})` : ''}</p>
             </div>
           </div>
           <div className="flex items-center justify-between mb-2">
