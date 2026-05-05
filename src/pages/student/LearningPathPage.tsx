@@ -27,10 +27,10 @@ export default function LearningPathPage() {
         // Get student name
         const { data: profile } = await supabase
           .from('profiles')
-          .select('full_name')
+          .select('first_name')
           .eq('id', user!.id)
           .single();
-        if (profile?.full_name) setStudentName(profile.full_name.split(' ')[0]);
+        if (profile?.first_name) setStudentName(profile.first_name);
 
         // Get student_profile id
         const { data: sp } = await supabase
@@ -43,18 +43,18 @@ export default function LearningPathPage() {
         // Get skill nodes for this grade
         const { data: nodes } = await supabase
           .from('skill_nodes')
-          .select('id, name, code, domain_id, sort_order, skill_domains(name)')
-          .order('sort_order', { ascending: true })
+          .select('id, name, code, domain_id, display_order, skill_domains:domain_id(name)')
+          .order('display_order', { ascending: true })
           .limit(50);
 
         // Get student mastery data
         const { data: mastery } = await supabase
           .from('student_skill_profiles')
-          .select('skill_node_id, current_score')
-          .eq('student_profile_id', sp.id);
+          .select('skill_id, current_score')
+          .eq('student_id', sp.id);
 
         const masteryMap = new Map(
-          (mastery || []).map(m => [m.skill_node_id, m.current_score || 0])
+          (mastery || []).map(m => [m.skill_id, m.current_score || 0])
         );
 
         const mappedSkills = (nodes || []).map((n: any, idx: number) => {
@@ -71,7 +71,7 @@ export default function LearningPathPage() {
             domainName: n.skill_domains?.name || 'General',
             masteryLevel: score,
             status,
-            order: n.sort_order || idx,
+            order: n.display_order || idx,
           };
         });
 
