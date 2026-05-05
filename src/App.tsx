@@ -68,6 +68,7 @@ import LearningPathPage from './pages/student/LearningPathPage'
 import GameLauncher from './pages/student/games/GameLauncher'
 import DataExplorerPage from './components/student/DataExplorer'
 import UnifiedReportCard from './pages/shared/UnifiedReportCard'
+import Inbox from './pages/shared/Inbox'
 import OrganizationIntake from './pages/admin/OrganizationIntake'
 
 function GuestRoute({ children }: { children: React.ReactNode }) {
@@ -128,6 +129,7 @@ export default function App() {
         <Route path="admin/api-settings" element={<ApiSettings />} />
         <Route path="admin/report-card" element={<UnifiedReportCard />} />
         <Route path="admin/organizations" element={<OrganizationIntake />} />
+        <Route path="admin/messages" element={<Inbox />} />
 
         {/* Teacher Routes */}
         <Route path="teacher" element={<TeacherDashboard />} />
@@ -169,6 +171,7 @@ export default function App() {
         <Route path="parent/messages" element={<ParentDashboard />} />
         <Route path="parent/letters" element={<ParentLetters />} />
         <Route path="parent/report-card" element={<UnifiedReportCard />} />
+        <Route path="parent/messages" element={<Inbox />} />
 
         {/* Student Routes */}
         <Route path="student" element={<FlightPlan />} />
