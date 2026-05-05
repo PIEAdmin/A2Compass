@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { PlaylistItem, PlaylistReason, PlaylistItemStatus } from '../../types/skills';
 import { usePlaylist } from '../../hooks/useSkills';
@@ -13,6 +13,7 @@ import {
   EmptyState,
   ConfettiBurst,
 } from '../../components/shared/Illustrations';
+import VideoPlayer from '../../components/shared/VideoPlayer';
 
 const REASON_COLORS: Record<PlaylistReason, { bg: string; text: string; label: string; icon: string }> = {
   needs_practice: { bg: 'bg-orange-100', text: 'text-orange-700', label: 'Needs Practice', icon: '🔄' },
@@ -67,6 +68,7 @@ export default function FlightPlan() {
   const { items, loading, error, complete, skip, start } = usePlaylist(studentId);
   const [showMastered, setShowMastered] = useState(false);
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
+  const [videoItem, setVideoItem] = useState<PlaylistItem | null>(null);
 
   // Check onboarding status — redirect to orientation if not complete
   useEffect(() => {
@@ -117,6 +119,21 @@ export default function FlightPlan() {
       await skip(itemId);
     } catch {
       // silently fail for now
+    }
+  };
+
+  const handleWatchVideo = (item: PlaylistItem) => {
+    setVideoItem(item);
+  };
+
+  const handleVideoWatched = async (itemId: string) => {
+    try {
+      await supabase
+        .from('student_playlist')
+        .update({ video_watched: true, video_watched_at: new Date().toISOString() })
+        .eq('id', itemId);
+    } catch (err) {
+      console.error('Failed to mark video watched:', err);
     }
   };
 
@@ -253,23 +270,39 @@ export default function FlightPlan() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex-shrink-0 flex gap-2">
+                  <div className="flex-shrink-0 flex flex-col gap-2 items-end">
                     {(item.status === 'pending' || item.status === 'active' || item.status === 'in_progress') && (
                       <>
-                        <button
-                          onClick={() => handleStartPractice(item)}
-                          className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-medium rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-sm hover:shadow-md transform hover:scale-105 active:scale-95"
-                        >
-                          {item.status === 'in_progress' ? '▶ Continue' : '🚀 Start'}
-                        </button>
-                        {(item.status === 'pending' || item.status === 'active') && (
+                        {/* Video button row */}
+                        {item.skill?.teaching_video_url ? (
                           <button
-                            onClick={() => handleSkip(item.id)}
-                            className="px-3 py-2 bg-gray-100 text-gray-500 text-sm font-medium rounded-xl hover:bg-gray-200 transition-colors"
+                            onClick={() => handleWatchVideo(item)}
+                            className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-medium rounded-xl hover:from-amber-600 hover:to-orange-600 transition-all shadow-sm hover:shadow-md transform hover:scale-105 active:scale-95 flex items-center gap-1.5"
                           >
-                            Skip
+                            📺 Watch Lesson
                           </button>
+                        ) : (
+                          <span className="text-xs text-gray-400 italic max-w-[140px] text-right">
+                            Lesson coming soon 💛
+                          </span>
                         )}
+                        {/* Practice + Skip row */}
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleStartPractice(item)}
+                            className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-medium rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-sm hover:shadow-md transform hover:scale-105 active:scale-95"
+                          >
+                            {item.status === 'in_progress' ? '▶ Continue' : '🚀 Start'}
+                          </button>
+                          {(item.status === 'pending' || item.status === 'active') && (
+                            <button
+                              onClick={() => handleSkip(item.id)}
+                              className="px-3 py-2 bg-gray-100 text-gray-500 text-sm font-medium rounded-xl hover:bg-gray-200 transition-colors"
+                            >
+                              Skip
+                            </button>
+                          )}
+                        </div>
                       </>
                     )}
                     {item.status === 'completed' && (
@@ -327,6 +360,16 @@ export default function FlightPlan() {
             <span className="illust-float inline-block" style={{ animationDelay: '0.5s' }}>⭐</span>
           </p>
         </div>
+      )}
+
+      {/* Video Player Modal */}
+      {videoItem && videoItem.skill?.teaching_video_url && (
+        <VideoPlayer
+          videoUrl={videoItem.skill.teaching_video_url}
+          skillName={videoItem.skill?.name || 'Lesson'}
+          onWatched={() => handleVideoWatched(videoItem.id)}
+          onClose={() => setVideoItem(null)}
+        />
       )}
     </div>
   );

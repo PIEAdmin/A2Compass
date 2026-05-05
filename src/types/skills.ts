@@ -28,6 +28,7 @@ export interface SkillNode {
   mastery_threshold: number;
   mastery_criteria: string | null;
   sample_activities: any[];
+  teaching_video_url: string | null;
   domain?: SkillDomain;
 }
 
@@ -85,6 +86,9 @@ export interface PlaylistItem {
   completed_at: string | null;
   score: number | null;
   mastery_met: boolean;
+  video_watched?: boolean;
+  video_watched_at?: string | null;
+  current_score?: number | null;
   skill?: SkillNode;
 }
 
