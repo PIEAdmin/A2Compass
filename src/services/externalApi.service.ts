@@ -316,10 +316,10 @@ export async function searchDataGov(
 
     const results: DataGovResult[] = (raw?.results ?? []).map((r: any) => ({
       title: r.title ?? 'Untitled Dataset',
-      description: (r.description ?? r.notes ?? '').substring(0, 300),
-      publisher: r.publisher ?? r.organization?.title ?? 'U.S. Government',
+      description: typeof r.description === 'string' ? r.description.substring(0, 300) : (r.description ?? '').toString().substring(0, 300),
+      publisher: r.publisher ?? r.organization?.name ?? 'U.S. Government',
       keywords: (r.keyword ?? []).slice(0, 8),
-      landingPage: r.landingPage ?? r.accessURL ?? `https://catalog.data.gov`,
+      landingPage: r.identifier ?? (r.slug ? `https://catalog.data.gov/dataset/${r.slug}` : 'https://catalog.data.gov'),
     }));
 
     return { results };
