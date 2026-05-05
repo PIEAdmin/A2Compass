@@ -23,6 +23,7 @@ const navItems: Record<string, NavItem[]> = {
     { path: '/admin/subjects', label: 'Subjects', icon: '📚' },
     { path: '/admin/reports', label: 'Reports', icon: '📈' },
     { path: '/admin/report-card', label: 'Report Card', icon: '📊' },
+    { path: '/admin/organizations', label: 'Organizations', icon: '🏢' },
     { path: '/admin/api-settings', label: 'API Settings', icon: '🔌' },
   ],
   teacher: [

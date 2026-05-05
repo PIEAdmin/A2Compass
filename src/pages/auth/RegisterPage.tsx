@@ -10,14 +10,29 @@ interface ChildForm {
 }
 
 const GRADE_OPTIONS = [
+  { value: '-1', label: 'Pre-K' },
   { value: '0', label: 'Kindergarten' },
   { value: '1', label: '1st Grade' },
   { value: '2', label: '2nd Grade' },
   { value: '3', label: '3rd Grade' },
   { value: '4', label: '4th Grade' },
-  { value: '5', label: '5th Grade' },
-  { value: '6', label: '6th Grade' },
 ]
+
+/** Auto-calculate recommended grade from date of birth */
+function calculateGradeFromDOB(dob: string): string {
+  if (!dob) return '1'
+  const birth = new Date(dob)
+  const today = new Date()
+  let age = today.getFullYear() - birth.getFullYear()
+  if (today.getMonth() < birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) {
+    age--
+  }
+  // Age → Grade mapping: 4=PreK, 5=K, 6=1st, 7=2nd, 8=3rd, 9=4th
+  if (age <= 4) return '-1'
+  if (age === 5) return '0'
+  if (age >= 10) return '4'
+  return String(age - 5)
+}
 
 export default function RegisterPage() {
   const navigate = useNavigate()
@@ -41,6 +56,8 @@ export default function RegisterPage() {
 
   // Created parent ID (for linking children)
   const [parentUserId, setParentUserId] = useState<string | null>(null)
+  // Track created child credentials for display
+  const [childCredentials, setChildCredentials] = useState<{ name: string; email: string; password: string }[]>([])
 
   const addChild = () => {
     setChildren([...children, { firstName: '', lastName: '', dateOfBirth: '', gradeLevel: '1' }])
@@ -55,6 +72,10 @@ export default function RegisterPage() {
   const updateChild = (index: number, field: keyof ChildForm, value: string) => {
     const updated = [...children]
     updated[index] = { ...updated[index], [field]: value }
+    // Auto-calculate grade when DOB changes
+    if (field === 'dateOfBirth' && value) {
+      updated[index].gradeLevel = calculateGradeFromDOB(value)
+    }
     setChildren(updated)
   }
 
@@ -178,6 +199,7 @@ export default function RegisterPage() {
 
       if (childAuth.user) {
         await createChildRecords(childAuth.user.id, child, childEmail, childPassword)
+        setChildCredentials(prev => [...prev, { name: `${child.firstName} ${child.lastName || lastName}`, email: childEmail, password: childPassword }])
       }
     }
 
@@ -490,25 +512,58 @@ export default function RegisterPage() {
               <div className="text-6xl">🎉</div>
               <h2 className="text-2xl font-bold text-compass-navy">Welcome to A² Compass!</h2>
               <p className="text-gray-600">
-                Your family's accounts are set up. Sandra from Achievement Academy will be in touch to help you get started.
+                Your family is all set! Here are the login details for your children.
               </p>
 
-              <div className="bg-blue-50 rounded-xl p-4 text-left space-y-2">
-                <h3 className="font-semibold text-compass-navy text-sm">What happens next?</h3>
-                <ul className="text-sm text-gray-600 space-y-1">
-                  <li>✅ Your parent account is ready</li>
-                  <li>📧 Check your email to verify your account</li>
-                  <li>👩‍🏫 Sandra will review and activate your children's accounts</li>
-                  <li>🚀 Once activated, your children can start their learning journey!</li>
-                </ul>
+              {/* Child credentials */}
+              {childCredentials.length > 0 && (
+                <div className="bg-blue-50 rounded-xl p-4 text-left space-y-3">
+                  <h3 className="font-semibold text-compass-navy text-sm flex items-center gap-2">
+                    🔑 Student Login Credentials
+                  </h3>
+                  <p className="text-xs text-gray-500">Save these — your children will use them to sign in!</p>
+                  {childCredentials.map((cred, i) => (
+                    <div key={i} className="bg-white rounded-lg p-3 border border-blue-100">
+                      <p className="font-medium text-compass-navy text-sm">{cred.name}</p>
+                      <div className="grid grid-cols-2 gap-1 mt-1">
+                        <p className="text-xs text-gray-500">Email:</p>
+                        <p className="text-xs font-mono text-compass-blue">{cred.email}</p>
+                        <p className="text-xs text-gray-500">Password:</p>
+                        <p className="text-xs font-mono text-compass-blue">{cred.password}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Next steps */}
+              <div className="bg-gradient-to-r from-compass-gold/10 to-orange-50 rounded-xl p-4 text-left space-y-2">
+                <h3 className="font-semibold text-compass-navy text-sm">🚀 What happens next?</h3>
+                <ol className="text-sm text-gray-600 space-y-2 list-decimal list-inside">
+                  <li><strong>Log in as your child</strong> using the credentials above</li>
+                  <li><strong>Take the Discovery Assessment</strong> — a fun, adaptive quiz that figures out your child's strengths</li>
+                  <li><strong>Get a personalized Flight Plan</strong> — daily learning activities tailored just for them!</li>
+                </ol>
               </div>
 
-              <button
-                onClick={() => navigate('/login')}
-                className="btn-primary px-8 py-2.5"
-              >
-                Go to Sign In
-              </button>
+              {/* Parent credentials reminder */}
+              <div className="bg-gray-50 rounded-xl p-3 text-left">
+                <p className="text-xs text-gray-500">
+                  <strong>Your parent account:</strong> {email} — Sign in anytime to view progress, reports, and manage enrollment.
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={() => navigate('/login')}
+                  className="btn-primary px-8 py-2.5 text-base"
+                >
+                  Sign In & Start Learning! 🎓
+                </button>
+                <p className="text-xs text-blue-200/60">
+                  Tip: Log in as your child first to start the Discovery Assessment
+                </p>
+              </div>
             </div>
           )}
         </div>

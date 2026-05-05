@@ -68,6 +68,7 @@ import LearningPathPage from './pages/student/LearningPathPage'
 import GameLauncher from './pages/student/games/GameLauncher'
 import DataExplorerPage from './components/student/DataExplorer'
 import UnifiedReportCard from './pages/shared/UnifiedReportCard'
+import OrganizationIntake from './pages/admin/OrganizationIntake'
 
 function GuestRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, loading } = useAuth()
@@ -126,6 +127,7 @@ export default function App() {
         <Route path="admin/reports" element={<AdminDashboard />} />
         <Route path="admin/api-settings" element={<ApiSettings />} />
         <Route path="admin/report-card" element={<UnifiedReportCard />} />
+        <Route path="admin/organizations" element={<OrganizationIntake />} />
 
         {/* Teacher Routes */}
         <Route path="teacher" element={<TeacherDashboard />} />
