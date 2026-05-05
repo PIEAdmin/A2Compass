@@ -22,6 +22,7 @@ const navItems: Record<string, NavItem[]> = {
     { path: '/admin/billing', label: 'Billing', icon: '💳' },
     { path: '/admin/subjects', label: 'Subjects', icon: '📚' },
     { path: '/admin/reports', label: 'Reports', icon: '📈' },
+    { path: '/admin/api-settings', label: 'API Settings', icon: '🔌' },
   ],
   teacher: [
     { path: '/teacher', label: 'Dashboard', icon: '🏠' },
@@ -62,6 +63,7 @@ const navItems: Record<string, NavItem[]> = {
     { path: '/student/achievements', label: 'Achievements', icon: '🏆' },
     { path: '/student/library', label: 'Library', icon: '📖' },
     { path: '/student/learning-path', label: 'Learning Path', icon: '🗺️' },
+    { path: '/student/data-explorer', label: 'Data Explorer', icon: '📊' },
   ],
 }
 

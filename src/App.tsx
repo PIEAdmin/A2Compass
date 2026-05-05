@@ -19,6 +19,7 @@ import DeleteAccount from './pages/settings/DeleteAccount'
 // Admin pages
 import AdminDashboard from './pages/admin/Dashboard'
 import AdminBillingPage from './pages/admin/Billing'
+import ApiSettings from './pages/admin/ApiSettings'
 
 // Teacher pages
 import TeacherDashboard from './pages/teacher/Dashboard'
@@ -65,6 +66,7 @@ import WarmActivities from './pages/student/WarmActivities'
 import StudentLibrary from './pages/student/StudentLibrary'
 import LearningPathPage from './pages/student/LearningPathPage'
 import GameLauncher from './pages/student/games/GameLauncher'
+import DataExplorerPage from './components/student/DataExplorer'
 
 function GuestRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, loading } = useAuth()
@@ -121,6 +123,7 @@ export default function App() {
         <Route path="admin/billing" element={<AdminBillingPage />} />
         <Route path="admin/subjects" element={<SubjectManager />} />
         <Route path="admin/reports" element={<AdminDashboard />} />
+        <Route path="admin/api-settings" element={<ApiSettings />} />
 
         {/* Teacher Routes */}
         <Route path="teacher" element={<TeacherDashboard />} />
@@ -176,6 +179,7 @@ export default function App() {
         <Route path="student/library" element={<StudentLibrary />} />
         <Route path="student/learning-path" element={<LearningPathPage />} />
         <Route path="student/game/:gameType" element={<GameLauncher />} />
+        <Route path="student/data-explorer" element={<DataExplorerPage />} />
 
         {/* Settings */}
         <Route path="settings/delete-account" element={<DeleteAccount />} />

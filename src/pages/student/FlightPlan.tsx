@@ -17,6 +17,8 @@ import VideoPlayer from '../../components/shared/VideoPlayer';
 import { SpeechBubble } from '../../components/shared/SpeechBubble';
 import StreakTracker from '../../components/shared/StreakTracker';
 import { studentService } from '../../services/students';
+import SpaceExplorer from '../../components/student/SpaceExplorer';
+import HistoryCorner from '../../components/student/HistoryCorner';
 
 const REASON_COLORS: Record<PlaylistReason, { bg: string; text: string; label: string; icon: string }> = {
   needs_practice: { bg: 'bg-orange-100', text: 'text-orange-700', label: 'Needs Practice', icon: '🔄' },
@@ -407,6 +409,11 @@ export default function FlightPlan() {
         </div>
       )}
 
+      {/* External Content Widgets */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "1.5rem", padding: "0 1.5rem 1.5rem" }}>
+        <SpaceExplorer />
+        <HistoryCorner />
+      </div>
       {/* Video Player Modal */}
       {videoItem && videoItem.skill?.teaching_video_url && (
         <VideoPlayer

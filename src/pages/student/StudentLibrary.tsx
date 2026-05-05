@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { supabase } from '../../services/supabase'
 import { useAuth } from '../../hooks'
+import DiscoverOER from '../../components/student/DiscoverOER'
 
 /* ── Inline types ─────────────────────────────────────── */
 
@@ -88,6 +89,8 @@ function SkeletonCard() {
         <div className="h-4 w-full rounded bg-gray-100" />
         <div className="h-4 w-2/3 rounded bg-gray-100" />
       </div>
+      {/* Discover OER Resources */}
+      <DiscoverOER />
     </div>
   )
 }
