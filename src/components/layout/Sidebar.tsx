@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../../hooks'
 
@@ -59,6 +60,8 @@ const navItems: Record<string, NavItem[]> = {
     { path: '/student/subjects', label: 'My Subjects', icon: '📚' },
     { path: '/student/progress', label: 'My Progress', icon: '🎯' },
     { path: '/student/achievements', label: 'Achievements', icon: '🏆' },
+    { path: '/student/library', label: 'Library', icon: '📖' },
+    { path: '/student/learning-path', label: 'Learning Path', icon: '🗺️' },
   ],
 }
 
@@ -138,12 +141,24 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
               <p className="text-xs text-white/50 capitalize">{user.role}</p>
             </div>
           </div>
-          <button
-            onClick={() => signOut()}
-            className="w-full text-sm text-white/60 hover:text-white py-1.5 transition-colors"
-          >
-            Sign Out
-          </button>
+          <div className="flex items-center justify-between mb-2">
+            <button
+              onClick={() => signOut()}
+              className="text-sm text-white/60 hover:text-white py-1.5 transition-colors"
+            >
+              Sign Out
+            </button>
+            <button
+              onClick={() => {
+                const isDark = document.documentElement.classList.toggle('dark')
+                localStorage.setItem('a2c_darkMode', isDark ? 'true' : 'false')
+              }}
+              className="text-lg hover:scale-110 transition-transform"
+              title="Toggle dark mode"
+            >
+              {typeof window !== 'undefined' && document.documentElement.classList.contains('dark') ? '☀️' : '🌙'}
+            </button>
+          </div>
         </div>
       </aside>
     </>

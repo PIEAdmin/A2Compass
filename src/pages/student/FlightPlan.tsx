@@ -14,6 +14,9 @@ import {
   ConfettiBurst,
 } from '../../components/shared/Illustrations';
 import VideoPlayer from '../../components/shared/VideoPlayer';
+import { SpeechBubble } from '../../components/shared/SpeechBubble';
+import StreakTracker from '../../components/shared/StreakTracker';
+import { studentService } from '../../services/students';
 
 const REASON_COLORS: Record<PlaylistReason, { bg: string; text: string; label: string; icon: string }> = {
   needs_practice: { bg: 'bg-orange-100', text: 'text-orange-700', label: 'Needs Practice', icon: '🔄' },
@@ -69,6 +72,14 @@ export default function FlightPlan() {
   const [showMastered, setShowMastered] = useState(false);
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
   const [videoItem, setVideoItem] = useState<PlaylistItem | null>(null);
+  const [streak, setStreak] = useState(0);
+  const [showBubble, setShowBubble] = useState(true);
+
+  // Fetch streak
+  useEffect(() => {
+    if (!user?.id) return;
+    studentService.getStreak(user.id).then(s => setStreak(s)).catch(() => {});
+  }, [user?.id]);
 
   // Check onboarding status — redirect to orientation if not complete
   useEffect(() => {
@@ -178,6 +189,40 @@ export default function FlightPlan() {
           </div>
         </div>
       </div>
+
+      {/* Streak Tracker */}
+      <StreakTracker
+        currentStreak={streak}
+        longestStreak={streak}
+        todayCompleted={completedCount > 0}
+        weekActivity={[true, true, completedCount > 0, false, false, false, false].slice(0, 7)}
+      />
+
+      {/* Pepper Speech Bubble */}
+      {showBubble && completedCount === 0 && (
+        <div className="flex items-end gap-3">
+          <PepperPenguin size={50} mood="happy" />
+          <SpeechBubble
+            message={`Ready to learn, ${studentName}? Let's crush today's Flight Plan! 🚀`}
+            mood="excited"
+            position="left"
+            animate
+            onDismiss={() => setShowBubble(false)}
+          />
+        </div>
+      )}
+      {showBubble && completedCount > 0 && completedCount < totalActive && (
+        <div className="flex items-end gap-3">
+          <PepperPenguin size={50} mood="celebrating" />
+          <SpeechBubble
+            message={`Great job! ${completedCount} done, ${totalActive - completedCount} to go! Keep it up! 🌟`}
+            mood="celebrating"
+            position="left"
+            animate
+            onDismiss={() => setShowBubble(false)}
+          />
+        </div>
+      )}
 
       {/* Progress Bar */}
       <div className="bg-white rounded-2xl shadow-sm border p-4 illust-slide-up" style={{ animationDelay: '0.1s' }}>

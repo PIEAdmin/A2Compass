@@ -62,6 +62,9 @@ import AssessmentPlayer from './pages/student/AssessmentPlayer'
 import OrientationWizard from './pages/student/OrientationWizard'
 import StudentWelcome from './pages/student/StudentWelcome'
 import WarmActivities from './pages/student/WarmActivities'
+import StudentLibrary from './pages/student/StudentLibrary'
+import LearningPathPage from './pages/student/LearningPathPage'
+import GameLauncher from './pages/student/games/GameLauncher'
 
 function GuestRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, loading } = useAuth()
@@ -170,6 +173,9 @@ export default function App() {
         <Route path="student/subjects" element={<StudentSubjects />} />
         <Route path="student/progress" element={<StudentProgress />} />
         <Route path="student/achievements" element={<StudentAchievements />} />
+        <Route path="student/library" element={<StudentLibrary />} />
+        <Route path="student/learning-path" element={<LearningPathPage />} />
+        <Route path="student/game/:gameType" element={<GameLauncher />} />
 
         {/* Settings */}
         <Route path="settings/delete-account" element={<DeleteAccount />} />

@@ -8,10 +8,16 @@ import './styles/index.css'
 import './styles/safe-area.css'
 import './styles/illustrations.css'
 import './styles/penguin.css'
+import './styles/dark-mode.css'
 import { initCapacitor } from './capacitor-init'
 
 // Initialize native bridge (no-op on web)
 initCapacitor()
+
+// Restore dark mode preference
+if (localStorage.getItem('a2c_darkMode') === 'true') {
+  document.documentElement.classList.add('dark')
+}
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
