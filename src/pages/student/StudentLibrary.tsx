@@ -89,8 +89,6 @@ function SkeletonCard() {
         <div className="h-4 w-full rounded bg-gray-100" />
         <div className="h-4 w-2/3 rounded bg-gray-100" />
       </div>
-      {/* Discover OER Resources */}
-      <DiscoverOER />
     </div>
   )
 }
@@ -529,6 +527,8 @@ export default function StudentLibrary() {
           </>
         )}
       </div>
+
+      <DiscoverOER />
     </div>
   )
 }
