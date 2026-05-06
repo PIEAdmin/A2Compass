@@ -20,13 +20,15 @@ import { studentService } from '../../services/students';
 import SpaceExplorer from '../../components/student/SpaceExplorer';
 import HistoryCorner from '../../components/student/HistoryCorner';
 
-const REASON_COLORS: Record<PlaylistReason, { bg: string; text: string; label: string; icon: string }> = {
+const REASON_COLORS: Record<string, { bg: string; text: string; label: string; icon: string }> = {
   needs_practice: { bg: 'bg-orange-100', text: 'text-orange-700', label: 'Needs Practice', icon: '🔄' },
   ready_to_learn: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'Ready to Learn', icon: '🌟' },
   foundational_gap: { bg: 'bg-red-100', text: 'text-red-700', label: 'Foundation', icon: '🧱' },
   spiral_review: { bg: 'bg-purple-100', text: 'text-purple-700', label: 'Spiral Review', icon: '🌀' },
   teacher_focus: { bg: 'bg-rose-100', text: 'text-rose-700', label: 'Teacher Focus', icon: '👩‍🏫' },
   teacher_added: { bg: 'bg-pink-100', text: 'text-pink-700', label: 'Teacher Added', icon: '📌' },
+  needs_improvement: { bg: 'bg-amber-100', text: 'text-amber-700', label: 'Practice Area', icon: '🎯' },
+  required_subject: { bg: 'bg-indigo-100', text: 'text-indigo-700', label: 'Daily Skill', icon: '📚' },
 };
 
 const STATUS_ICONS: Record<string, string> = {

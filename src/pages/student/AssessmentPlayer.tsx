@@ -273,6 +273,29 @@ export default function AssessmentPlayer() {
   const [starsEarned, setStarsEarned] = useState(0);
   const [starAnimation, setStarAnimation] = useState(false);
   const [sessionType, setSessionType] = useState<SessionType>('initial_placement');
+  const [existingSessions, setExistingSessions] = useState<any[]>([]);
+  const [checkingExisting, setCheckingExisting] = useState(true);
+
+  // Check for existing paused/in-progress sessions on load
+  useEffect(() => {
+    if (!studentId) return;
+    (async () => {
+      try {
+        const { getStudentProfileId } = await import('../../services/students');
+        const spId = await getStudentProfileId(studentId);
+        if (!spId) { setCheckingExisting(false); return; }
+        const { data } = await (await import('../../services/supabase')).supabase
+          .from('assessment_sessions')
+          .select('id, status, items_attempted, items_correct, started_at, updated_at')
+          .eq('student_id', spId)
+          .in('status', ['in_progress', 'paused'])
+          .order('updated_at', { ascending: false })
+          .limit(5);
+        setExistingSessions(data || []);
+      } catch (e) { console.error('Failed to check existing sessions:', e); }
+      setCheckingExisting(false);
+    })();
+  }, [studentId]);
 
   // Track stars from correct answers
   useEffect(() => {
@@ -321,32 +344,95 @@ export default function AssessmentPlayer() {
     );
   }
 
-  // ---------- Start Screen ----------
+  // ---------- Start Screen (with resume detection) ----------
   if (!session && !loading && !isComplete) {
+    if (checkingExisting) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center">
+          <AnimationStyles />
+          <div className="text-center bounce-in">
+            <div className="text-6xl mb-4 pulse-soft">🧭</div>
+            <p className="text-indigo-600 text-lg font-medium">Checking your progress...</p>
+          </div>
+        </div>
+      );
+    }
+
+    const hasExisting = existingSessions.length > 0;
+    const bestSession = hasExisting ? existingSessions[0] : null;
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center p-6">
         <AnimationStyles />
         <FloatingDecorations emojis={['⭐', '🌟', '🦋', '🌈', '🚀', '📚']} />
         <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-xl p-10 max-w-md w-full text-center relative z-10 bounce-in">
-          <div className="text-6xl mb-4 pulse-soft">🌟</div>
-          <h1 className="text-3xl font-bold text-indigo-700 mb-2">
-            My Learning Adventure
-          </h1>
-          <p className="text-gray-600 mb-8 text-lg">
-            Let's see what you already know! There are no wrong answers — just do
-            your best!
-          </p>
+          {hasExisting ? (
+            <>
+              <div className="text-6xl mb-4 pulse-soft">👋</div>
+              <h1 className="text-3xl font-bold text-indigo-700 mb-2">
+                Welcome Back!
+              </h1>
+              <p className="text-gray-600 mb-4 text-lg">
+                You have an adventure in progress!
+              </p>
+              <div className="bg-indigo-50 rounded-xl p-4 mb-6 text-left">
+                <div className="text-sm text-indigo-700">
+                  <div className="flex justify-between mb-1">
+                    <span>Questions answered:</span>
+                    <span className="font-bold">{bestSession.items_attempted || 0}</span>
+                  </div>
+                  <div className="flex justify-between mb-1">
+                    <span>Correct so far:</span>
+                    <span className="font-bold text-green-600">{bestSession.items_correct || 0}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Status:</span>
+                    <span className="font-bold capitalize">{bestSession.status === 'in_progress' ? '📝 In Progress' : '⏸️ Paused'}</span>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={resumeSession}
+                onMouseEnter={() => speak('Continue where you left off!')}
+                className="w-full py-4 px-6 bg-green-500 text-white text-xl font-bold rounded-2xl
+                           hover:bg-green-600 active:scale-95 transition-all shadow-lg mb-3"
+              >
+                ▶️ Continue Where I Left Off!
+              </button>
+
+              <button
+                onClick={() => startSession(sessionType)}
+                onMouseEnter={() => speak('Start a brand new adventure')}
+                className="w-full py-3 px-6 bg-gray-100 text-gray-600 font-medium rounded-2xl
+                           hover:bg-gray-200 active:scale-95 transition-all text-sm"
+              >
+                🔄 Start Fresh Instead
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="text-6xl mb-4 pulse-soft">🌟</div>
+              <h1 className="text-3xl font-bold text-indigo-700 mb-2">
+                My Learning Adventure
+              </h1>
+              <p className="text-gray-600 mb-8 text-lg">
+                Let's see what you already know! There are no wrong answers — just do
+                your best!
+              </p>
+
+              <button
+                onClick={() => startSession(sessionType)}
+                className="w-full py-4 px-6 bg-indigo-600 text-white text-xl font-bold rounded-2xl
+                           hover:bg-indigo-700 active:scale-95 transition-all shadow-lg"
+              >
+                🚀 Let's Go!
+              </button>
+            </>
+          )}
 
           <button
-            onClick={() => startSession(sessionType)}
-            className="w-full py-4 px-6 bg-indigo-600 text-white text-xl font-bold rounded-2xl
-                       hover:bg-indigo-700 active:scale-95 transition-all shadow-lg"
-          >
-            🚀 Let's Go!
-          </button>
-
-          <button
-            onClick={() => speak('Let\'s see what you already know! There are no wrong answers, just do your best!')}
+            onClick={() => speak(hasExisting ? 'Welcome back! You can continue where you left off or start fresh.' : 'Let\'s see what you already know! There are no wrong answers, just do your best!')}
             className="mt-4 text-indigo-500 hover:text-indigo-700 flex items-center justify-center gap-2 mx-auto"
           >
             🔊 Read to me
@@ -390,6 +476,29 @@ export default function AssessmentPlayer() {
       </div>
     );
   }
+
+
+  // Auto-generate improvement Flight Plan from wrong answers when assessment completes
+  useEffect(() => {
+    if (!isComplete || !studentId) return;
+    (async () => {
+      try {
+        const { getStudentProfileId } = await import('../../services/students');
+        const { supabase } = await import('../../services/supabase');
+        const spId = await getStudentProfileId(studentId);
+        if (!spId) return;
+        const { data, error } = await supabase.rpc('generate_improvement_playlist', {
+          p_student_profile_id: spId,
+          p_auth_user_id: studentId
+        });
+        if (error) console.error('Failed to generate improvement playlist:', error);
+        else if (data && data.length > 0) {
+          const inserted = data.filter((d: any) => d.inserted);
+          console.log(`📋 Flight Plan updated: ${inserted.length} improvement skills added from assessment errors`);
+        }
+      } catch (e) { console.error('Improvement playlist error:', e); }
+    })();
+  }, [isComplete, studentId]);
 
   // ---------- Completion Screen ----------
   if (isComplete) {
@@ -637,6 +746,26 @@ export default function AssessmentPlayer() {
                          active:scale-95 shadow-sm hover:shadow-md font-bold text-base"
             >
               Skip This One <span className="text-xl">⏭️</span>
+            </button>
+          </div>
+        )}
+
+        {/* Take a Break Button — always visible during questions */}
+        {item && !showFeedback && (
+          <div className="flex justify-center mt-4 relative z-10">
+            <button
+              onClick={() => {
+                if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+                speak('Taking a break! Your progress is saved. Come back anytime!');
+                setTimeout(() => pauseSession(), 500);
+              }}
+              onMouseEnter={() => speakOption('Take a break and come back later')}
+              className="flex items-center gap-2 px-6 py-3 bg-blue-50 hover:bg-blue-100
+                         border-2 border-blue-200 hover:border-blue-300 rounded-2xl
+                         text-blue-600 hover:text-blue-700 transition-all
+                         active:scale-95 shadow-sm font-semibold text-base"
+            >
+              <span className="text-xl">😴</span> Take a Break — Come Back Later
             </button>
           </div>
         )}
