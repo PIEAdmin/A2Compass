@@ -33,6 +33,7 @@ import ContentLibrary from './pages/teacher/library/ContentLibrary'
 import CurriculumPlanner from './pages/teacher/curriculum/CurriculumPlanner'
 import AssignmentTool from './pages/teacher/assignments/AssignmentTool'
 import AssessmentDashboard from './pages/teacher/AssessmentDashboard'
+import LiveMonitor from './pages/teacher/LiveMonitor'
 import ItemBankReview from './pages/teacher/ItemBankReview'
 import CurriculumBrowser from './pages/teacher/CurriculumBrowser'
 import ReportCardBuilder from './pages/teacher/ReportCardBuilder'
@@ -130,6 +131,7 @@ export default function App() {
         <Route path="admin/report-card" element={<UnifiedReportCard />} />
         <Route path="admin/organizations" element={<OrganizationIntake />} />
         <Route path="admin/messages" element={<Inbox />} />
+        <Route path="admin/live-monitor" element={<LiveMonitor />} />
 
         {/* Teacher Routes */}
         <Route path="teacher" element={<TeacherDashboard />} />
@@ -139,6 +141,7 @@ export default function App() {
         <Route path="teacher/mastery" element={<TeacherDashboard />} />
         <Route path="teacher/skill-map" element={<SkillMap />} />
         <Route path="teacher/assessments" element={<AssessmentDashboard />} />
+        <Route path="teacher/live-monitor" element={<LiveMonitor />} />
         <Route path="teacher/item-bank" element={<ItemBankReview />} />
         <Route path="teacher/discovery-results" element={<DiscoveryGamesResults />} />
         <Route path="teacher/lessons" element={<LessonsList />} />

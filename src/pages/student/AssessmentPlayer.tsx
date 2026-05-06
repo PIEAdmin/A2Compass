@@ -23,12 +23,28 @@ const speak = (text: string) => {
   synth.resume();
   setTimeout(() => {
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 0.85;
-    utterance.pitch = 1.1;
-    // Fallback: pick a voice explicitly if available
+    utterance.volume = 1.0;   // MAX volume
+    utterance.rate = 0.82;    // Slightly slower for kids
+    utterance.pitch = 1.15;   // Warm, friendly tone
+    // Pick the friendliest available voice
     const voices = synth.getVoices();
-    const english = voices.find(v => v.lang.startsWith('en') && v.localService);
-    if (english) utterance.voice = english;
+    const preferred = [
+      'Google US English',          // Chrome — clear and friendly
+      'Microsoft Aria Online',      // Edge — natural and warm
+      'Samantha',                   // macOS — friendly female voice
+      'Microsoft Zira',             // Windows — clear female voice
+      'Google UK English Female',   // Chrome fallback
+      'Karen',                      // macOS fallback
+    ];
+    let bestVoice = null;
+    for (const name of preferred) {
+      bestVoice = voices.find(v => v.name.includes(name));
+      if (bestVoice) break;
+    }
+    // Fallback: any English voice, prefer non-local (Google voices are better quality)
+    if (!bestVoice) bestVoice = voices.find(v => v.lang.startsWith('en') && !v.localService);
+    if (!bestVoice) bestVoice = voices.find(v => v.lang.startsWith('en'));
+    if (bestVoice) utterance.voice = bestVoice;
     synth.speak(utterance);
     // Chrome watchdog: if paused after 10s, resume
     setTimeout(() => { if (synth.speaking && synth.paused) synth.resume(); }, 10000);
@@ -570,19 +586,24 @@ export default function AssessmentPlayer() {
               disabled={showFeedback}
             />
 
-            {/* Hint button */}
-            {item.hintText && !showHint && (
+            {/* Help Me Learn button */}
+            {(item.hintText || (item as any).explanation) && !showHint && (
               <button
-                onClick={useHint}
-                className="mt-6 text-amber-500 hover:text-amber-600 flex items-center gap-2 transition-colors"
+                onClick={() => { useHint(); }}
+                onMouseEnter={() => speakOption('Help me learn this')}
+                className="mt-6 flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-amber-400 to-orange-400
+                           hover:from-amber-500 hover:to-orange-500 text-white font-bold rounded-2xl
+                           shadow-md hover:shadow-lg transform hover:scale-105 transition-all text-lg"
               >
-                💡 Need a hint?
+                🐧 Help Me Learn This!
               </button>
             )}
-            {showHint && item.hintText && (
-              <div className="mt-4 bg-amber-50 border border-amber-200 rounded-2xl p-4 text-amber-800">
-                💡 {item.hintText}
-              </div>
+            {showHint && (
+              <TeachingBubble
+                hintText={item.hintText || ''}
+                explanation={(item as any).explanation || ''}
+                skillName={item.skillName || ''}
+              />
             )}
           </div>
         )}
@@ -827,6 +848,63 @@ interface RendererProps {
   showHint: boolean;
   disabled: boolean;
 }
+
+
+// ---------- Teaching Bubble (replaces simple hint) ----------
+function TeachingBubble({ hintText, explanation, skillName }: { hintText: string; explanation: string; skillName: string }) {
+  useEffect(() => {
+    // Auto-read the teaching content when it appears
+    let teachText = '';
+    if (hintText && explanation) {
+      teachText = `Here\'s a tip! ${hintText}. And here\'s what you need to know: ${explanation}`;
+    } else if (hintText) {
+      teachText = `Here\'s a tip! ${hintText}`;
+    } else if (explanation) {
+      teachText = `Let me teach you! ${explanation}`;
+    }
+    if (teachText) speak(teachText);
+  }, [hintText, explanation]);
+
+  return (
+    <div className="mt-4 bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 rounded-3xl p-5 shadow-lg relative">
+      {/* Penguin icon */}
+      <div className="absolute -top-4 -left-2 text-3xl">🐧</div>
+      <div className="ml-6">
+        <p className="text-amber-900 font-bold text-lg mb-2">
+          💡 Let me help you!
+        </p>
+        {hintText && (
+          <p className="text-amber-800 text-base mb-2">
+            👉 <strong>Tip:</strong> {hintText}
+          </p>
+        )}
+        {explanation && (
+          <p className="text-amber-700 text-base bg-white/60 rounded-xl p-3 mt-2">
+            📖 <strong>Here&apos;s what you need to know:</strong> {explanation}
+          </p>
+        )}
+        {!hintText && !explanation && (
+          <p className="text-amber-700 text-base">
+            Take your time and try your best! You can skip this one if you&apos;re not sure. 😊
+          </p>
+        )}
+      </div>
+      {/* Re-read button */}
+      <button
+        onClick={() => {
+          const text = hintText && explanation
+            ? `Here\'s a tip! ${hintText}. And here\'s what you need to know: ${explanation}`
+            : hintText || explanation || 'Take your time!';
+          speak(text);
+        }}
+        className="mt-3 ml-6 text-sm text-amber-600 hover:text-amber-800 flex items-center gap-1"
+      >
+        🔊 Read it again
+      </button>
+    </div>
+  );
+}
+
 
 function QuestionRenderer({ item, questionType, onAnswer, showHint, disabled }: RendererProps) {
   // Normalize the DB data format to what renderers expect
