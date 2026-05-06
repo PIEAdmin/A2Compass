@@ -52,6 +52,16 @@ const speakWithChoices = (questionText: string, questionData: Record<string, any
   speak(fullText);
 };
 
+/** Speak individual option text on hover/focus (debounced) */
+let _speakTimer: ReturnType<typeof setTimeout> | null = null;
+const speakOption = (text: string) => {
+  if (_speakTimer) clearTimeout(_speakTimer);
+  _speakTimer = setTimeout(() => {
+    speak(String(text));
+  }, 150);
+};
+
+
 // ---------- Domain-themed emojis ----------
 const getDomainEmojis = (domainName: string): string[] => {
   const d = (domainName || '').toLowerCase();
@@ -145,6 +155,18 @@ function AnimationStyles() {
       }
       .hover-grow { transition: transform 0.2s, box-shadow 0.2s; }
       .hover-grow:hover { transform: scale(1.03); box-shadow: 0 4px 20px rgba(99,102,241,0.2); }
+      .speak-hover { cursor: pointer; position: relative; }
+      .speak-hover::after {
+        content: '🔊';
+        position: absolute;
+        top: 2px;
+        right: 6px;
+        font-size: 14px;
+        opacity: 0;
+        transition: opacity 0.2s;
+        pointer-events: none;
+      }
+      .speak-hover:hover::after { opacity: 0.6; }
     `}</style>
   );
 }
@@ -759,11 +781,13 @@ function MultipleChoiceRenderer({ item, onAnswer, disabled }: QProps) {
               const isCorrect = opt === correctAnswer;
               onAnswer({ selected: opt }, isCorrect);
             }}
+            onMouseEnter={() => speakOption(opt)}
+            onFocus={() => speakOption(opt)}
             disabled={disabled}
             className="min-h-[64px] p-4 text-lg font-bold rounded-2xl border-2 border-gray-200
                        bg-white hover:bg-indigo-50 hover:border-indigo-400 hover:shadow-md
                        active:scale-95 transition-all disabled:opacity-50
-                       text-gray-800 shadow-sm hover-grow"
+                       text-gray-800 shadow-sm hover-grow speak-hover"
           >
             {opt}
           </button>
@@ -804,6 +828,8 @@ function TapSelectRenderer({ item, onAnswer, disabled }: QProps) {
           <button
             key={idx}
             onClick={() => toggle(opt)}
+            onMouseEnter={() => speakOption(opt)}
+            onFocus={() => speakOption(opt)}
             disabled={disabled}
             className={`min-h-[64px] p-4 text-lg font-bold rounded-2xl border-2 transition-all
                        active:scale-95 disabled:opacity-50
@@ -811,7 +837,7 @@ function TapSelectRenderer({ item, onAnswer, disabled }: QProps) {
                          selected.includes(opt)
                            ? 'bg-indigo-100 border-indigo-500 text-indigo-800'
                            : 'bg-white border-gray-200 text-gray-800 hover:bg-indigo-50'
-                       }`}
+                       } speak-hover`}
           >
             {selected.includes(opt) && '✓ '}
             {opt}
@@ -860,6 +886,8 @@ function CountingRenderer({ item, onAnswer, disabled }: QProps) {
                 setCount(num);
                 onAnswer({ count: num }, num === correctCount);
               }}
+              onMouseEnter={() => speakOption(String(num))}
+              onFocus={() => speakOption(String(num))}
               disabled={disabled}
               className={`w-14 h-14 text-xl font-bold rounded-2xl border-2 transition-all
                          active:scale-95 disabled:opacity-50
@@ -907,6 +935,8 @@ function FillBlankRenderer({ item, onAnswer, disabled }: QProps) {
                 setValue(opt);
                 onAnswer({ answer: opt }, opt === correctAnswer);
               }}
+              onMouseEnter={() => speakOption(opt)}
+              onFocus={() => speakOption(opt)}
               disabled={disabled}
               className="min-h-[64px] p-4 text-lg font-bold rounded-2xl border-2 border-gray-200
                          bg-white hover:bg-indigo-50 hover:border-indigo-400
@@ -982,6 +1012,8 @@ function MatchingRenderer({ item, onAnswer, disabled }: QProps) {
             <button
               key={left}
               onClick={() => handleLeftClick(left)}
+              onMouseEnter={() => speakOption(left)}
+              onFocus={() => speakOption(left)}
               disabled={disabled || !!matched[left]}
               className={`w-full min-h-[56px] p-3 text-lg font-bold rounded-xl border-2 transition-all
                          ${
@@ -1001,6 +1033,8 @@ function MatchingRenderer({ item, onAnswer, disabled }: QProps) {
             <button
               key={right}
               onClick={() => handleRightClick(right)}
+              onMouseEnter={() => speakOption(right)}
+              onFocus={() => speakOption(right)}
               disabled={disabled || Object.values(matched).includes(right)}
               className={`w-full min-h-[56px] p-3 text-lg font-bold rounded-xl border-2 transition-all
                          ${
@@ -1064,6 +1098,8 @@ function SequenceRenderer({ item, onAnswer, disabled }: QProps) {
           <button
             key={idx}
             onClick={() => handleTap(val)}
+            onMouseEnter={() => speakOption(val)}
+            onFocus={() => speakOption(val)}
             disabled={disabled}
             className="min-h-[64px] p-4 text-lg font-bold rounded-2xl border-2 border-gray-200
                        bg-white hover:bg-indigo-50 hover:border-indigo-400
@@ -1122,6 +1158,8 @@ function DragDropRenderer({ item, onAnswer, disabled }: QProps) {
             <button
               key={idx}
               onClick={() => handleItemTap(d)}
+              onMouseEnter={() => speakOption(d)}
+              onFocus={() => speakOption(d)}
               disabled={disabled}
               className={`px-4 py-3 text-lg font-bold rounded-xl border-2 transition-all
                          active:scale-95
@@ -1142,6 +1180,8 @@ function DragDropRenderer({ item, onAnswer, disabled }: QProps) {
           <button
             key={idx}
             onClick={() => handleTargetTap(t)}
+            onMouseEnter={() => speakOption(t)}
+            onFocus={() => speakOption(t)}
             disabled={disabled}
             className="min-h-[80px] p-4 border-2 border-dashed border-gray-300 rounded-2xl
                        bg-gray-50 hover:bg-purple-50 hover:border-purple-400 transition-all text-center"
