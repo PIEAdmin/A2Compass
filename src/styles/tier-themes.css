@@ -1,0 +1,146 @@
+/* ═══════════════════════════════════════════════════════════
+   🌲  TIER-SPECIFIC THEMES — A² Compass
+   ═══════════════════════════════════════════════════════════ */
+
+/* === DEFAULT / EXPLORERS' CAMP (Pre-K – 4th) === */
+:root,
+[data-tier="explorers"] {
+  --tier-primary: #2d8a4e;
+  --tier-primary-light: #48bb78;
+  --tier-primary-dark: #276749;
+  --tier-secondary: #ed8936;
+  --tier-secondary-light: #f6ad55;
+  --tier-accent: #f6e05e;
+  --tier-bg-from: #f0fff4;
+  --tier-bg-to: #fffff0;
+  --tier-bg-gradient: linear-gradient(135deg, var(--tier-bg-from) 0%, var(--tier-bg-to) 100%);
+  --tier-card-border: rgba(45, 138, 78, 0.15);
+  --tier-card-shadow: 0 4px 12px rgba(45, 138, 78, 0.08);
+  --tier-card-hover-shadow: 0 8px 25px rgba(45, 138, 78, 0.15);
+  --tier-nav-bg: linear-gradient(135deg, #276749 0%, #2d8a4e 50%, #38a169 100%);
+  --tier-nav-text: #ffffff;
+  --tier-heading-color: #276749;
+  --tier-badge-bg: linear-gradient(135deg, #48bb78, #38a169);
+  --tier-button-gradient: linear-gradient(135deg, #48bb78, #2d8a4e);
+  --tier-button-hover: linear-gradient(135deg, #68d391, #38a169);
+  --tier-progress-fill: linear-gradient(90deg, #48bb78, #f6e05e);
+  --tier-emoji-bg: '🌲';
+  --tier-emoji-accent: '🧭';
+}
+
+/* === SCHOLARS' GUILD (5th–8th) === */
+[data-tier="scholars"] {
+  --tier-primary: #5b21b6;
+  --tier-primary-light: #7c3aed;
+  --tier-primary-dark: #4c1d95;
+  --tier-secondary: #d97706;
+  --tier-secondary-light: #fbbf24;
+  --tier-accent: #a78bfa;
+  --tier-bg-from: #f5f3ff;
+  --tier-bg-to: #fffbeb;
+  --tier-bg-gradient: linear-gradient(135deg, var(--tier-bg-from) 0%, var(--tier-bg-to) 100%);
+  --tier-card-border: rgba(91, 33, 182, 0.12);
+  --tier-card-shadow: 0 4px 12px rgba(91, 33, 182, 0.08);
+  --tier-card-hover-shadow: 0 8px 25px rgba(91, 33, 182, 0.15);
+  --tier-nav-bg: linear-gradient(135deg, #4c1d95 0%, #5b21b6 50%, #6d28d9 100%);
+  --tier-nav-text: #ffffff;
+  --tier-heading-color: #4c1d95;
+  --tier-badge-bg: linear-gradient(135deg, #7c3aed, #5b21b6);
+  --tier-button-gradient: linear-gradient(135deg, #7c3aed, #5b21b6);
+  --tier-button-hover: linear-gradient(135deg, #a78bfa, #6d28d9);
+  --tier-progress-fill: linear-gradient(90deg, #7c3aed, #fbbf24);
+}
+
+/* === THE COLLEGIUM (9th–12th) === */
+[data-tier="collegium"] {
+  --tier-primary: #1e3a5f;
+  --tier-primary-light: #2563eb;
+  --tier-primary-dark: #1e1b4b;
+  --tier-secondary: #991b1b;
+  --tier-secondary-light: #dc2626;
+  --tier-accent: #d4af37;
+  --tier-bg-from: #f0f4f8;
+  --tier-bg-to: #fef3f2;
+  --tier-bg-gradient: linear-gradient(135deg, var(--tier-bg-from) 0%, var(--tier-bg-to) 100%);
+  --tier-card-border: rgba(30, 58, 95, 0.12);
+  --tier-card-shadow: 0 4px 12px rgba(30, 58, 95, 0.08);
+  --tier-card-hover-shadow: 0 8px 25px rgba(30, 58, 95, 0.15);
+  --tier-nav-bg: linear-gradient(135deg, #1e1b4b 0%, #1e3a5f 50%, #2563eb 100%);
+  --tier-nav-text: #ffffff;
+  --tier-heading-color: #1e3a5f;
+  --tier-badge-bg: linear-gradient(135deg, #2563eb, #1e3a5f);
+  --tier-button-gradient: linear-gradient(135deg, #2563eb, #1e3a5f);
+  --tier-button-hover: linear-gradient(135deg, #3b82f6, #2563eb);
+  --tier-progress-fill: linear-gradient(90deg, #2563eb, #d4af37);
+}
+
+/* ═══════ THEMED COMPONENTS ═══════ */
+
+/* Themed page background */
+.tier-page {
+  background: var(--tier-bg-gradient);
+  min-height: 100vh;
+}
+
+/* Themed card */
+.tier-card {
+  background: white;
+  border: 1px solid var(--tier-card-border);
+  border-radius: 16px;
+  box-shadow: var(--tier-card-shadow);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tier-card:hover {
+  box-shadow: var(--tier-card-hover-shadow);
+  transform: translateY(-2px);
+}
+
+/* Themed primary button */
+.tier-btn-primary {
+  background: var(--tier-button-gradient);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 24px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.tier-btn-primary:hover {
+  background: var(--tier-button-hover);
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.tier-btn-primary:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Themed progress bar */
+.tier-progress {
+  background: #e2e8f0;
+  border-radius: 999px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.tier-progress-bar {
+  background: var(--tier-progress-fill);
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Themed heading */
+.tier-heading {
+  color: var(--tier-heading-color);
+}
+
+/* Themed nav */
+.tier-nav {
+  background: var(--tier-nav-bg);
+  color: var(--tier-nav-text);
+}

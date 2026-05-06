@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import * as studentService from '../../services/students';
+import { studentService } from '../../services/students';
 import { getMilestones, upsertSoftSkillRating } from '../../services/milestones.service';
 import type { MilestoneNotification, SoftSkillKey } from '../../types/milestones';
 import { SOFT_SKILL_LABELS } from '../../types/milestones';

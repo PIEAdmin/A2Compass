@@ -56,6 +56,7 @@ const OrientationWizard = lazy(() => import('./pages/student/OrientationWizard')
 const StudentWelcome = lazy(() => import('./pages/student/StudentWelcome'))
 const WarmActivities = lazy(() => import('./pages/student/WarmActivities'))
 const StudentLibrary = lazy(() => import('./pages/student/StudentLibrary'))
+const RewardShop = lazy(() => import('./pages/student/RewardShop'))
 const LearningPathPage = lazy(() => import('./pages/student/LearningPathPage'))
 const GameLauncher = lazy(() => import('./pages/student/games/GameLauncher'))
 const DataExplorerPage = lazy(() => import('./components/student/DataExplorer'))
@@ -194,6 +195,7 @@ export default function App() {
         <Route path="student/progress" element={<StudentProgress />} />
         <Route path="student/achievements" element={<StudentAchievements />} />
         <Route path="student/library" element={<StudentLibrary />} />
+        <Route path="student/reward-shop" element={<RewardShop />} />
         <Route path="student/learning-path" element={<LearningPathPage />} />
         <Route path="student/game/:gameType" element={<GameLauncher />} />
         <Route path="student/data-explorer" element={<DataExplorerPage />} />

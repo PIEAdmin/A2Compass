@@ -70,6 +70,8 @@ const navItems: Record<string, NavItem[]> = {
     { path: '/student/progress', label: 'My Progress', icon: '🎯' },
     { path: '/student/achievements', label: 'Achievements', icon: '🏆' },
     { path: '/student/library', label: 'Library', icon: '📖' },
+    { path: '/student/reward-shop', label: 'Reward Shop', icon: '🛍️' },
+    { path: '/student/messages', label: 'Messages', icon: '💌' },
     { path: '/student/learning-path', label: 'Learning Path', icon: '🗺️' },
     { path: '/student/data-explorer', label: 'Data Explorer', icon: '📊' },
   ],
