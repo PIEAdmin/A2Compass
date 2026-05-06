@@ -83,6 +83,36 @@ export default function FlightPlan() {
     studentService.getStreak(user.id).then(s => setStreak(s)).catch(() => {});
   }, [user?.id]);
 
+  // Track student login (once per browser session)
+  useEffect(() => {
+    if (!user?.id) return;
+    const sessionKey = `login_logged_${user.id}`;
+    if (sessionStorage.getItem(sessionKey)) return; // Already logged this session
+    sessionStorage.setItem(sessionKey, 'true');
+
+    (async () => {
+      try {
+        // Get student_profile.id
+        const { data: sp } = await supabase
+          .from('student_profiles')
+          .select('id')
+          .eq('user_id', user.id)
+          .single();
+        if (!sp) return;
+
+        await supabase.from('activity_log').insert({
+          student_id: sp.id,
+          activity_type: 'login',
+          activity_name: 'Student Login',
+          details: { platform: navigator.userAgent.includes('Mobile') ? 'mobile' : 'desktop' }
+        });
+      } catch (err) {
+        console.error('Failed to log login:', err);
+      }
+    })();
+  }, [user?.id]);
+
+
   // Check onboarding status — redirect to orientation if not complete
   useEffect(() => {
     if (!user?.id) return;

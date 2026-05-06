@@ -28,6 +28,7 @@ const CurriculumPlanner = lazy(() => import('./pages/teacher/curriculum/Curricul
 const AssignmentTool = lazy(() => import('./pages/teacher/assignments/AssignmentTool'))
 const AssessmentDashboard = lazy(() => import('./pages/teacher/AssessmentDashboard'))
 const LiveMonitor = lazy(() => import('./pages/teacher/LiveMonitor'))
+const ActivityFeed = lazy(() => import('./pages/shared/ActivityFeed'))
 const ItemBankReview = lazy(() => import('./pages/teacher/ItemBankReview'))
 const CurriculumBrowser = lazy(() => import('./pages/teacher/CurriculumBrowser'))
 const ReportCardBuilder = lazy(() => import('./pages/teacher/ReportCardBuilder'))
