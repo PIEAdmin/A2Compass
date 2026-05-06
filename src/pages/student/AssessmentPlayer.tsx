@@ -270,6 +270,10 @@ export default function AssessmentPlayer() {
     itemHistory,
   } = useAssessmentPlayer(studentId);
 
+  // Derive item early so useEffects can safely reference it
+  const item = currentItem?.item;
+  const progress = currentItem?.progress;
+
   const [starsEarned, setStarsEarned] = useState(0);
   const [starAnimation, setStarAnimation] = useState(false);
   const [sessionType, setSessionType] = useState<SessionType>('initial_placement');
@@ -601,8 +605,7 @@ export default function AssessmentPlayer() {
   }
 
   // ---------- Main Question View ----------
-  const item = currentItem?.item;
-  const progress = currentItem?.progress;
+  // (item & progress moved up above useEffects to avoid TDZ crash)
   const skillsChecked = session?.skills_assessed ?? 0;
   const totalTarget = session?.target_skill_ids?.length || 0;
 
