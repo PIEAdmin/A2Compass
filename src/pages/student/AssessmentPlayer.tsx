@@ -280,6 +280,15 @@ export default function AssessmentPlayer() {
   const [existingSessions, setExistingSessions] = useState<any[]>([]);
   const [checkingExisting, setCheckingExisting] = useState(true);
 
+  // Warm-up phase state
+  const [warmupPhase, setWarmupPhase] = useState(false);
+  const [warmupItems, setWarmupItems] = useState<any[]>([]);
+  const [warmupIndex, setWarmupIndex] = useState(0);
+  const [warmupAnswer, setWarmupAnswer] = useState<string | null>(null);
+  const [warmupFeedback, setWarmupFeedback] = useState(false);
+  const [showWarmupIntro, setShowWarmupIntro] = useState(false);
+  const [needsWarmup, setNeedsWarmup] = useState(false);
+
   // Check for existing paused/in-progress sessions on load
   useEffect(() => {
     if (!studentId) return;
@@ -296,6 +305,26 @@ export default function AssessmentPlayer() {
           .order('updated_at', { ascending: false })
           .limit(5);
         setExistingSessions(data || []);
+        // Check if student needs warm-up (no prior schooling or low starting level)
+        try {
+          const { supabase } = await import('../../services/supabase');
+          const { data: profile } = await supabase
+            .from('student_profiles')
+            .select('no_prior_schooling, starting_assessment_level')
+            .eq('user_id', studentId)
+            .single();
+          if (profile?.no_prior_schooling || (profile?.starting_assessment_level != null && profile.starting_assessment_level <= 0)) {
+            setNeedsWarmup(true);
+            // Pre-fetch warm-up items
+            const { data: wItems } = await supabase
+              .from('assessment_items')
+              .select('id, question_data, hint_text, explanation')
+              .eq('is_warmup', true)
+              .eq('is_active', true)
+              .order('created_at');
+            if (wItems && wItems.length > 0) setWarmupItems(wItems);
+          }
+        } catch (e) { console.error('Warm-up check failed:', e); }
       } catch (e) { console.error('Failed to check existing sessions:', e); }
       setCheckingExisting(false);
     })();
@@ -406,7 +435,13 @@ export default function AssessmentPlayer() {
               </button>
 
               <button
-                onClick={() => startSession(sessionType)}
+                onClick={() => {
+                  if (needsWarmup && warmupItems.length > 0) {
+                    setShowWarmupIntro(true);
+                  } else {
+                    startSession(sessionType);
+                  }
+                }}
                 onMouseEnter={() => speak('Start a brand new adventure')}
                 className="w-full py-3 px-6 bg-gray-100 text-gray-600 font-medium rounded-2xl
                            hover:bg-gray-200 active:scale-95 transition-all text-sm"
@@ -426,7 +461,13 @@ export default function AssessmentPlayer() {
               </p>
 
               <button
-                onClick={() => startSession(sessionType)}
+                onClick={() => {
+                  if (needsWarmup && warmupItems.length > 0) {
+                    setShowWarmupIntro(true);
+                  } else {
+                    startSession(sessionType);
+                  }
+                }}
                 className="w-full py-4 px-6 bg-indigo-600 text-white text-xl font-bold rounded-2xl
                            hover:bg-indigo-700 active:scale-95 transition-all shadow-lg"
               >
@@ -438,6 +479,178 @@ export default function AssessmentPlayer() {
           <button
             onClick={() => speak(hasExisting ? 'Welcome back! You can continue where you left off or start fresh.' : 'Let\'s see what you already know! There are no wrong answers, just do your best!')}
             className="mt-4 text-indigo-500 hover:text-indigo-700 flex items-center justify-center gap-2 mx-auto"
+          >
+            🔊 Read to me
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+
+  // ---------- Warm-Up Intro Screen ----------
+  if (showWarmupIntro && !warmupPhase) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-orange-50 to-pink-50 flex items-center justify-center p-6">
+        <AnimationStyles />
+        <FloatingDecorations emojis={['🌟', '🎈', '🎉', '🌈', '🦋', '✨']} />
+        <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-xl p-10 max-w-md w-full text-center relative z-10 bounce-in">
+          <div className="text-6xl mb-4 pulse-soft">🎪</div>
+          <h1 className="text-3xl font-bold text-orange-600 mb-3">
+            Let's Warm Up First!
+          </h1>
+          <p className="text-gray-600 mb-2 text-lg">
+            Before your big adventure, let's try a few fun warm-up questions!
+          </p>
+          <p className="text-gray-500 mb-6">
+            These don't count — they're just for fun! 🎈
+          </p>
+          <button
+            onClick={() => {
+              setShowWarmupIntro(false);
+              setWarmupPhase(true);
+              setWarmupIndex(0);
+              setWarmupAnswer(null);
+              setWarmupFeedback(false);
+              setTimeout(() => {
+                const q = warmupItems[0]?.question_data?.prompt || warmupItems[0]?.question_data?.question || '';
+                speak('Here is a fun warm up question! ' + q);
+              }, 500);
+            }}
+            className="w-full py-4 px-6 bg-orange-500 text-white text-xl font-bold rounded-2xl
+                       hover:bg-orange-600 active:scale-95 transition-all shadow-lg mb-3"
+          >
+            🎯 I'm Ready!
+          </button>
+          <button
+            onClick={() => {
+              setShowWarmupIntro(false);
+              startSession(sessionType);
+            }}
+            className="w-full py-3 px-6 bg-gray-100 text-gray-500 font-medium rounded-xl
+                       hover:bg-gray-200 active:scale-95 transition-all text-sm"
+          >
+            Skip warm-up
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ---------- Warm-Up Question Screen ----------
+  if (warmupPhase && warmupItems.length > 0) {
+    const wItem = warmupItems[warmupIndex];
+    const qData = wItem?.question_data || {};
+    const options = qData.options || [];
+    const correctAnswer = qData.correctAnswer;
+    const questionText = qData.prompt || qData.question || 'Here is your question!';
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-orange-50 to-pink-50 flex items-center justify-center p-6">
+        <AnimationStyles />
+        <FloatingDecorations emojis={['⭐', '🎈', '🌟', '🎉']} />
+        <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-xl p-8 max-w-lg w-full relative z-10 bounce-in">
+          {/* Progress dots */}
+          <div className="flex justify-center gap-2 mb-4">
+            {warmupItems.map((_: any, i: number) => (
+              <div key={i} className={`w-3 h-3 rounded-full transition-all ${
+                i < warmupIndex ? 'bg-green-400 scale-110' :
+                i === warmupIndex ? 'bg-orange-400 scale-125 pulse-soft' : 'bg-gray-200'
+              }`} />
+            ))}
+          </div>
+
+          <div className="text-center mb-2">
+            <span className="text-sm font-medium text-orange-500 bg-orange-50 px-3 py-1 rounded-full">
+              ✨ Warm-Up {warmupIndex + 1} of {warmupItems.length}
+            </span>
+          </div>
+
+          <h2 className="text-2xl font-bold text-gray-800 text-center mt-4 mb-6">
+            {questionText}
+          </h2>
+
+          <div className="grid grid-cols-2 gap-3 mb-6">
+            {options.map((opt: string, i: number) => {
+              const isSelected = warmupAnswer === opt;
+              const isCorrect = opt === correctAnswer;
+              let btnClass = 'py-4 px-4 rounded-2xl text-lg font-bold transition-all border-2 ';
+              if (warmupFeedback) {
+                if (isCorrect) btnClass += 'bg-green-100 border-green-400 text-green-700 scale-105';
+                else if (isSelected && !isCorrect) btnClass += 'bg-red-50 border-red-300 text-red-400';
+                else btnClass += 'bg-gray-50 border-gray-200 text-gray-400';
+              } else if (isSelected) {
+                btnClass += 'bg-indigo-100 border-indigo-400 text-indigo-700 scale-105';
+              } else {
+                btnClass += 'bg-white border-gray-200 text-gray-700 hover:border-indigo-300 hover:bg-indigo-50 active:scale-95';
+              }
+              return (
+                <button
+                  key={i}
+                  onClick={() => {
+                    if (warmupFeedback) return;
+                    setWarmupAnswer(opt);
+                    setWarmupFeedback(true);
+                    if (opt === correctAnswer) {
+                      speak(wItem.explanation || 'Great job! That is correct!');
+                    } else {
+                      speak('Good try! The answer is ' + correctAnswer + '. ' + (wItem.explanation || ''));
+                    }
+                  }}
+                  onMouseEnter={() => !warmupFeedback && speak(opt)}
+                  className={btnClass}
+                  disabled={warmupFeedback}
+                >
+                  {opt}
+                </button>
+              );
+            })}
+          </div>
+
+          {warmupFeedback && (
+            <div className={`text-center p-4 rounded-2xl mb-4 bounce-in ${
+              warmupAnswer === correctAnswer ? 'bg-green-50' : 'bg-yellow-50'
+            }`}>
+              <div className="text-3xl mb-2">
+                {warmupAnswer === correctAnswer ? '🌟' : '💪'}
+              </div>
+              <p className="text-lg font-medium">
+                {warmupAnswer === correctAnswer
+                  ? (wItem.explanation || 'Amazing! You got it! 🎉')
+                  : `Good try! The answer is ${correctAnswer}. ${wItem.explanation || ''}`}
+              </p>
+            </div>
+          )}
+
+          {warmupFeedback && (
+            <button
+              onClick={() => {
+                if (warmupIndex + 1 >= warmupItems.length) {
+                  // Warm-up complete — start real assessment
+                  setWarmupPhase(false);
+                  speak('Great warm up! Now let us start your learning adventure!');
+                  setTimeout(() => startSession(sessionType), 1500);
+                } else {
+                  setWarmupIndex(warmupIndex + 1);
+                  setWarmupAnswer(null);
+                  setWarmupFeedback(false);
+                  setTimeout(() => {
+                    const nextQ = warmupItems[warmupIndex + 1]?.question_data?.prompt ||
+                                  warmupItems[warmupIndex + 1]?.question_data?.question || '';
+                    speak(nextQ);
+                  }, 400);
+                }
+              }}
+              className="w-full py-4 px-6 bg-orange-500 text-white text-xl font-bold rounded-2xl
+                         hover:bg-orange-600 active:scale-95 transition-all shadow-lg"
+            >
+              {warmupIndex + 1 >= warmupItems.length ? '🚀 Start My Adventure!' : '➡️ Next Question!'}
+            </button>
+          )}
+
+          <button
+            onClick={() => speak(questionText)}
+            className="mt-3 text-orange-500 hover:text-orange-700 flex items-center justify-center gap-2 mx-auto text-sm"
           >
             🔊 Read to me
           </button>
