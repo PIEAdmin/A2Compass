@@ -183,6 +183,7 @@ export interface PlayerState {
   isComplete: boolean;
   completionSummary: NextSkillResult['summary'] | null;
   domainTransition: string | null; // domain name when switching domains
+  itemHistory: Array<{skill: NextSkillResult | null, item: NextItemResult | null}>;
 }
 
 // ---------- Dashboard Aggregates ----------

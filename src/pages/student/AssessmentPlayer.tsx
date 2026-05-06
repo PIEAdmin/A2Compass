@@ -249,6 +249,9 @@ export default function AssessmentPlayer() {
     useHint,
     pauseSession,
     resumeSession,
+    goBack,
+    skipItem,
+    itemHistory,
   } = useAssessmentPlayer(studentId);
 
   const [starsEarned, setStarsEarned] = useState(0);
@@ -581,6 +584,39 @@ export default function AssessmentPlayer() {
                 💡 {item.hintText}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Back & Skip Navigation */}
+        {item && !showFeedback && (
+          <div className="flex items-center justify-between mt-6 relative z-10">
+            {/* Back Button */}
+            {itemHistory && itemHistory.length > 0 ? (
+              <button
+                onClick={() => { if ('speechSynthesis' in window) window.speechSynthesis.cancel(); goBack(); }}
+                onMouseEnter={() => speakOption('Go back')}
+                className="flex items-center gap-2 px-5 py-3 bg-white/90 hover:bg-gray-100
+                           border-2 border-gray-300 hover:border-indigo-400 rounded-2xl
+                           text-gray-600 hover:text-indigo-700 transition-all
+                           active:scale-95 shadow-sm hover:shadow-md font-bold text-base"
+              >
+                <span className="text-xl">⬅️</span> Go Back
+              </button>
+            ) : (
+              <div />
+            )}
+
+            {/* Skip Button */}
+            <button
+              onClick={() => { if ('speechSynthesis' in window) window.speechSynthesis.cancel(); skipItem(); }}
+              onMouseEnter={() => speakOption("Skip this one")}
+              className="flex items-center gap-2 px-5 py-3 bg-white/90 hover:bg-orange-50
+                         border-2 border-orange-300 hover:border-orange-400 rounded-2xl
+                         text-orange-600 hover:text-orange-700 transition-all
+                         active:scale-95 shadow-sm hover:shadow-md font-bold text-base"
+            >
+              Skip This One <span className="text-xl">⏭️</span>
+            </button>
           </div>
         )}
       </div>

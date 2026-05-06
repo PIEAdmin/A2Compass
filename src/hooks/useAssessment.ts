@@ -28,6 +28,7 @@ const INITIAL_PLAYER_STATE: PlayerState = {
   isComplete: false,
   completionSummary: null,
   domainTransition: null,
+  itemHistory: [],
 };
 
 // ==========================================================
@@ -161,6 +162,7 @@ export function useAssessmentPlayer(authUserId: string) {
         } else {
           setState((prev) => ({
             ...prev,
+            itemHistory: [...prev.itemHistory, { skill: prev.currentSkill, item: prev.currentItem }],
             currentItem: nextItem,
             showFeedback: false,
             lastResponse: null,
@@ -218,6 +220,7 @@ export function useAssessmentPlayer(authUserId: string) {
 
     setState((prev) => ({
       ...prev,
+      itemHistory: [...prev.itemHistory, { skill: prev.currentSkill, item: prev.currentItem }],
       currentSkill: nextSkill,
       currentItem: nextItem,
       showFeedback: false,
@@ -253,6 +256,51 @@ export function useAssessmentPlayer(authUserId: string) {
     }
   }, [state.session]);
 
+  /** Go back to the previous question */
+  const goBack = useCallback(() => {
+    // Cancel any in-progress TTS
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    setState((prev) => {
+      if (prev.itemHistory.length === 0) return prev;
+      const history = [...prev.itemHistory];
+      const previous = history.pop()!;
+      return {
+        ...prev,
+        itemHistory: history,
+        currentSkill: previous.skill,
+        currentItem: previous.item,
+        showFeedback: false,
+        lastResponse: null,
+        showHint: false,
+      };
+    });
+  }, []);
+
+  /** Skip the current question without frustration */
+  const skipItem = useCallback(async () => {
+    if (!state.session || !state.currentItem?.item) return;
+    setError(null);
+    try {
+      // Cancel any TTS
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+      // Record as a skipped response (incorrect, zero time)
+      const result: ProcessResponseResult =
+        await assessmentService.processResponse(
+          state.session.id,
+          state.currentItem.item.id,
+          { skipped: true },
+          false,
+          undefined,
+          0,
+          false
+        );
+      // Advance immediately — no feedback delay for skips
+      await advance(result);
+    } catch (err: any) {
+      setError(err.message || 'Failed to skip');
+    }
+  }, [state.session, state.currentItem]);
+
   return {
     ...state,
     loading,
@@ -262,6 +310,8 @@ export function useAssessmentPlayer(authUserId: string) {
     useHint,
     pauseSession,
     resumeSession,
+    goBack,
+    skipItem,
   };
 }
 
