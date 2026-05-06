@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import type { AppDispatch } from './store'
@@ -7,70 +7,74 @@ import { useAuth } from './hooks'
 import { DashboardLayout } from './components/layout'
 import { LoadingSpinner } from './components/common'
 
+// Lazy-loaded pages — each downloads only when visited
+const LoginPage = lazy(() => import('./pages/auth/LoginPage'))
+const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword'))
+const ResetPassword = lazy(() => import('./pages/auth/ResetPassword'))
+const RegisterPage = lazy(() => import('./pages/auth/RegisterPage'))
+const DeleteAccount = lazy(() => import('./pages/settings/DeleteAccount'))
+const AdminDashboard = lazy(() => import('./pages/admin/Dashboard'))
+const AdminBillingPage = lazy(() => import('./pages/admin/Billing'))
+const ApiSettings = lazy(() => import('./pages/admin/ApiSettings'))
+const TeacherDashboard = lazy(() => import('./pages/teacher/Dashboard'))
+const MissionControl = lazy(() => import('./pages/teacher/MissionControl'))
+const SkillMap = lazy(() => import('./pages/teacher/SkillMap'))
+const LessonsList = lazy(() => import('./pages/teacher/lessons/LessonsList'))
+const LessonBuilder = lazy(() => import('./pages/teacher/lessons/LessonBuilder'))
+const ActivitiesList = lazy(() => import('./pages/teacher/activities/ActivitiesList'))
+const ActivityCreator = lazy(() => import('./pages/teacher/activities/ActivityCreator'))
+const ContentLibrary = lazy(() => import('./pages/teacher/library/ContentLibrary'))
+const CurriculumPlanner = lazy(() => import('./pages/teacher/curriculum/CurriculumPlanner'))
+const AssignmentTool = lazy(() => import('./pages/teacher/assignments/AssignmentTool'))
+const AssessmentDashboard = lazy(() => import('./pages/teacher/AssessmentDashboard'))
+const LiveMonitor = lazy(() => import('./pages/teacher/LiveMonitor'))
+const ItemBankReview = lazy(() => import('./pages/teacher/ItemBankReview'))
+const CurriculumBrowser = lazy(() => import('./pages/teacher/CurriculumBrowser'))
+const ReportCardBuilder = lazy(() => import('./pages/teacher/ReportCardBuilder'))
+const StudentDiscoveryProfile = lazy(() => import('./pages/teacher/StudentDiscoveryProfile'))
+const PacingGuidePage = lazy(() => import('./pages/teacher/PacingGuidePage'))
+const DiscoveryGamesResults = lazy(() => import('./pages/teacher/DiscoveryGamesResults'))
+const TeacherResources = lazy(() => import('./pages/teacher/TeacherResources'))
+const SubjectManager = lazy(() => import('./pages/teacher/SubjectManager'))
+const ParentDashboard = lazy(() => import('./pages/parent/Dashboard'))
+const ParentBillingPage = lazy(() => import('./pages/parent/Billing'))
+const EnrollPage = lazy(() => import('./pages/parent/Enroll'))
+const GrowthTimeline = lazy(() => import('./pages/parent/GrowthTimeline'))
+const AssessmentSummary = lazy(() => import('./pages/parent/AssessmentSummary'))
+const ParentOrientation = lazy(() => import('./pages/parent/ParentOrientation'))
+const ParentLetters = lazy(() => import('./pages/parent/ParentLetters'))
+const ParentCurriculum = lazy(() => import('./pages/parent/ParentCurriculum'))
+const FlightPlan = lazy(() => import('./pages/student/FlightPlan'))
+const SkillPractice = lazy(() => import('./pages/student/SkillPractice'))
+const StudentSubjects = lazy(() => import('./pages/student/StudentSubjects'))
+const StudentProgress = lazy(() => import('./pages/student/StudentProgress'))
+const StudentAchievements = lazy(() => import('./pages/student/StudentAchievements'))
+const ActivityPlayer = lazy(() => import('./pages/student/activity-player/ActivityPlayer'))
+const AssessmentPlayer = lazy(() => import('./pages/student/AssessmentPlayer'))
+const OrientationWizard = lazy(() => import('./pages/student/OrientationWizard'))
+const StudentWelcome = lazy(() => import('./pages/student/StudentWelcome'))
+const WarmActivities = lazy(() => import('./pages/student/WarmActivities'))
+const StudentLibrary = lazy(() => import('./pages/student/StudentLibrary'))
+const LearningPathPage = lazy(() => import('./pages/student/LearningPathPage'))
+const GameLauncher = lazy(() => import('./pages/student/games/GameLauncher'))
+const DataExplorerPage = lazy(() => import('./components/student/DataExplorer'))
+const UnifiedReportCard = lazy(() => import('./pages/shared/UnifiedReportCard'))
+const Inbox = lazy(() => import('./pages/shared/Inbox'))
+const OrganizationIntake = lazy(() => import('./pages/admin/OrganizationIntake'))
+
+import { LoadingSpinner } from './components/common'
+
 // Auth
-import LoginPage from './pages/auth/LoginPage'
-import ForgotPassword from './pages/auth/ForgotPassword'
-import ResetPassword from './pages/auth/ResetPassword'
-import RegisterPage from './pages/auth/RegisterPage'
 
 // Settings
-import DeleteAccount from './pages/settings/DeleteAccount'
 
 // Admin pages
-import AdminDashboard from './pages/admin/Dashboard'
-import AdminBillingPage from './pages/admin/Billing'
-import ApiSettings from './pages/admin/ApiSettings'
 
 // Teacher pages
-import TeacherDashboard from './pages/teacher/Dashboard'
-import MissionControl from './pages/teacher/MissionControl'
-import SkillMap from './pages/teacher/SkillMap'
-import LessonsList from './pages/teacher/lessons/LessonsList'
-import LessonBuilder from './pages/teacher/lessons/LessonBuilder'
-import ActivitiesList from './pages/teacher/activities/ActivitiesList'
-import ActivityCreator from './pages/teacher/activities/ActivityCreator'
-import ContentLibrary from './pages/teacher/library/ContentLibrary'
-import CurriculumPlanner from './pages/teacher/curriculum/CurriculumPlanner'
-import AssignmentTool from './pages/teacher/assignments/AssignmentTool'
-import AssessmentDashboard from './pages/teacher/AssessmentDashboard'
-import LiveMonitor from './pages/teacher/LiveMonitor'
-import ItemBankReview from './pages/teacher/ItemBankReview'
-import CurriculumBrowser from './pages/teacher/CurriculumBrowser'
-import ReportCardBuilder from './pages/teacher/ReportCardBuilder'
-import StudentDiscoveryProfile from './pages/teacher/StudentDiscoveryProfile'
-import PacingGuidePage from './pages/teacher/PacingGuidePage'
-import DiscoveryGamesResults from './pages/teacher/DiscoveryGamesResults'
-import TeacherResources from './pages/teacher/TeacherResources'
-import SubjectManager from './pages/teacher/SubjectManager'
 
 // Parent pages
-import ParentDashboard from './pages/parent/Dashboard'
-import ParentBillingPage from './pages/parent/Billing'
-import EnrollPage from './pages/parent/Enroll'
-import GrowthTimeline from './pages/parent/GrowthTimeline'
-import AssessmentSummary from './pages/parent/AssessmentSummary'
-import ParentOrientation from './pages/parent/ParentOrientation'
-import ParentLetters from './pages/parent/ParentLetters'
-import ParentCurriculum from './pages/parent/ParentCurriculum'
 
 // Student pages
-import FlightPlan from './pages/student/FlightPlan'
-import SkillPractice from './pages/student/SkillPractice'
-import StudentSubjects from './pages/student/StudentSubjects'
-import StudentProgress from './pages/student/StudentProgress'
-import StudentAchievements from './pages/student/StudentAchievements'
-import ActivityPlayer from './pages/student/activity-player/ActivityPlayer'
-import AssessmentPlayer from './pages/student/AssessmentPlayer'
-import OrientationWizard from './pages/student/OrientationWizard'
-import StudentWelcome from './pages/student/StudentWelcome'
-import WarmActivities from './pages/student/WarmActivities'
-import StudentLibrary from './pages/student/StudentLibrary'
-import LearningPathPage from './pages/student/LearningPathPage'
-import GameLauncher from './pages/student/games/GameLauncher'
-import DataExplorerPage from './components/student/DataExplorer'
-import UnifiedReportCard from './pages/shared/UnifiedReportCard'
-import Inbox from './pages/shared/Inbox'
-import OrganizationIntake from './pages/admin/OrganizationIntake'
 
 function GuestRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, loading } = useAuth()
@@ -106,6 +110,7 @@ export default function App() {
   }, [dispatch])
 
   return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><LoadingSpinner /></div>}>
     <Routes>
       {/* Public auth routes */}
       <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
@@ -198,5 +203,6 @@ export default function App() {
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </Suspense>
   )
 }
