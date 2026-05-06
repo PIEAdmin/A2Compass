@@ -15,24 +15,75 @@ import type {
 
 // ---------- TTS Helper ----------
 const speak = (text: string) => {
-  if ('speechSynthesis' in window) {
-    window.speechSynthesis.cancel();
+  if (!text || !('speechSynthesis' in window)) return;
+  const synth = window.speechSynthesis;
+  // Chrome bug: cancel() then immediate speak() silently fails — add delay
+  synth.cancel();
+  // Resume in case synth got stuck in paused state
+  synth.resume();
+  setTimeout(() => {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = 0.85;
     utterance.pitch = 1.1;
-    window.speechSynthesis.speak(utterance);
-  }
+    // Fallback: pick a voice explicitly if available
+    const voices = synth.getVoices();
+    const english = voices.find(v => v.lang.startsWith('en') && v.localService);
+    if (english) utterance.voice = english;
+    synth.speak(utterance);
+    // Chrome watchdog: if paused after 10s, resume
+    setTimeout(() => { if (synth.speaking && synth.paused) synth.resume(); }, 10000);
+  }, 80);
 };
 
-/** Read question text AND all answer choices aloud */
+// Pre-load voices on module init (Chrome loads them lazily)
+if ('speechSynthesis' in window) {
+  window.speechSynthesis.getVoices();
+  window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
+}
+
+/** Read question text AND all answer choices aloud with clear instructions */
 const speakWithChoices = (questionText: string, questionData: Record<string, any>, questionType: string) => {
-  let fullText = questionText;
+  // Build a child-friendly instruction prefix based on question type
+  let instruction = '';
+  switch (questionType) {
+    case 'multiple_choice':
+      instruction = 'Pick the best answer. ';
+      break;
+    case 'tap_select':
+      instruction = 'Tap all the right answers. ';
+      break;
+    case 'counting':
+      instruction = 'Count what you see, then pick the right number. ';
+      break;
+    case 'sequence':
+      instruction = 'Put these in the right order. Tap them one at a time. ';
+      break;
+    case 'fill_blank':
+      instruction = 'Pick the word that fills in the blank. ';
+      break;
+    case 'matching':
+      instruction = 'Match each item on the left with its pair on the right. ';
+      break;
+    case 'drag_drop':
+      instruction = 'Put each item where it belongs. ';
+      break;
+    case 'teacher_observed':
+      instruction = 'Your teacher will help you with this one. ';
+      break;
+    case 'audio_response':
+      instruction = 'Say your answer out loud. ';
+      break;
+    default:
+      instruction = 'Listen carefully. ';
+  }
+
+  let fullText = instruction + (questionText || 'Here is your question.');
+
   // Collect choices based on question type
   const opts: string[] = questionData?.options || [];
   const items: any[] = questionData?.items || [];
   const pairs: any[] = questionData?.pairs || [];
   const draggables: any[] = questionData?.draggables || [];
-  const targets: any[] = questionData?.targets || [];
 
   if (opts.length > 0) {
     const labels = opts.map((o: any) => typeof o === 'object' ? (o.text || o.label || String(o)) : String(o));
@@ -40,14 +91,19 @@ const speakWithChoices = (questionText: string, questionData: Record<string, any
   } else if (items.length > 0 && questionType !== 'sequence') {
     const labels = items.map((it: any) => it.label || it.text || String(it));
     fullText += '. The choices are: ' + labels.join(', ') + '.';
+  } else if (items.length > 0 && questionType === 'sequence') {
+    const labels = items.map((it: any) => it.label || it.text || String(it));
+    fullText += '. The items are: ' + labels.join(', ') + '.';
   } else if (questionType === 'counting') {
-    const count = questionData?.correctCount || questionData?.objects?.length || 0;
     fullText += '. Count the objects you see and tap the right number.';
   } else if (pairs.length > 0) {
-    fullText += '. Match each item on the left with its pair on the right.';
+    const leftItems = pairs.map((p: any) => p.left || '').filter(Boolean);
+    const rightItems = pairs.map((p: any) => p.right || '').filter(Boolean);
+    if (leftItems.length) fullText += '. On the left: ' + leftItems.join(', ') + '.';
+    if (rightItems.length) fullText += ' On the right: ' + rightItems.join(', ') + '.';
   } else if (draggables.length > 0) {
     const dragLabels = draggables.map((d: any) => typeof d === 'object' ? (d.label || d.id) : d);
-    fullText += '. Put these items where they belong: ' + dragLabels.join(', ') + '.';
+    fullText += '. The items to sort are: ' + dragLabels.join(', ') + '.';
   }
   speak(fullText);
 };
@@ -207,6 +263,25 @@ export default function AssessmentPlayer() {
       setTimeout(() => setStarAnimation(false), 600);
     }
   }, [lastResponse]);
+
+  // Auto-read question aloud when a new question loads
+  useEffect(() => {
+    if (item && !showFeedback) {
+      const qText =
+        item.questionData?.questionText ||
+        item.questionData?.prompt ||
+        item.audioPrompt ||
+        '';
+      const timer = setTimeout(() => {
+        speakWithChoices(
+          qText,
+          item.questionData || {},
+          item.questionType || 'multiple_choice'
+        );
+      }, 600);
+      return () => { clearTimeout(timer); if ('speechSynthesis' in window) window.speechSynthesis.cancel(); };
+    }
+  }, [item?.id]);
 
   // ---------- Error State (check BEFORE start screen so errors are visible) ----------
   if (error && !session) {
@@ -473,10 +548,13 @@ export default function AssessmentPlayer() {
                   item.questionType || 'multiple_choice'
                 );
               }}
-              className="mb-6 flex items-center gap-2 text-indigo-500 hover:text-indigo-700 transition-colors group"
+              className="mb-6 flex items-center gap-3 px-5 py-3 bg-indigo-50 hover:bg-indigo-100
+                         border-2 border-indigo-200 hover:border-indigo-400 rounded-2xl
+                         text-indigo-600 hover:text-indigo-800 transition-all group
+                         active:scale-95 shadow-sm hover:shadow-md"
             >
-              <span className="text-3xl group-hover:scale-110 transition-transform">🔊</span>
-              <span className="text-sm font-medium">Play Question</span>
+              <span className="text-3xl group-hover:scale-110 transition-transform animate-pulse">🔊</span>
+              <span className="text-base font-bold">Hear Question</span>
             </button>
 
             {/* Render the appropriate question type — key forces fresh state per question */}
