@@ -34,20 +34,45 @@ export default function Enroll() {
     address: '', city: '', state: '', zip: '', estimatedStudents: '10', website: ''
   });
 
+  /* ── Tier+interval → pricing_packages slug ──────────────── */
+  const TIER_SLUG_MAP: Record<string, string> = {
+    'spark-monthly': 'spark-monthly',
+    'spark-annual': 'spark-annual',
+    'launch-monthly': 'launch-monthly',
+    'launch-annual': 'launch-annual',
+    'launch-founders-monthly': 'launch-founders',
+  };
+
   /* ── Individual Plan Selection → Checkout ──────────────── */
   async function handleSelectPlan(tier: 'spark' | 'launch' | 'launch-founders', interval: BillingInterval) {
     if (!user) { navigate('/login?redirect=/parent/enroll'); return; }
     setLoading(true);
     try {
+      // Look up the stripe_price_id from pricing_packages
+      const slug = TIER_SLUG_MAP[`${tier}-${interval}`] || tier;
+      const { data: pkg, error: pkgErr } = await supabase
+        .from('pricing_packages')
+        .select('stripe_price_id')
+        .eq('slug', slug)
+        .eq('is_active', true)
+        .single();
+      if (pkgErr || !pkg?.stripe_price_id) throw new Error('Plan not found. Please try again.');
+
       const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-        body: { tier, interval, userId: user.id }
+        body: {
+          price_id: pkg.stripe_price_id,
+          parent_id: user.id,
+          mode: 'subscription',
+          success_url: `${window.location.origin}/parent?enrolled=true`,
+          cancel_url: `${window.location.origin}/parent/enroll`,
+        }
       });
       if (error) throw error;
       if (data?.url) window.location.href = data.url;
       else alert('Checkout session created! Check your email for payment link.');
     } catch (err: any) {
       console.error('Checkout error:', err);
-      alert('Unable to start checkout right now. Please try again or contact us at admin@aaacademy.us');
+      alert(err.message || 'Unable to start checkout right now. Please try again or contact us at admin@aaacademy.us');
     } finally {
       setLoading(false);
     }
