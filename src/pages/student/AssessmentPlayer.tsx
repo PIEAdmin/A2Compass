@@ -317,19 +317,7 @@ export default function AssessmentPlayer() {
   const item = currentItem?.item;
   const progress = currentItem?.progress;
 
-  // DEBUG: Track render cycles to find infinite loop
-  const renderCount = useRef(0);
-  renderCount.current++;
-  if (renderCount.current > 50) {
-    console.error('🔴 RENDER LOOP DETECTED', renderCount.current, {
-      session: !!session, loading, isPaused, isComplete, error, item: !!item, domainTransition,
-      checkingExisting, existingSessions: existingSessions.length, warmupPhase
-    });
-  } else if (renderCount.current > 3) {
-    console.log('🔵 Render #' + renderCount.current, {
-      session: !!session, loading, isPaused, isComplete, error: !!error, item: !!item
-    });
-  }
+
 
   const [starsEarned, setStarsEarned] = useState(0);
   const [starAnimation, setStarAnimation] = useState(false);
@@ -395,6 +383,29 @@ export default function AssessmentPlayer() {
       setTimeout(() => setStarAnimation(false), 600);
     }
   }, [lastResponse]);
+
+  // Auto-generate improvement Flight Plan from wrong answers when assessment completes
+  // NOTE: This MUST be before all conditional returns — React hooks must run in same order every render
+  useEffect(() => {
+    if (!isComplete || !studentId) return;
+    (async () => {
+      try {
+        const { getStudentProfileId } = await import('../../services/students');
+        const { supabase } = await import('../../services/supabase');
+        const spId = await getStudentProfileId(studentId);
+        if (!spId) return;
+        const { data, error: rpcErr } = await supabase.rpc('generate_improvement_playlist', {
+          p_student_profile_id: spId,
+          p_auth_user_id: studentId
+        });
+        if (rpcErr) console.error('Failed to generate improvement playlist:', rpcErr);
+        else if (data && data.length > 0) {
+          const inserted = data.filter((d: any) => d.inserted);
+          console.log(`📋 Flight Plan updated: ${inserted.length} improvement skills added from assessment errors`);
+        }
+      } catch (e) { console.error('Improvement playlist error:', e); }
+    })();
+  }, [isComplete, studentId]);
 
   // Auto-read question aloud when a new question loads
   useEffect(() => {
@@ -751,28 +762,6 @@ export default function AssessmentPlayer() {
     );
   }
 
-
-  // Auto-generate improvement Flight Plan from wrong answers when assessment completes
-  useEffect(() => {
-    if (!isComplete || !studentId) return;
-    (async () => {
-      try {
-        const { getStudentProfileId } = await import('../../services/students');
-        const { supabase } = await import('../../services/supabase');
-        const spId = await getStudentProfileId(studentId);
-        if (!spId) return;
-        const { data, error } = await supabase.rpc('generate_improvement_playlist', {
-          p_student_profile_id: spId,
-          p_auth_user_id: studentId
-        });
-        if (error) console.error('Failed to generate improvement playlist:', error);
-        else if (data && data.length > 0) {
-          const inserted = data.filter((d: any) => d.inserted);
-          console.log(`📋 Flight Plan updated: ${inserted.length} improvement skills added from assessment errors`);
-        }
-      } catch (e) { console.error('Improvement playlist error:', e); }
-    })();
-  }, [isComplete, studentId]);
 
   // ---------- Completion Screen ----------
   if (isComplete) {
