@@ -2,7 +2,7 @@
 // A² Compass — Assessment Player (Student-Facing)
 // Child-friendly, audio-supported, game-like assessment experience
 // ============================================================
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAssessmentPlayer } from '../../hooks/useAssessment';
 import { useAuth } from '../../hooks';
 import { LoadingSpinner } from '../../components/common';
@@ -1284,7 +1284,10 @@ function QuestionRenderer({ item, questionType, onAnswer, showHint, disabled }: 
 }
 
 // ==========================================================
-// Question Type Renderers
+// ==========================================================
+// Question Type Renderers — ENHANCED
+// Button fixes: processing state, speaker icons, touch support,
+// double-submit prevention, loading indicators
 // ==========================================================
 
 interface QProps {
@@ -1293,13 +1296,55 @@ interface QProps {
   disabled: boolean;
 }
 
-/** Large, friendly multiple-choice buttons */
+/** Speaker icon button for individual answer choices */
+function SpeakerIcon({ text, size = 'md' }: { text: string; size?: 'sm' | 'md' }) {
+  const [reading, setReading] = useState(false);
+  const handleRead = (e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (reading) return;
+    setReading(true);
+    speakOption(text);
+    setTimeout(() => setReading(false), 1500);
+  };
+  return (
+    <button
+      onClick={handleRead}
+      onTouchEnd={handleRead}
+      className={`inline-flex items-center justify-center rounded-full flex-shrink-0
+        ${reading ? 'text-indigo-600 animate-pulse' : 'text-gray-400 hover:text-indigo-500'}
+        transition-colors ${size === 'sm' ? 'p-0.5' : 'p-1'}`}
+      aria-label={`Read aloud: ${text}`}
+      type="button"
+    >
+      <svg className={size === 'sm' ? 'w-4 h-4' : 'w-5 h-5'} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15.536 8.464a5 5 0 010 7.072M11 5L6 9H2v6h4l5 4V5z" />
+      </svg>
+    </button>
+  );
+}
+
+/** Large, friendly multiple-choice buttons — with processing state + speaker icons */
 function MultipleChoiceRenderer({ item, onAnswer, disabled }: QProps) {
+  const [processing, setProcessing] = useState<string | null>(null);
+  const submittedRef = useRef(false);
   const qd = item.questionData;
   const options: string[] = qd.options || [];
   const correctAnswer = qd.correctAnswer ?? qd.answer;
   const questionText = qd.questionText || qd.prompt || '';
   const displayContent = qd.display || qd.stimulus;
+
+  // Reset on new item
+  useEffect(() => { submittedRef.current = false; setProcessing(null); }, [item.id]);
+
+  const handleSelect = (opt: string) => {
+    if (disabled || submittedRef.current || processing) return;
+    submittedRef.current = true;
+    setProcessing(opt);
+    const isCorrect = opt === correctAnswer;
+    // Tiny delay for visual feedback
+    setTimeout(() => onAnswer({ selected: opt }, isCorrect), 120);
+  };
 
   return (
     <div>
@@ -1309,24 +1354,29 @@ function MultipleChoiceRenderer({ item, onAnswer, disabled }: QProps) {
           {displayContent}
         </div>
       )}
-      <div className="grid grid-cols-2 gap-4 mt-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
         {options.map((opt, idx) => (
           <button
             key={idx}
-            onClick={() => {
-              if (disabled) return;
-              const isCorrect = opt === correctAnswer;
-              onAnswer({ selected: opt }, isCorrect);
-            }}
-            onMouseEnter={() => speakOption(opt)}
-            onFocus={() => speakOption(opt)}
-            disabled={disabled}
-            className="min-h-[64px] p-4 text-lg font-bold rounded-2xl border-2 border-gray-200
-                       bg-white hover:bg-indigo-50 hover:border-indigo-400 hover:shadow-md
-                       active:scale-95 transition-all disabled:opacity-50
-                       text-gray-800 shadow-sm hover-grow speak-hover"
+            onClick={() => handleSelect(opt)}
+            onTouchEnd={(e) => { e.preventDefault(); handleSelect(opt); }}
+            onMouseEnter={() => { if (!processing) speakOption(opt); }}
+            onFocus={() => { if (!processing) speakOption(opt); }}
+            disabled={disabled || (!!processing && processing !== opt)}
+            className={`min-h-[64px] p-4 text-lg font-bold rounded-2xl border-2 transition-all
+                       flex items-center justify-between gap-2
+                       ${processing === opt
+                         ? 'bg-indigo-100 border-indigo-500 scale-95'
+                         : 'bg-white border-gray-200 hover:bg-indigo-50 hover:border-indigo-400 hover:shadow-md active:scale-95'
+                       }
+                       disabled:opacity-50 text-gray-800 shadow-sm`}
           >
-            {opt}
+            <span className="flex-1 text-left">{opt}</span>
+            {processing === opt ? (
+              <span className="animate-spin text-indigo-600">⏳</span>
+            ) : (
+              <SpeakerIcon text={opt} />
+            )}
           </button>
         ))}
       </div>
@@ -1337,58 +1387,69 @@ function MultipleChoiceRenderer({ item, onAnswer, disabled }: QProps) {
 /** Tap to select multiple correct answers */
 function TapSelectRenderer({ item, onAnswer, disabled }: QProps) {
   const [selected, setSelected] = useState<string[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+  const submittedRef = useRef(false);
   const qd = item.questionData;
   const options: string[] = qd.options || [];
   const correctAnswers: string[] = qd.correctAnswers || [];
   const questionText = qd.questionText || qd.prompt || '';
 
+  useEffect(() => { submittedRef.current = false; setSubmitting(false); setSelected([]); }, [item.id]);
+
   const toggle = (opt: string) => {
-    if (disabled) return;
+    if (disabled || submitting) return;
     setSelected((prev) =>
       prev.includes(opt) ? prev.filter((s) => s !== opt) : [...prev, opt]
     );
   };
 
   const handleSubmit = () => {
+    if (submittedRef.current || submitting) return;
+    submittedRef.current = true;
+    setSubmitting(true);
     const isCorrect =
       selected.length === correctAnswers.length &&
       selected.every((s) => correctAnswers.includes(s));
-    onAnswer({ selected }, isCorrect);
+    setTimeout(() => onAnswer({ selected }, isCorrect), 120);
   };
 
   return (
     <div>
       <p className="text-xl font-semibold text-gray-800 mb-4">{questionText}</p>
       <p className="text-sm text-gray-500 mb-4">Tap all that are correct!</p>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {options.map((opt, idx) => (
           <button
             key={idx}
             onClick={() => toggle(opt)}
+            onTouchEnd={(e) => { e.preventDefault(); toggle(opt); }}
             onMouseEnter={() => speakOption(opt)}
             onFocus={() => speakOption(opt)}
-            disabled={disabled}
+            disabled={disabled || submitting}
             className={`min-h-[64px] p-4 text-lg font-bold rounded-2xl border-2 transition-all
-                       active:scale-95 disabled:opacity-50
-                       ${
-                         selected.includes(opt)
-                           ? 'bg-indigo-100 border-indigo-500 text-indigo-800'
-                           : 'bg-white border-gray-200 text-gray-800 hover:bg-indigo-50'
-                       } speak-hover`}
+                       flex items-center justify-between gap-2 active:scale-95 disabled:opacity-50
+                       ${selected.includes(opt)
+                         ? 'bg-indigo-100 border-indigo-500 text-indigo-800'
+                         : 'bg-white border-gray-200 text-gray-800 hover:bg-indigo-50'
+                       }`}
           >
-            {selected.includes(opt) && '✓ '}
-            {opt}
+            <span className="flex-1 text-left">
+              {selected.includes(opt) && '✓ '}{opt}
+            </span>
+            <SpeakerIcon text={opt} />
           </button>
         ))}
       </div>
       {selected.length > 0 && (
         <button
           onClick={handleSubmit}
-          disabled={disabled}
+          onTouchEnd={(e) => { e.preventDefault(); handleSubmit(); }}
+          disabled={disabled || submitting}
           className="mt-6 w-full py-4 bg-indigo-600 text-white text-lg font-bold rounded-2xl
-                     hover:bg-indigo-700 active:scale-95 transition-all"
+                     hover:bg-indigo-700 active:scale-95 transition-all disabled:opacity-50
+                     flex items-center justify-center gap-2"
         >
-          Check my answer!
+          {submitting ? <><span className="animate-spin">⏳</span> Checking...</> : 'Check my answer!'}
         </button>
       )}
     </div>
@@ -1397,44 +1458,48 @@ function TapSelectRenderer({ item, onAnswer, disabled }: QProps) {
 
 /** Count visual objects */
 function CountingRenderer({ item, onAnswer, disabled }: QProps) {
-  const [count, setCount] = useState<number | null>(null);
+  const [processing, setProcessing] = useState<number | null>(null);
+  const submittedRef = useRef(false);
   const qd = item.questionData;
   const objects: string[] = qd.objects || [];
   const correctCount = qd.correctCount ?? objects.length;
   const questionText = qd.questionText || 'How many do you see?';
+
+  useEffect(() => { submittedRef.current = false; setProcessing(null); }, [item.id]);
+
+  const handleSelect = (num: number) => {
+    if (disabled || submittedRef.current || processing !== null) return;
+    submittedRef.current = true;
+    setProcessing(num);
+    setTimeout(() => onAnswer({ count: num }, num === correctCount), 120);
+  };
 
   return (
     <div>
       <p className="text-xl font-semibold text-gray-800 mb-4">{questionText}</p>
       <div className="flex flex-wrap gap-3 justify-center p-6 bg-blue-50 rounded-2xl mb-6">
         {objects.map((obj, idx) => (
-          <span key={idx} className="text-4xl">
-            {obj}
-          </span>
+          <span key={idx} className="text-4xl">{obj}</span>
         ))}
       </div>
-      <div className="flex items-center justify-center gap-3">
+      <div className="flex items-center justify-center gap-3 flex-wrap">
         {Array.from({ length: Math.min(10, correctCount + 3) }, (_, i) => i + 1).map(
           (num) => (
             <button
               key={num}
-              onClick={() => {
-                if (disabled) return;
-                setCount(num);
-                onAnswer({ count: num }, num === correctCount);
-              }}
+              onClick={() => handleSelect(num)}
+              onTouchEnd={(e) => { e.preventDefault(); handleSelect(num); }}
               onMouseEnter={() => speakOption(String(num))}
               onFocus={() => speakOption(String(num))}
-              disabled={disabled}
+              disabled={disabled || (processing !== null && processing !== num)}
               className={`w-14 h-14 text-xl font-bold rounded-2xl border-2 transition-all
                          active:scale-95 disabled:opacity-50
-                         ${
-                           count === num
-                             ? 'bg-indigo-500 border-indigo-600 text-white'
-                             : 'bg-white border-gray-200 text-gray-800 hover:bg-indigo-50'
+                         ${processing === num
+                           ? 'bg-indigo-500 border-indigo-600 text-white scale-95'
+                           : 'bg-white border-gray-200 text-gray-800 hover:bg-indigo-50'
                          }`}
             >
-              {num}
+              {processing === num ? '⏳' : num}
             </button>
           )
         )}
@@ -1443,17 +1508,31 @@ function CountingRenderer({ item, onAnswer, disabled }: QProps) {
   );
 }
 
-/** Fill in the blank with a dropdown or input */
+/** Fill in the blank with dropdown or input */
 function FillBlankRenderer({ item, onAnswer, disabled }: QProps) {
   const [value, setValue] = useState('');
+  const [processing, setProcessing] = useState<string | null>(null);
+  const submittedRef = useRef(false);
   const qd = item.questionData;
   const sentence = qd.sentence || qd.questionText || '';
   const options: string[] = qd.options || [];
   const correctAnswer = qd.correctAnswer ?? qd.answer;
 
-  const handleSubmit = () => {
-    if (disabled || !value) return;
-    onAnswer({ answer: value }, value === correctAnswer);
+  useEffect(() => { submittedRef.current = false; setProcessing(null); setValue(''); }, [item.id]);
+
+  const handleSelect = (opt: string) => {
+    if (disabled || submittedRef.current || processing) return;
+    submittedRef.current = true;
+    setProcessing(opt);
+    setValue(opt);
+    setTimeout(() => onAnswer({ answer: opt }, opt === correctAnswer), 120);
+  };
+
+  const handleTextSubmit = () => {
+    if (disabled || !value || submittedRef.current) return;
+    submittedRef.current = true;
+    setProcessing(value);
+    setTimeout(() => onAnswer({ answer: value }, value === correctAnswer), 120);
   };
 
   return (
@@ -1463,23 +1542,29 @@ function FillBlankRenderer({ item, onAnswer, disabled }: QProps) {
         {sentence.replace('___', '______')}
       </p>
       {options.length > 0 ? (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {options.map((opt, idx) => (
             <button
               key={idx}
-              onClick={() => {
-                if (disabled) return;
-                setValue(opt);
-                onAnswer({ answer: opt }, opt === correctAnswer);
-              }}
-              onMouseEnter={() => speakOption(opt)}
-              onFocus={() => speakOption(opt)}
-              disabled={disabled}
-              className="min-h-[64px] p-4 text-lg font-bold rounded-2xl border-2 border-gray-200
-                         bg-white hover:bg-indigo-50 hover:border-indigo-400
-                         active:scale-95 transition-all disabled:opacity-50"
+              onClick={() => handleSelect(opt)}
+              onTouchEnd={(e) => { e.preventDefault(); handleSelect(opt); }}
+              onMouseEnter={() => { if (!processing) speakOption(opt); }}
+              onFocus={() => { if (!processing) speakOption(opt); }}
+              disabled={disabled || (!!processing && processing !== opt)}
+              className={`min-h-[64px] p-4 text-lg font-bold rounded-2xl border-2 transition-all
+                         flex items-center justify-between gap-2
+                         ${processing === opt
+                           ? 'bg-indigo-100 border-indigo-500 scale-95'
+                           : 'bg-white border-gray-200 hover:bg-indigo-50 hover:border-indigo-400 active:scale-95'
+                         }
+                         disabled:opacity-50`}
             >
-              {opt}
+              <span className="flex-1 text-left">{opt}</span>
+              {processing === opt ? (
+                <span className="animate-spin text-indigo-600">⏳</span>
+              ) : (
+                <SpeakerIcon text={opt} />
+              )}
             </button>
           ))}
         </div>
@@ -1489,17 +1574,20 @@ function FillBlankRenderer({ item, onAnswer, disabled }: QProps) {
             type="text"
             value={value}
             onChange={(e) => setValue(e.target.value)}
-            disabled={disabled}
+            disabled={disabled || !!processing}
             className="flex-1 text-xl p-4 rounded-2xl border-2 border-gray-200 focus:border-indigo-400 outline-none"
             placeholder="Type your answer..."
+            onKeyDown={(e) => { if (e.key === 'Enter') handleTextSubmit(); }}
           />
           <button
-            onClick={handleSubmit}
-            disabled={disabled || !value}
+            onClick={handleTextSubmit}
+            onTouchEnd={(e) => { e.preventDefault(); handleTextSubmit(); }}
+            disabled={disabled || !value || !!processing}
             className="py-4 px-6 bg-indigo-600 text-white font-bold rounded-2xl
-                       hover:bg-indigo-700 active:scale-95 transition-all disabled:opacity-50"
+                       hover:bg-indigo-700 active:scale-95 transition-all disabled:opacity-50
+                       flex items-center gap-2"
           >
-            ✓
+            {processing ? <span className="animate-spin">⏳</span> : '✓'}
           </button>
         </div>
       )}
@@ -1509,29 +1597,37 @@ function FillBlankRenderer({ item, onAnswer, disabled }: QProps) {
 
 /** Simplified matching: tap pairs */
 function MatchingRenderer({ item, onAnswer, disabled }: QProps) {
+  const [submitting, setSubmitting] = useState(false);
+  const submittedRef = useRef(false);
   const qd = item.questionData;
   const pairs: { left: string; right: string }[] = qd.pairs || [];
   const [matched, setMatched] = useState<Record<string, string>>({});
   const [selectedLeft, setSelectedLeft] = useState<string | null>(null);
 
   const lefts = pairs.map((p) => p.left);
-  const rights = pairs.map((p) => p.right).sort(() => Math.random() - 0.5);
+  const [shuffledRights] = useState(() => pairs.map((p) => p.right).sort(() => Math.random() - 0.5));
+
+  useEffect(() => { submittedRef.current = false; setSubmitting(false); setMatched({}); setSelectedLeft(null); }, [item.id]);
 
   const handleLeftClick = (left: string) => {
-    if (disabled) return;
+    if (disabled || submitting) return;
     setSelectedLeft(left);
+    speakOption(left);
   };
 
   const handleRightClick = (right: string) => {
-    if (disabled || !selectedLeft) return;
+    if (disabled || !selectedLeft || submitting) return;
+    speakOption(right);
     const updated = { ...matched, [selectedLeft]: right };
     setMatched(updated);
     setSelectedLeft(null);
 
-    // Check if all matched
     if (Object.keys(updated).length === pairs.length) {
+      if (submittedRef.current) return;
+      submittedRef.current = true;
+      setSubmitting(true);
       const allCorrect = pairs.every((p) => updated[p.left] === p.right);
-      onAnswer({ matches: updated }, allCorrect);
+      setTimeout(() => onAnswer({ matches: updated }, allCorrect), 200);
     }
   };
 
@@ -1549,38 +1645,38 @@ function MatchingRenderer({ item, onAnswer, disabled }: QProps) {
             <button
               key={left}
               onClick={() => handleLeftClick(left)}
-              onMouseEnter={() => speakOption(left)}
-              onFocus={() => speakOption(left)}
-              disabled={disabled || !!matched[left]}
+              onTouchEnd={(e) => { e.preventDefault(); handleLeftClick(left); }}
+              disabled={disabled || !!matched[left] || submitting}
               className={`w-full min-h-[56px] p-3 text-lg font-bold rounded-xl border-2 transition-all
-                         ${
-                           matched[left]
-                             ? 'bg-green-100 border-green-400 text-green-800'
-                             : selectedLeft === left
-                             ? 'bg-indigo-100 border-indigo-500 text-indigo-800'
-                             : 'bg-white border-gray-200 hover:bg-indigo-50'
-                         }`}
+                flex items-center justify-between gap-2
+                ${matched[left]
+                  ? 'bg-green-100 border-green-400 text-green-800'
+                  : selectedLeft === left
+                  ? 'bg-indigo-100 border-indigo-500 text-indigo-800'
+                  : 'bg-white border-gray-200 hover:bg-indigo-50'
+                }`}
             >
-              {left}
+              <span>{left}</span>
+              <SpeakerIcon text={left} size="sm" />
             </button>
           ))}
         </div>
         <div className="space-y-3">
-          {rights.map((right) => (
+          {shuffledRights.map((right) => (
             <button
               key={right}
               onClick={() => handleRightClick(right)}
-              onMouseEnter={() => speakOption(right)}
-              onFocus={() => speakOption(right)}
-              disabled={disabled || Object.values(matched).includes(right)}
+              onTouchEnd={(e) => { e.preventDefault(); handleRightClick(right); }}
+              disabled={disabled || Object.values(matched).includes(right) || submitting}
               className={`w-full min-h-[56px] p-3 text-lg font-bold rounded-xl border-2 transition-all
-                         ${
-                           Object.values(matched).includes(right)
-                             ? 'bg-green-100 border-green-400 text-green-800'
-                             : 'bg-white border-gray-200 hover:bg-purple-50'
-                         }`}
+                flex items-center justify-between gap-2
+                ${Object.values(matched).includes(right)
+                  ? 'bg-green-100 border-green-400 text-green-800'
+                  : 'bg-white border-gray-200 hover:bg-purple-50'
+                }`}
             >
-              {right}
+              <span>{right}</span>
+              <SpeakerIcon text={right} size="sm" />
             </button>
           ))}
         </div>
@@ -1589,22 +1685,30 @@ function MatchingRenderer({ item, onAnswer, disabled }: QProps) {
   );
 }
 
-/** Sequence: tap "which comes first/next?" simplified */
+/** Sequence: tap in correct order */
 function SequenceRenderer({ item, onAnswer, disabled }: QProps) {
+  const [submitting, setSubmitting] = useState(false);
+  const submittedRef = useRef(false);
   const qd = item.questionData;
   const items: string[] = qd.items || [];
   const correctOrder: string[] = qd.correctOrder || items;
   const [order, setOrder] = useState<string[]>([]);
   const remaining = items.filter((i) => !order.includes(i));
 
+  useEffect(() => { submittedRef.current = false; setSubmitting(false); setOrder([]); }, [item.id]);
+
   const handleTap = (val: string) => {
-    if (disabled) return;
+    if (disabled || submitting) return;
+    speakOption(val);
     const newOrder = [...order, val];
     setOrder(newOrder);
 
     if (newOrder.length === items.length) {
+      if (submittedRef.current) return;
+      submittedRef.current = true;
+      setSubmitting(true);
       const isCorrect = newOrder.every((v, i) => v === correctOrder[i]);
-      onAnswer({ order: newOrder }, isCorrect);
+      setTimeout(() => onAnswer({ order: newOrder }, isCorrect), 200);
     }
   };
 
@@ -1615,34 +1719,32 @@ function SequenceRenderer({ item, onAnswer, disabled }: QProps) {
       </p>
       <p className="text-sm text-gray-500 mb-4">Tap them in the right order.</p>
 
-      {/* Selected order */}
       {order.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-4 p-4 bg-green-50 rounded-2xl min-h-[56px]">
           {order.map((val, idx) => (
-            <span
-              key={idx}
-              className="px-4 py-2 bg-green-200 text-green-800 font-bold rounded-xl text-lg"
-            >
+            <span key={idx} className="px-4 py-2 bg-green-200 text-green-800 font-bold rounded-xl text-lg">
               {idx + 1}. {val}
             </span>
           ))}
         </div>
       )}
 
-      {/* Remaining items */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {remaining.map((val, idx) => (
           <button
             key={idx}
             onClick={() => handleTap(val)}
+            onTouchEnd={(e) => { e.preventDefault(); handleTap(val); }}
             onMouseEnter={() => speakOption(val)}
             onFocus={() => speakOption(val)}
-            disabled={disabled}
+            disabled={disabled || submitting}
             className="min-h-[64px] p-4 text-lg font-bold rounded-2xl border-2 border-gray-200
                        bg-white hover:bg-indigo-50 hover:border-indigo-400
-                       active:scale-95 transition-all disabled:opacity-50"
+                       active:scale-95 transition-all disabled:opacity-50
+                       flex items-center justify-between gap-2"
           >
-            {val}
+            <span className="flex-1 text-left">{val}</span>
+            <SpeakerIcon text={val} />
           </button>
         ))}
       </div>
@@ -1652,6 +1754,8 @@ function SequenceRenderer({ item, onAnswer, disabled }: QProps) {
 
 /** Simplified drag-drop: tap source then tap target */
 function DragDropRenderer({ item, onAnswer, disabled }: QProps) {
+  const [submitting, setSubmitting] = useState(false);
+  const submittedRef = useRef(false);
   const qd = item.questionData;
   const draggables: string[] = qd.draggables || qd.items || [];
   const targets: string[] = qd.targets || qd.zones || [];
@@ -1659,22 +1763,27 @@ function DragDropRenderer({ item, onAnswer, disabled }: QProps) {
   const [placements, setPlacements] = useState<Record<string, string>>({});
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
 
+  useEffect(() => { submittedRef.current = false; setSubmitting(false); setPlacements({}); setSelectedItem(null); }, [item.id]);
+
   const handleItemTap = (val: string) => {
-    if (disabled) return;
+    if (disabled || submitting) return;
     setSelectedItem(val);
+    speakOption(val);
   };
 
   const handleTargetTap = (target: string) => {
-    if (disabled || !selectedItem) return;
+    if (disabled || !selectedItem || submitting) return;
+    speakOption(target);
     const updated = { ...placements, [selectedItem]: target };
     setPlacements(updated);
     setSelectedItem(null);
 
     if (Object.keys(updated).length === draggables.length) {
-      const isCorrect = Object.entries(correctMapping).every(
-        ([k, v]) => updated[k] === v
-      );
-      onAnswer({ placements: updated }, isCorrect);
+      if (submittedRef.current) return;
+      submittedRef.current = true;
+      setSubmitting(true);
+      const isCorrect = Object.entries(correctMapping).every(([k, v]) => updated[k] === v);
+      setTimeout(() => onAnswer({ placements: updated }, isCorrect), 200);
     }
   };
 
@@ -1683,58 +1792,46 @@ function DragDropRenderer({ item, onAnswer, disabled }: QProps) {
       <p className="text-xl font-semibold text-gray-800 mb-2">
         {qd.questionText || 'Put each item where it belongs!'}
       </p>
-      <p className="text-sm text-gray-500 mb-4">
-        Tap an item, then tap where it goes.
-      </p>
+      <p className="text-sm text-gray-500 mb-4">Tap an item, then tap where it goes.</p>
 
-      {/* Items */}
       <div className="flex flex-wrap gap-3 mb-6">
-        {draggables
-          .filter((d) => !placements[d])
-          .map((d, idx) => (
-            <button
-              key={idx}
-              onClick={() => handleItemTap(d)}
-              onMouseEnter={() => speakOption(d)}
-              onFocus={() => speakOption(d)}
-              disabled={disabled}
-              className={`px-4 py-3 text-lg font-bold rounded-xl border-2 transition-all
-                         active:scale-95
-                         ${
-                           selectedItem === d
-                             ? 'bg-indigo-100 border-indigo-500 text-indigo-800'
-                             : 'bg-white border-gray-200 hover:bg-indigo-50'
-                         }`}
-            >
-              {d}
-            </button>
-          ))}
+        {draggables.filter((d) => !placements[d]).map((d, idx) => (
+          <button
+            key={idx}
+            onClick={() => handleItemTap(d)}
+            onTouchEnd={(e) => { e.preventDefault(); handleItemTap(d); }}
+            disabled={disabled || submitting}
+            className={`px-4 py-3 text-lg font-bold rounded-xl border-2 transition-all active:scale-95
+              flex items-center gap-2
+              ${selectedItem === d
+                ? 'bg-indigo-100 border-indigo-500 text-indigo-800'
+                : 'bg-white border-gray-200 hover:bg-indigo-50'
+              }`}
+          >
+            {d} <SpeakerIcon text={d} size="sm" />
+          </button>
+        ))}
       </div>
 
-      {/* Targets */}
       <div className="grid grid-cols-2 gap-4">
         {targets.map((t, idx) => (
           <button
             key={idx}
             onClick={() => handleTargetTap(t)}
-            onMouseEnter={() => speakOption(t)}
-            onFocus={() => speakOption(t)}
-            disabled={disabled}
+            onTouchEnd={(e) => { e.preventDefault(); handleTargetTap(t); }}
+            disabled={disabled || submitting}
             className="min-h-[80px] p-4 border-2 border-dashed border-gray-300 rounded-2xl
                        bg-gray-50 hover:bg-purple-50 hover:border-purple-400 transition-all text-center"
           >
-            <span className="text-sm text-gray-500 block mb-1">{t}</span>
+            <span className="text-sm text-gray-500 flex items-center justify-center gap-1 mb-1">
+              {t} <SpeakerIcon text={t} size="sm" />
+            </span>
             <div className="flex flex-wrap gap-1 justify-center">
-              {Object.entries(placements)
-                .filter(([, v]) => v === t)
-                .map(([k]) => (
-                  <span
-                    key={k}
-                    className="px-3 py-1 bg-purple-200 text-purple-800 rounded-lg font-bold text-sm"
-                  >
-                    {k}
-                  </span>
-                ))}
+              {Object.entries(placements).filter(([, v]) => v === t).map(([k]) => (
+                <span key={k} className="px-3 py-1 bg-purple-200 text-purple-800 rounded-lg font-bold text-sm">
+                  {k}
+                </span>
+              ))}
             </div>
           </button>
         ))}
@@ -1745,7 +1842,18 @@ function DragDropRenderer({ item, onAnswer, disabled }: QProps) {
 
 /** Teacher-observed: shows task instructions, teacher marks pass/fail */
 function TeacherObservedRenderer({ item, onAnswer, disabled }: QProps) {
+  const [processing, setProcessing] = useState<string | null>(null);
+  const submittedRef = useRef(false);
   const qd = item.questionData;
+
+  useEffect(() => { submittedRef.current = false; setProcessing(null); }, [item.id]);
+
+  const handleSelect = (result: string, isCorrect: boolean) => {
+    if (submittedRef.current || processing) return;
+    submittedRef.current = true;
+    setProcessing(result);
+    setTimeout(() => onAnswer({ teacherResult: result }, isCorrect), 120);
+  };
 
   return (
     <div>
@@ -1757,28 +1865,29 @@ function TeacherObservedRenderer({ item, onAnswer, disabled }: QProps) {
           {qd.instructions || qd.questionText || 'Observe the student performing the task.'}
         </p>
         {qd.materials && (
-          <p className="text-blue-600 text-sm mt-2">
-            Materials: {qd.materials}
-          </p>
+          <p className="text-blue-600 text-sm mt-2">Materials: {qd.materials}</p>
         )}
       </div>
-
       <div className="grid grid-cols-2 gap-4">
         <button
-          onClick={() => onAnswer({ teacherResult: 'pass' }, true)}
-          disabled={disabled}
-          className="min-h-[72px] p-4 text-lg font-bold rounded-2xl border-2 border-green-300
-                     bg-green-50 text-green-700 hover:bg-green-100 active:scale-95 transition-all"
+          onClick={() => handleSelect('pass', true)}
+          onTouchEnd={(e) => { e.preventDefault(); handleSelect('pass', true); }}
+          disabled={disabled || !!processing}
+          className={`min-h-[72px] p-4 text-lg font-bold rounded-2xl border-2 transition-all active:scale-95
+            ${processing === 'pass' ? 'bg-green-200 border-green-500 scale-95' : 'border-green-300 bg-green-50 text-green-700 hover:bg-green-100'}
+            disabled:opacity-50`}
         >
-          ✅ Pass
+          {processing === 'pass' ? '⏳ Saving...' : '✅ Pass'}
         </button>
         <button
-          onClick={() => onAnswer({ teacherResult: 'fail' }, false)}
-          disabled={disabled}
-          className="min-h-[72px] p-4 text-lg font-bold rounded-2xl border-2 border-orange-300
-                     bg-orange-50 text-orange-700 hover:bg-orange-100 active:scale-95 transition-all"
+          onClick={() => handleSelect('fail', false)}
+          onTouchEnd={(e) => { e.preventDefault(); handleSelect('fail', false); }}
+          disabled={disabled || !!processing}
+          className={`min-h-[72px] p-4 text-lg font-bold rounded-2xl border-2 transition-all active:scale-95
+            ${processing === 'fail' ? 'bg-orange-200 border-orange-500 scale-95' : 'border-orange-300 bg-orange-50 text-orange-700 hover:bg-orange-100'}
+            disabled:opacity-50`}
         >
-          🔄 Needs Practice
+          {processing === 'fail' ? '⏳ Saving...' : '🔄 Needs Practice'}
         </button>
       </div>
     </div>
@@ -1787,7 +1896,18 @@ function TeacherObservedRenderer({ item, onAnswer, disabled }: QProps) {
 
 /** Audio response: play audio prompt, teacher marks correct */
 function AudioResponseRenderer({ item, onAnswer, disabled }: QProps) {
+  const [processing, setProcessing] = useState<string | null>(null);
+  const submittedRef = useRef(false);
   const qd = item.questionData;
+
+  useEffect(() => { submittedRef.current = false; setProcessing(null); }, [item.id]);
+
+  const handleSelect = (result: string, isCorrect: boolean) => {
+    if (submittedRef.current || processing) return;
+    submittedRef.current = true;
+    setProcessing(result);
+    setTimeout(() => onAnswer({ audioResult: result }, isCorrect), 120);
+  };
 
   return (
     <div>
@@ -1798,6 +1918,7 @@ function AudioResponseRenderer({ item, onAnswer, disabled }: QProps) {
         </p>
         <button
           onClick={() => speak(qd.audioPrompt || qd.prompt || qd.questionText || '')}
+          onTouchEnd={(e) => { e.preventDefault(); speak(qd.audioPrompt || qd.prompt || qd.questionText || ''); }}
           className="px-8 py-4 bg-purple-600 text-white text-xl font-bold rounded-2xl
                      hover:bg-purple-700 active:scale-95 transition-all inline-flex items-center gap-3"
         >
@@ -1811,20 +1932,24 @@ function AudioResponseRenderer({ item, onAnswer, disabled }: QProps) {
 
       <div className="grid grid-cols-2 gap-4">
         <button
-          onClick={() => onAnswer({ audioResult: 'correct' }, true)}
-          disabled={disabled}
-          className="min-h-[72px] p-4 text-lg font-bold rounded-2xl border-2 border-green-300
-                     bg-green-50 text-green-700 hover:bg-green-100 active:scale-95 transition-all"
+          onClick={() => handleSelect('correct', true)}
+          onTouchEnd={(e) => { e.preventDefault(); handleSelect('correct', true); }}
+          disabled={disabled || !!processing}
+          className={`min-h-[72px] p-4 text-lg font-bold rounded-2xl border-2 transition-all active:scale-95
+            ${processing === 'correct' ? 'bg-green-200 border-green-500 scale-95' : 'border-green-300 bg-green-50 text-green-700 hover:bg-green-100'}
+            disabled:opacity-50`}
         >
-          ✅ Correct
+          {processing === 'correct' ? '⏳ Saving...' : '✅ Correct'}
         </button>
         <button
-          onClick={() => onAnswer({ audioResult: 'incorrect' }, false)}
-          disabled={disabled}
-          className="min-h-[72px] p-4 text-lg font-bold rounded-2xl border-2 border-orange-300
-                     bg-orange-50 text-orange-700 hover:bg-orange-100 active:scale-95 transition-all"
+          onClick={() => handleSelect('incorrect', false)}
+          onTouchEnd={(e) => { e.preventDefault(); handleSelect('incorrect', false); }}
+          disabled={disabled || !!processing}
+          className={`min-h-[72px] p-4 text-lg font-bold rounded-2xl border-2 transition-all active:scale-95
+            ${processing === 'incorrect' ? 'bg-orange-200 border-orange-500 scale-95' : 'border-orange-300 bg-orange-50 text-orange-700 hover:bg-orange-100'}
+            disabled:opacity-50`}
         >
-          🔄 Try Again
+          {processing === 'incorrect' ? '⏳ Saving...' : '🔄 Try Again'}
         </button>
       </div>
     </div>
