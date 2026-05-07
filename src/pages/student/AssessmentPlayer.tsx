@@ -317,6 +317,20 @@ export default function AssessmentPlayer() {
   const item = currentItem?.item;
   const progress = currentItem?.progress;
 
+  // DEBUG: Track render cycles to find infinite loop
+  const renderCount = useRef(0);
+  renderCount.current++;
+  if (renderCount.current > 50) {
+    console.error('🔴 RENDER LOOP DETECTED', renderCount.current, {
+      session: !!session, loading, isPaused, isComplete, error, item: !!item, domainTransition,
+      checkingExisting, existingSessions: existingSessions.length, warmupPhase
+    });
+  } else if (renderCount.current > 3) {
+    console.log('🔵 Render #' + renderCount.current, {
+      session: !!session, loading, isPaused, isComplete, error: !!error, item: !!item
+    });
+  }
+
   const [starsEarned, setStarsEarned] = useState(0);
   const [starAnimation, setStarAnimation] = useState(false);
   const [sessionType, setSessionType] = useState<SessionType>('initial_placement');
