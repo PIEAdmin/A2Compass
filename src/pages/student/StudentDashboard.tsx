@@ -73,7 +73,7 @@ export default function StudentDashboard() {
   const animTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   // New sections state
-  const [scheduleData, setScheduleData] = useState<{ start: string; end: string; breaks: string[] } | null>(null);
+  const [scheduleData, setScheduleData] = useState<{ start: string; end: string; breaks: { time: string; label: string }[] } | null>(null);
   const [upcomingAssignments, setUpcomingAssignments] = useState<any[]>([]);
   const [upcomingTests, setUpcomingTests] = useState<any[]>([]);
   const [checkinCelebrating, setCheckinCelebrating] = useState(false);
@@ -151,7 +151,9 @@ export default function StudentDashboard() {
             setScheduleData({
               start: profile.school_start_time || '08:00',
               end: profile.school_end_time || '15:00',
-              breaks: Array.isArray(profile.break_times) ? profile.break_times : [],
+              breaks: Array.isArray(profile.break_times)
+                ? profile.break_times.map((b: any) => typeof b === 'object' ? { time: b.time || '', label: b.label || 'Break' } : { time: String(b), label: 'Break' })
+                : [],
             });
           }
 
@@ -160,8 +162,8 @@ export default function StudentDashboard() {
           nextWeek.setDate(nextWeek.getDate() + 7);
           const { data: assignments } = await supabase
             .from('student_assignments')
-            .select('id, title, due_date, assignment_type, status, activity_name')
-            .eq('student_profile_id', profile.id)
+            .select('id, title, due_date, assignment_type, status')
+            .eq('student_id', profile.id)
             .in('status', ['pending', 'in_progress'])
             .lte('due_date', nextWeek.toISOString())
             .order('due_date', { ascending: true })
@@ -278,7 +280,7 @@ export default function StudentDashboard() {
 
     // Check breaks
     for (let i = 0; i < scheduleData.breaks.length; i++) {
-      const breakTime = parseTime(scheduleData.breaks[i]);
+      const breakTime = parseTime(scheduleData.breaks[i].time);
       if (Math.abs(nowMinutes - breakTime) < 15) return i + 1; // in a break (±15min)
     }
     return 0; // in class
@@ -444,12 +446,12 @@ export default function StudentDashboard() {
               />
 
               {/* Break times */}
-              {scheduleData.breaks.map((breakTime, idx) => (
+              {scheduleData.breaks.map((brk, idx) => (
                 <div key={idx} className="flex items-center gap-2">
                   <div className="w-8 h-0.5 bg-gray-300 flex-shrink-0" />
                   <TimeBlock
-                    label={`Break ${idx + 1}`}
-                    time={formatTime12(breakTime)}
+                    label={brk.label || `Break ${idx + 1}`}
+                    time={formatTime12(brk.time)}
                     icon="☕"
                     active={getCurrentTimeBlock() === idx + 1}
                   />
@@ -492,9 +494,9 @@ export default function StudentDashboard() {
               >
                 <span className="text-2xl">{assignmentTypeIcon(a.assignment_type)}</span>
                 <div className="flex-1 min-w-0">
-                  <ReadAloud text={a.title || a.activity_name || 'Assignment'} showIcon={true} iconSize="sm">
+                  <ReadAloud text={a.title || 'Assignment'} showIcon={true} iconSize="sm">
                     <p className="font-medium text-gray-800 text-sm truncate">
-                      {a.title || a.activity_name || 'Assignment'}
+                      {a.title || 'Assignment'}
                     </p>
                   </ReadAloud>
                   <p className="text-xs text-gray-500">
