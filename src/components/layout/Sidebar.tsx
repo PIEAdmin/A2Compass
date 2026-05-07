@@ -64,7 +64,8 @@ const navItems: Record<string, NavItem[]> = {
     { path: '/settings/delete-account', label: 'Delete Account', icon: '🗑️', divider: true },
   ],
   student: [
-    { path: '/student', label: 'Flight Plan', icon: '🛫' },
+    { path: '/student', label: 'Dashboard', icon: '🏠' },
+    { path: '/student/flight-plan', label: 'Flight Plan', icon: '🛫' },
     { path: '/student/assessment', label: 'My Assessment', icon: '🌟' },
     { path: '/student/subjects', label: 'My Subjects', icon: '📚' },
     { path: '/student/progress', label: 'My Progress', icon: '🎯' },

@@ -46,6 +46,7 @@ const ParentOrientation = lazy(() => import('./pages/parent/ParentOrientation'))
 const ParentLetters = lazy(() => import('./pages/parent/ParentLetters'))
 const ParentCurriculum = lazy(() => import('./pages/parent/ParentCurriculum'))
 const FlightPlan = lazy(() => import('./pages/student/FlightPlan'))
+const StudentDashboard = lazy(() => import('./pages/student/StudentDashboard'))
 const SkillPractice = lazy(() => import('./pages/student/SkillPractice'))
 const StudentSubjects = lazy(() => import('./pages/student/StudentSubjects'))
 const StudentProgress = lazy(() => import('./pages/student/StudentProgress'))
@@ -184,7 +185,8 @@ export default function App() {
         <Route path="parent/messages" element={<Inbox />} />
 
         {/* Student Routes */}
-        <Route path="student" element={<FlightPlan />} />
+        <Route path="student" element={<StudentDashboard />} />
+        <Route path="student/flight-plan" element={<FlightPlan />} />
         <Route path="student/welcome" element={<StudentWelcome />} />
         <Route path="student/orientation" element={<OrientationWizard />} />
         <Route path="student/activities" element={<WarmActivities />} />
@@ -206,6 +208,7 @@ export default function App() {
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    <SessionTimeout />
     </Suspense>
   )
 }
