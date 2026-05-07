@@ -36,7 +36,7 @@ const speak = (text: string): Promise<void> => {
 
 export { speak as speakText };
 
-export default function ReadAloud({
+export function ReadAloud({
   text,
   children,
   className = '',

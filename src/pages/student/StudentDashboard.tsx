@@ -8,7 +8,7 @@ import {
   FloatingStars,
   ConfettiBurst,
 } from '../../components/shared/Illustrations';
-import ReadAloud, { ReadAloudBlock } from '../../components/shared/ReadAloud';
+import { ReadAloud, ReadAloudBlock } from '../../components/shared/ReadAloud';
 
 function getGreeting(): { text: string; emoji: string } {
   const hour = new Date().getHours();

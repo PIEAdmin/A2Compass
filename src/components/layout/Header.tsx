@@ -1,3 +1,4 @@
+import PepperAvatar from '../shared/PepperAvatar';
 import React, { useEffect, useState } from 'react';
 import { SoundToggle } from '../shared/SoundToggle';
 import { SparkPointsDisplay } from '../shared/SparkPointsDisplay';
@@ -49,6 +50,8 @@ export default function Header({ title, subtitle, children }: HeaderProps) {
           )}
           {/* Sound toggle for students */}
           {role === 'student' && <SoundToggle showLabel={false} />}
+          {/* Pepper Avatar for students */}
+          {role === 'student' && <PepperAvatar size="sm" />}
           {children}
         </div>
       </div>
