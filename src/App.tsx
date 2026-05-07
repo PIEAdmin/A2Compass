@@ -64,20 +64,15 @@ const DataExplorerPage = lazy(() => import('./components/student/DataExplorer'))
 const UnifiedReportCard = lazy(() => import('./pages/shared/UnifiedReportCard'))
 const Inbox = lazy(() => import('./pages/shared/Inbox'))
 const OrganizationIntake = lazy(() => import('./pages/admin/OrganizationIntake'))
+const MyLocker = lazy(() => import('./pages/student/MyLocker'))
+const SessionTimeout = lazy(() => import('./components/shared/SessionTimeout'))
 
-import { LoadingSpinner } from './components/common'
 
-// Auth
 
-// Settings
 
-// Admin pages
 
-// Teacher pages
 
-// Parent pages
 
-// Student pages
 
 function GuestRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, loading } = useAuth()
@@ -198,6 +193,7 @@ export default function App() {
         <Route path="student/achievements" element={<StudentAchievements />} />
         <Route path="student/library" element={<StudentLibrary />} />
         <Route path="student/reward-shop" element={<RewardShop />} />
+        <Route path="student/locker" element={<MyLocker />} />
         <Route path="student/learning-path" element={<LearningPathPage />} />
         <Route path="student/game/:gameType" element={<GameLauncher />} />
         <Route path="student/data-explorer" element={<DataExplorerPage />} />
