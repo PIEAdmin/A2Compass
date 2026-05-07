@@ -245,7 +245,7 @@ export function useAssessmentPlayer(authUserId: string) {
     }
   }, [state.session]);
 
-  /** Resume a paused session */
+  /** Resume a paused session (when already loaded into state) */
   const resumeSession = useCallback(async () => {
     if (!state.session) return;
     try {
@@ -255,6 +255,50 @@ export function useAssessmentPlayer(authUserId: string) {
       setError(err.message || 'Failed to resume');
     }
   }, [state.session]);
+
+  /** Resume an existing session from the Welcome Back screen */
+  const resumeExistingSession = useCallback(async (existingSession: AssessmentSession) => {
+    setLoading(true);
+    setError(null);
+    try {
+      // Mark session as in_progress if it was paused
+      if (existingSession.status === 'paused') {
+        await assessmentService.resumeSession(existingSession.id);
+      }
+
+      // Get the next skill to assess
+      const nextSkill: NextSkillResult = await assessmentService.getNextSkill(existingSession.id);
+
+      if (nextSkill.done) {
+        setState({
+          ...INITIAL_PLAYER_STATE,
+          session: existingSession,
+          isComplete: true,
+          completionSummary: nextSkill.summary ?? null,
+        });
+        return;
+      }
+
+      // Get the next item for that skill
+      let nextItem: NextItemResult | null = null;
+      if (nextSkill.skillId) {
+        nextItem = await assessmentService.getNextItem(existingSession.id, nextSkill.skillId);
+      }
+
+      previousDomain.current = nextSkill.domainName ?? null;
+
+      setState({
+        ...INITIAL_PLAYER_STATE,
+        session: existingSession,
+        currentSkill: nextSkill,
+        currentItem: nextItem,
+      });
+    } catch (err: any) {
+      setError(err.message || 'Failed to resume session');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   /** Go back to the previous question */
   const goBack = useCallback(() => {
@@ -310,6 +354,7 @@ export function useAssessmentPlayer(authUserId: string) {
     useHint,
     pauseSession,
     resumeSession,
+    resumeExistingSession,
     goBack,
     skipItem,
   };

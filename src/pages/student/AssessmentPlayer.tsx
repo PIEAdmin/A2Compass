@@ -305,6 +305,7 @@ export default function AssessmentPlayer() {
     useHint,
     pauseSession,
     resumeSession,
+    resumeExistingSession,
     goBack,
     skipItem,
     itemHistory,
@@ -466,7 +467,7 @@ export default function AssessmentPlayer() {
               </div>
 
               <button
-                onClick={resumeSession}
+                onClick={() => bestSession && resumeExistingSession(bestSession)}
                 onMouseEnter={() => speak('Continue where you left off!')}
                 className="w-full py-4 px-6 bg-green-500 text-white text-xl font-bold rounded-2xl
                            hover:bg-green-600 active:scale-95 transition-all shadow-lg mb-3"
