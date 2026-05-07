@@ -1,6 +1,7 @@
 // ============================================================
 // A² Compass — Assessment Player (Student-Facing)
 // Child-friendly, audio-supported, game-like assessment experience
+// Enhanced: "Tap to Hear, Tap Again to Select" pattern for touch devices
 // ============================================================
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAssessmentPlayer } from '../../hooks/useAssessment';
@@ -134,6 +135,19 @@ const speakOption = (text: string) => {
 };
 
 
+// ---------- Touch Device Detection Hook ----------
+/** Returns a ref that is set to true on first touchstart event */
+function useTouchDevice() {
+  const isTouchRef = useRef(false);
+  useEffect(() => {
+    const handler = () => { isTouchRef.current = true; };
+    window.addEventListener('touchstart', handler, { passive: true });
+    return () => window.removeEventListener('touchstart', handler);
+  }, []);
+  return isTouchRef;
+}
+
+
 // ---------- Domain-themed emojis ----------
 const getDomainEmojis = (domainName: string): string[] => {
   const d = (domainName || '').toLowerCase();
@@ -217,6 +231,14 @@ function AnimationStyles() {
         0% { background-position: -200% center; }
         100% { background-position: 200% center; }
       }
+      @keyframes ripple {
+        0% { transform: scale(0.8); opacity: 0.6; }
+        100% { transform: scale(2.2); opacity: 0; }
+      }
+      @keyframes speaker-pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+      }
       .slide-up { animation: slide-up 0.4s ease-out; }
       .bounce-in { animation: bounce-in 0.5s ease-out; }
       .pulse-soft { animation: pulse-soft 2s ease-in-out infinite; }
@@ -239,6 +261,23 @@ function AnimationStyles() {
         pointer-events: none;
       }
       .speak-hover:hover::after { opacity: 0.6; }
+      .speaker-active {
+        animation: speaker-pulse 0.6s ease-in-out infinite;
+        color: #4f46e5 !important;
+      }
+      .speaker-ripple {
+        position: relative;
+        overflow: visible;
+      }
+      .speaker-ripple::after {
+        content: '';
+        position: absolute;
+        inset: -4px;
+        border-radius: 50%;
+        border: 2px solid #6366f1;
+        animation: ripple 0.8s ease-out;
+        pointer-events: none;
+      }
     `}</style>
   );
 }
@@ -246,6 +285,7 @@ function AnimationStyles() {
 export default function AssessmentPlayer() {
   const { user } = useAuth();
   const studentId = user?.id ?? '';
+  const isTouchRef = useTouchDevice();
 
   const {
     session,
@@ -818,7 +858,6 @@ export default function AssessmentPlayer() {
   }
 
   // ---------- Main Question View ----------
-  // (item & progress moved up above useEffects to avoid TDZ crash)
   const skillsChecked = session?.skills_assessed ?? 0;
   const totalTarget = session?.target_skill_ids?.length || 0;
 
@@ -909,6 +948,7 @@ export default function AssessmentPlayer() {
               onAnswer={(response, isCorrect) => submitAnswer(response, isCorrect)}
               showHint={showHint}
               disabled={showFeedback}
+              isTouchRef={isTouchRef}
             />
 
             {/* Help Me Learn button */}
@@ -1192,6 +1232,7 @@ interface RendererProps {
   onAnswer: (response: Record<string, any>, isCorrect: boolean) => void;
   showHint: boolean;
   disabled: boolean;
+  isTouchRef: React.MutableRefObject<boolean>;
 }
 
 
@@ -1251,7 +1292,7 @@ function TeachingBubble({ hintText, explanation, skillName }: { hintText: string
 }
 
 
-function QuestionRenderer({ item, questionType, onAnswer, showHint, disabled }: RendererProps) {
+function QuestionRenderer({ item, questionType, onAnswer, showHint, disabled, isTouchRef }: RendererProps) {
   // Normalize the DB data format to what renderers expect
   const normalizedItem = {
     ...item,
@@ -1261,58 +1302,67 @@ function QuestionRenderer({ item, questionType, onAnswer, showHint, disabled }: 
 
   switch (questionType) {
     case 'multiple_choice':
-      return <MultipleChoiceRenderer item={nItem} onAnswer={onAnswer} disabled={disabled} />;
+      return <MultipleChoiceRenderer item={nItem} onAnswer={onAnswer} disabled={disabled} isTouchRef={isTouchRef} />;
     case 'tap_select':
-      return <TapSelectRenderer item={nItem} onAnswer={onAnswer} disabled={disabled} />;
+      return <TapSelectRenderer item={nItem} onAnswer={onAnswer} disabled={disabled} isTouchRef={isTouchRef} />;
     case 'counting':
-      return <CountingRenderer item={nItem} onAnswer={onAnswer} disabled={disabled} />;
+      return <CountingRenderer item={nItem} onAnswer={onAnswer} disabled={disabled} isTouchRef={isTouchRef} />;
     case 'fill_blank':
-      return <FillBlankRenderer item={nItem} onAnswer={onAnswer} disabled={disabled} />;
+      return <FillBlankRenderer item={nItem} onAnswer={onAnswer} disabled={disabled} isTouchRef={isTouchRef} />;
     case 'matching':
-      return <MatchingRenderer item={nItem} onAnswer={onAnswer} disabled={disabled} />;
+      return <MatchingRenderer item={nItem} onAnswer={onAnswer} disabled={disabled} isTouchRef={isTouchRef} />;
     case 'sequence':
-      return <SequenceRenderer item={nItem} onAnswer={onAnswer} disabled={disabled} />;
+      return <SequenceRenderer item={nItem} onAnswer={onAnswer} disabled={disabled} isTouchRef={isTouchRef} />;
     case 'drag_drop':
-      return <DragDropRenderer item={nItem} onAnswer={onAnswer} disabled={disabled} />;
+      return <DragDropRenderer item={nItem} onAnswer={onAnswer} disabled={disabled} isTouchRef={isTouchRef} />;
     case 'teacher_observed':
       return <TeacherObservedRenderer item={nItem} onAnswer={onAnswer} disabled={disabled} />;
     case 'audio_response':
       return <AudioResponseRenderer item={nItem} onAnswer={onAnswer} disabled={disabled} />;
     default:
-      return <MultipleChoiceRenderer item={nItem} onAnswer={onAnswer} disabled={disabled} />;
+      return <MultipleChoiceRenderer item={nItem} onAnswer={onAnswer} disabled={disabled} isTouchRef={isTouchRef} />;
   }
 }
 
 // ==========================================================
-// ==========================================================
 // Question Type Renderers — ENHANCED
-// Button fixes: processing state, speaker icons, touch support,
-// double-submit prevention, loading indicators
+// "Tap to Hear, Tap Again to Select" pattern for touch devices
 // ==========================================================
 
 interface QProps {
   item: NonNullable<NextItemResult['item']>;
   onAnswer: (response: Record<string, any>, isCorrect: boolean) => void;
   disabled: boolean;
+  isTouchRef: React.MutableRefObject<boolean>;
 }
 
-/** Speaker icon button for individual answer choices */
+interface QPropsSimple {
+  item: NonNullable<NextItemResult['item']>;
+  onAnswer: (response: Record<string, any>, isCorrect: boolean) => void;
+  disabled: boolean;
+}
+
+/** Enhanced Speaker icon button — pulses indigo when active, ripple on tap */
 function SpeakerIcon({ text, size = 'md' }: { text: string; size?: 'sm' | 'md' }) {
   const [reading, setReading] = useState(false);
+  const [showRipple, setShowRipple] = useState(false);
   const handleRead = (e: React.MouseEvent | React.TouchEvent) => {
     e.stopPropagation();
     e.preventDefault();
     if (reading) return;
     setReading(true);
+    setShowRipple(true);
     speakOption(text);
+    setTimeout(() => setShowRipple(false), 800);
     setTimeout(() => setReading(false), 1500);
   };
   return (
     <button
       onClick={handleRead}
       onTouchEnd={handleRead}
-      className={`inline-flex items-center justify-center rounded-full flex-shrink-0
-        ${reading ? 'text-indigo-600 animate-pulse' : 'text-gray-400 hover:text-indigo-500'}
+      className={`inline-flex items-center justify-center rounded-full flex-shrink-0 relative
+        ${reading ? 'text-indigo-600 speaker-active' : 'text-gray-400 hover:text-indigo-500'}
+        ${showRipple ? 'speaker-ripple' : ''}
         transition-colors ${size === 'sm' ? 'p-0.5' : 'p-1'}`}
       aria-label={`Read aloud: ${text}`}
       type="button"
@@ -1324,10 +1374,25 @@ function SpeakerIcon({ text, size = 'md' }: { text: string; size?: 'sm' | 'md' }
   );
 }
 
-/** Large, friendly multiple-choice buttons — with processing state + speaker icons */
-function MultipleChoiceRenderer({ item, onAnswer, disabled }: QProps) {
+/** Small pulsing speaker indicator shown when an option is being read */
+function ReadingSpeakerBadge() {
+  return (
+    <span className="inline-flex items-center speaker-active text-indigo-600">
+      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15.536 8.464a5 5 0 010 7.072M11 5L6 9H2v6h4l5 4V5z" />
+      </svg>
+    </span>
+  );
+}
+
+
+/** Large, friendly multiple-choice buttons — with "tap to hear, tap again to select" */
+function MultipleChoiceRenderer({ item, onAnswer, disabled, isTouchRef }: QProps) {
   const [processing, setProcessing] = useState<string | null>(null);
   const submittedRef = useRef(false);
+  const [readingOption, setReadingOption] = useState<string | null>(null);
+  const [lastReadOption, setLastReadOption] = useState<string | null>(null);
+  const touchedRef = useRef(false);
   const qd = item.questionData;
   const options: string[] = qd.options || [];
   const correctAnswer = qd.correctAnswer ?? qd.answer;
@@ -1335,15 +1400,37 @@ function MultipleChoiceRenderer({ item, onAnswer, disabled }: QProps) {
   const displayContent = qd.display || qd.stimulus;
 
   // Reset on new item
-  useEffect(() => { submittedRef.current = false; setProcessing(null); }, [item.id]);
+  useEffect(() => { submittedRef.current = false; setProcessing(null); setReadingOption(null); setLastReadOption(null); }, [item.id]);
 
-  const handleSelect = (opt: string) => {
+  const doSelect = (opt: string) => {
     if (disabled || submittedRef.current || processing) return;
     submittedRef.current = true;
     setProcessing(opt);
+    setReadingOption(null);
     const isCorrect = opt === correctAnswer;
-    // Tiny delay for visual feedback
     setTimeout(() => onAnswer({ selected: opt }, isCorrect), 120);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent, opt: string) => {
+    e.preventDefault();
+    touchedRef.current = true;
+    if (disabled || submittedRef.current || processing) return;
+    if (lastReadOption !== opt) {
+      // First tap: read aloud, don't submit
+      setReadingOption(opt);
+      setLastReadOption(opt);
+      speak(opt);
+      setTimeout(() => setReadingOption(null), 2000);
+    } else {
+      // Second tap: submit
+      doSelect(opt);
+    }
+  };
+
+  const handleClick = (opt: string) => {
+    // If this click was triggered by a touch, ignore (touchEnd already handled it)
+    if (touchedRef.current) { touchedRef.current = false; return; }
+    doSelect(opt);
   };
 
   return (
@@ -1355,52 +1442,86 @@ function MultipleChoiceRenderer({ item, onAnswer, disabled }: QProps) {
         </div>
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
-        {options.map((opt, idx) => (
-          <button
-            key={idx}
-            onClick={() => handleSelect(opt)}
-            onTouchEnd={(e) => { e.preventDefault(); handleSelect(opt); }}
-            onMouseEnter={() => { if (!processing) speakOption(opt); }}
-            onFocus={() => { if (!processing) speakOption(opt); }}
-            disabled={disabled || (!!processing && processing !== opt)}
-            className={`min-h-[64px] p-4 text-lg font-bold rounded-2xl border-2 transition-all
-                       flex items-center justify-between gap-2
-                       ${processing === opt
-                         ? 'bg-indigo-100 border-indigo-500 scale-95'
-                         : 'bg-white border-gray-200 hover:bg-indigo-50 hover:border-indigo-400 hover:shadow-md active:scale-95'
-                       }
-                       disabled:opacity-50 text-gray-800 shadow-sm`}
-          >
-            <span className="flex-1 text-left">{opt}</span>
-            {processing === opt ? (
-              <span className="animate-spin text-indigo-600">⏳</span>
-            ) : (
-              <SpeakerIcon text={opt} />
-            )}
-          </button>
-        ))}
+        {options.map((opt, idx) => {
+          const isBeingRead = readingOption === opt;
+          const wasRead = lastReadOption === opt && !processing;
+          return (
+            <button
+              key={idx}
+              onClick={() => handleClick(opt)}
+              onTouchEnd={(e) => handleTouchEnd(e, opt)}
+              onMouseEnter={() => { if (!processing && !isTouchRef.current) speakOption(opt); }}
+              onFocus={() => { if (!processing) speakOption(opt); }}
+              disabled={disabled || (!!processing && processing !== opt)}
+              className={`min-h-[64px] p-4 text-lg font-bold rounded-2xl border-2 transition-all
+                         flex items-center justify-between gap-2
+                         ${processing === opt
+                           ? 'bg-indigo-100 border-indigo-500 scale-95'
+                           : isBeingRead
+                           ? 'bg-yellow-100 border-yellow-400 shadow-md'
+                           : wasRead
+                           ? 'bg-yellow-50 border-yellow-300'
+                           : 'bg-white border-gray-200 hover:bg-indigo-50 hover:border-indigo-400 hover:shadow-md active:scale-95'
+                         }
+                         disabled:opacity-50 text-gray-800 shadow-sm`}
+            >
+              <span className="flex-1 text-left">{opt}</span>
+              {processing === opt ? (
+                <span className="animate-spin text-indigo-600">⏳</span>
+              ) : isBeingRead ? (
+                <ReadingSpeakerBadge />
+              ) : (
+                <SpeakerIcon text={opt} />
+              )}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
 }
 
-/** Tap to select multiple correct answers */
-function TapSelectRenderer({ item, onAnswer, disabled }: QProps) {
+/** Tap to select multiple correct answers — with "tap to hear, tap again to toggle" */
+function TapSelectRenderer({ item, onAnswer, disabled, isTouchRef }: QProps) {
   const [selected, setSelected] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const submittedRef = useRef(false);
+  const [readingOption, setReadingOption] = useState<string | null>(null);
+  const [lastReadOption, setLastReadOption] = useState<string | null>(null);
+  const touchedRef = useRef(false);
   const qd = item.questionData;
   const options: string[] = qd.options || [];
   const correctAnswers: string[] = qd.correctAnswers || [];
   const questionText = qd.questionText || qd.prompt || '';
 
-  useEffect(() => { submittedRef.current = false; setSubmitting(false); setSelected([]); }, [item.id]);
+  useEffect(() => { submittedRef.current = false; setSubmitting(false); setSelected([]); setReadingOption(null); setLastReadOption(null); }, [item.id]);
 
   const toggle = (opt: string) => {
     if (disabled || submitting) return;
+    setReadingOption(null);
     setSelected((prev) =>
       prev.includes(opt) ? prev.filter((s) => s !== opt) : [...prev, opt]
     );
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent, opt: string) => {
+    e.preventDefault();
+    touchedRef.current = true;
+    if (disabled || submitting) return;
+    if (lastReadOption !== opt) {
+      setReadingOption(opt);
+      setLastReadOption(opt);
+      speak(opt);
+      setTimeout(() => setReadingOption(null), 2000);
+    } else {
+      toggle(opt);
+      setLastReadOption(null);
+    }
+  };
+
+  const handleClick = (opt: string) => {
+    if (touchedRef.current) { touchedRef.current = false; return; }
+    toggle(opt);
   };
 
   const handleSubmit = () => {
@@ -1418,27 +1539,32 @@ function TapSelectRenderer({ item, onAnswer, disabled }: QProps) {
       <p className="text-xl font-semibold text-gray-800 mb-4">{questionText}</p>
       <p className="text-sm text-gray-500 mb-4">Tap all that are correct!</p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {options.map((opt, idx) => (
-          <button
-            key={idx}
-            onClick={() => toggle(opt)}
-            onTouchEnd={(e) => { e.preventDefault(); toggle(opt); }}
-            onMouseEnter={() => speakOption(opt)}
-            onFocus={() => speakOption(opt)}
-            disabled={disabled || submitting}
-            className={`min-h-[64px] p-4 text-lg font-bold rounded-2xl border-2 transition-all
-                       flex items-center justify-between gap-2 active:scale-95 disabled:opacity-50
-                       ${selected.includes(opt)
-                         ? 'bg-indigo-100 border-indigo-500 text-indigo-800'
-                         : 'bg-white border-gray-200 text-gray-800 hover:bg-indigo-50'
-                       }`}
-          >
-            <span className="flex-1 text-left">
-              {selected.includes(opt) && '✓ '}{opt}
-            </span>
-            <SpeakerIcon text={opt} />
-          </button>
-        ))}
+        {options.map((opt, idx) => {
+          const isBeingRead = readingOption === opt;
+          return (
+            <button
+              key={idx}
+              onClick={() => handleClick(opt)}
+              onTouchEnd={(e) => handleTouchEnd(e, opt)}
+              onMouseEnter={() => { if (!isTouchRef.current) speakOption(opt); }}
+              onFocus={() => speakOption(opt)}
+              disabled={disabled || submitting}
+              className={`min-h-[64px] p-4 text-lg font-bold rounded-2xl border-2 transition-all
+                         flex items-center justify-between gap-2 active:scale-95 disabled:opacity-50
+                         ${isBeingRead
+                           ? 'bg-yellow-100 border-yellow-400 text-gray-800 shadow-md'
+                           : selected.includes(opt)
+                           ? 'bg-indigo-100 border-indigo-500 text-indigo-800'
+                           : 'bg-white border-gray-200 text-gray-800 hover:bg-indigo-50'
+                         }`}
+            >
+              <span className="flex-1 text-left">
+                {selected.includes(opt) && '✓ '}{opt}
+              </span>
+              {isBeingRead ? <ReadingSpeakerBadge /> : <SpeakerIcon text={opt} />}
+            </button>
+          );
+        })}
       </div>
       {selected.length > 0 && (
         <button
@@ -1456,22 +1582,45 @@ function TapSelectRenderer({ item, onAnswer, disabled }: QProps) {
   );
 }
 
-/** Count visual objects */
-function CountingRenderer({ item, onAnswer, disabled }: QProps) {
+/** Count visual objects — with "tap to hear number, tap again to select" */
+function CountingRenderer({ item, onAnswer, disabled, isTouchRef }: QProps) {
   const [processing, setProcessing] = useState<number | null>(null);
   const submittedRef = useRef(false);
+  const [readingOption, setReadingOption] = useState<number | null>(null);
+  const [lastReadOption, setLastReadOption] = useState<number | null>(null);
+  const touchedRef = useRef(false);
   const qd = item.questionData;
   const objects: string[] = qd.objects || [];
   const correctCount = qd.correctCount ?? objects.length;
   const questionText = qd.questionText || 'How many do you see?';
 
-  useEffect(() => { submittedRef.current = false; setProcessing(null); }, [item.id]);
+  useEffect(() => { submittedRef.current = false; setProcessing(null); setReadingOption(null); setLastReadOption(null); }, [item.id]);
 
-  const handleSelect = (num: number) => {
+  const doSelect = (num: number) => {
     if (disabled || submittedRef.current || processing !== null) return;
     submittedRef.current = true;
     setProcessing(num);
+    setReadingOption(null);
     setTimeout(() => onAnswer({ count: num }, num === correctCount), 120);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent, num: number) => {
+    e.preventDefault();
+    touchedRef.current = true;
+    if (disabled || submittedRef.current || processing !== null) return;
+    if (lastReadOption !== num) {
+      setReadingOption(num);
+      setLastReadOption(num);
+      speak(String(num));
+      setTimeout(() => setReadingOption(null), 2000);
+    } else {
+      doSelect(num);
+    }
+  };
+
+  const handleClick = (num: number) => {
+    if (touchedRef.current) { touchedRef.current = false; return; }
+    doSelect(num);
   };
 
   return (
@@ -1484,48 +1633,76 @@ function CountingRenderer({ item, onAnswer, disabled }: QProps) {
       </div>
       <div className="flex items-center justify-center gap-3 flex-wrap">
         {Array.from({ length: Math.min(10, correctCount + 3) }, (_, i) => i + 1).map(
-          (num) => (
-            <button
-              key={num}
-              onClick={() => handleSelect(num)}
-              onTouchEnd={(e) => { e.preventDefault(); handleSelect(num); }}
-              onMouseEnter={() => speakOption(String(num))}
-              onFocus={() => speakOption(String(num))}
-              disabled={disabled || (processing !== null && processing !== num)}
-              className={`w-14 h-14 text-xl font-bold rounded-2xl border-2 transition-all
-                         active:scale-95 disabled:opacity-50
-                         ${processing === num
-                           ? 'bg-indigo-500 border-indigo-600 text-white scale-95'
-                           : 'bg-white border-gray-200 text-gray-800 hover:bg-indigo-50'
-                         }`}
-            >
-              {processing === num ? '⏳' : num}
-            </button>
-          )
+          (num) => {
+            const isBeingRead = readingOption === num;
+            return (
+              <button
+                key={num}
+                onClick={() => handleClick(num)}
+                onTouchEnd={(e) => handleTouchEnd(e, num)}
+                onMouseEnter={() => { if (!processing && !isTouchRef.current) speakOption(String(num)); }}
+                onFocus={() => { if (!processing) speakOption(String(num)); }}
+                disabled={disabled || (processing !== null && processing !== num)}
+                className={`w-14 h-14 text-xl font-bold rounded-2xl border-2 transition-all
+                           active:scale-95 disabled:opacity-50
+                           ${processing === num
+                             ? 'bg-indigo-500 border-indigo-600 text-white scale-95'
+                             : isBeingRead
+                             ? 'bg-yellow-100 border-yellow-400 text-gray-800 shadow-md'
+                             : 'bg-white border-gray-200 text-gray-800 hover:bg-indigo-50'
+                           }`}
+              >
+                {processing === num ? '⏳' : isBeingRead ? <>{num} <span className="text-xs">🔊</span></> : num}
+              </button>
+            );
+          }
         )}
       </div>
     </div>
   );
 }
 
-/** Fill in the blank with dropdown or input */
-function FillBlankRenderer({ item, onAnswer, disabled }: QProps) {
+/** Fill in the blank — with "tap to hear, tap again to select" for option buttons */
+function FillBlankRenderer({ item, onAnswer, disabled, isTouchRef }: QProps) {
   const [value, setValue] = useState('');
   const [processing, setProcessing] = useState<string | null>(null);
   const submittedRef = useRef(false);
+  const [readingOption, setReadingOption] = useState<string | null>(null);
+  const [lastReadOption, setLastReadOption] = useState<string | null>(null);
+  const touchedRef = useRef(false);
   const qd = item.questionData;
   const sentence = qd.sentence || qd.questionText || '';
   const options: string[] = qd.options || [];
   const correctAnswer = qd.correctAnswer ?? qd.answer;
 
-  useEffect(() => { submittedRef.current = false; setProcessing(null); setValue(''); }, [item.id]);
+  useEffect(() => { submittedRef.current = false; setProcessing(null); setValue(''); setReadingOption(null); setLastReadOption(null); }, [item.id]);
 
-  const handleSelect = (opt: string) => {
+  const doSelect = (opt: string) => {
     if (disabled || submittedRef.current || processing) return;
     submittedRef.current = true;
     setProcessing(opt);
+    setReadingOption(null);
     setValue(opt);
     setTimeout(() => onAnswer({ answer: opt }, opt === correctAnswer), 120);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent, opt: string) => {
+    e.preventDefault();
+    touchedRef.current = true;
+    if (disabled || submittedRef.current || processing) return;
+    if (lastReadOption !== opt) {
+      setReadingOption(opt);
+      setLastReadOption(opt);
+      speak(opt);
+      setTimeout(() => setReadingOption(null), 2000);
+    } else {
+      doSelect(opt);
+    }
+  };
+
+  const handleClick = (opt: string) => {
+    if (touchedRef.current) { touchedRef.current = false; return; }
+    doSelect(opt);
   };
 
   const handleTextSubmit = () => {
@@ -1543,30 +1720,37 @@ function FillBlankRenderer({ item, onAnswer, disabled }: QProps) {
       </p>
       {options.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {options.map((opt, idx) => (
-            <button
-              key={idx}
-              onClick={() => handleSelect(opt)}
-              onTouchEnd={(e) => { e.preventDefault(); handleSelect(opt); }}
-              onMouseEnter={() => { if (!processing) speakOption(opt); }}
-              onFocus={() => { if (!processing) speakOption(opt); }}
-              disabled={disabled || (!!processing && processing !== opt)}
-              className={`min-h-[64px] p-4 text-lg font-bold rounded-2xl border-2 transition-all
-                         flex items-center justify-between gap-2
-                         ${processing === opt
-                           ? 'bg-indigo-100 border-indigo-500 scale-95'
-                           : 'bg-white border-gray-200 hover:bg-indigo-50 hover:border-indigo-400 active:scale-95'
-                         }
-                         disabled:opacity-50`}
-            >
-              <span className="flex-1 text-left">{opt}</span>
-              {processing === opt ? (
-                <span className="animate-spin text-indigo-600">⏳</span>
-              ) : (
-                <SpeakerIcon text={opt} />
-              )}
-            </button>
-          ))}
+          {options.map((opt, idx) => {
+            const isBeingRead = readingOption === opt;
+            return (
+              <button
+                key={idx}
+                onClick={() => handleClick(opt)}
+                onTouchEnd={(e) => handleTouchEnd(e, opt)}
+                onMouseEnter={() => { if (!processing && !isTouchRef.current) speakOption(opt); }}
+                onFocus={() => { if (!processing) speakOption(opt); }}
+                disabled={disabled || (!!processing && processing !== opt)}
+                className={`min-h-[64px] p-4 text-lg font-bold rounded-2xl border-2 transition-all
+                           flex items-center justify-between gap-2
+                           ${processing === opt
+                             ? 'bg-indigo-100 border-indigo-500 scale-95'
+                             : isBeingRead
+                             ? 'bg-yellow-100 border-yellow-400 shadow-md'
+                             : 'bg-white border-gray-200 hover:bg-indigo-50 hover:border-indigo-400 active:scale-95'
+                           }
+                           disabled:opacity-50`}
+              >
+                <span className="flex-1 text-left">{opt}</span>
+                {processing === opt ? (
+                  <span className="animate-spin text-indigo-600">⏳</span>
+                ) : isBeingRead ? (
+                  <ReadingSpeakerBadge />
+                ) : (
+                  <SpeakerIcon text={opt} />
+                )}
+              </button>
+            );
+          })}
         </div>
       ) : (
         <div className="flex gap-3">
@@ -1595,10 +1779,13 @@ function FillBlankRenderer({ item, onAnswer, disabled }: QProps) {
   );
 }
 
-/** Simplified matching: tap pairs */
-function MatchingRenderer({ item, onAnswer, disabled }: QProps) {
+/** Simplified matching: tap pairs — with "tap to hear" */
+function MatchingRenderer({ item, onAnswer, disabled, isTouchRef }: QProps) {
   const [submitting, setSubmitting] = useState(false);
   const submittedRef = useRef(false);
+  const [readingOption, setReadingOption] = useState<string | null>(null);
+  const [lastReadOption, setLastReadOption] = useState<string | null>(null);
+  const touchedRef = useRef(false);
   const qd = item.questionData;
   const pairs: { left: string; right: string }[] = qd.pairs || [];
   const [matched, setMatched] = useState<Record<string, string>>({});
@@ -1607,16 +1794,38 @@ function MatchingRenderer({ item, onAnswer, disabled }: QProps) {
   const lefts = pairs.map((p) => p.left);
   const [shuffledRights] = useState(() => pairs.map((p) => p.right).sort(() => Math.random() - 0.5));
 
-  useEffect(() => { submittedRef.current = false; setSubmitting(false); setMatched({}); setSelectedLeft(null); }, [item.id]);
+  useEffect(() => { submittedRef.current = false; setSubmitting(false); setMatched({}); setSelectedLeft(null); setReadingOption(null); setLastReadOption(null); }, [item.id]);
 
-  const handleLeftClick = (left: string) => {
+  const doLeftClick = (left: string) => {
     if (disabled || submitting) return;
     setSelectedLeft(left);
+    setReadingOption(null);
     speakOption(left);
   };
 
-  const handleRightClick = (right: string) => {
+  const handleLeftTouchEnd = (e: React.TouchEvent, left: string) => {
+    e.preventDefault();
+    touchedRef.current = true;
+    if (disabled || submitting) return;
+    if (lastReadOption !== left) {
+      setReadingOption(left);
+      setLastReadOption(left);
+      speak(left);
+      setTimeout(() => setReadingOption(null), 2000);
+    } else {
+      doLeftClick(left);
+      setLastReadOption(null);
+    }
+  };
+
+  const handleLeftClick = (left: string) => {
+    if (touchedRef.current) { touchedRef.current = false; return; }
+    doLeftClick(left);
+  };
+
+  const doRightClick = (right: string) => {
     if (disabled || !selectedLeft || submitting) return;
+    setReadingOption(null);
     speakOption(right);
     const updated = { ...matched, [selectedLeft]: right };
     setMatched(updated);
@@ -1631,6 +1840,26 @@ function MatchingRenderer({ item, onAnswer, disabled }: QProps) {
     }
   };
 
+  const handleRightTouchEnd = (e: React.TouchEvent, right: string) => {
+    e.preventDefault();
+    touchedRef.current = true;
+    if (disabled || submitting) return;
+    if (lastReadOption !== right) {
+      setReadingOption(right);
+      setLastReadOption(right);
+      speak(right);
+      setTimeout(() => setReadingOption(null), 2000);
+    } else {
+      doRightClick(right);
+      setLastReadOption(null);
+    }
+  };
+
+  const handleRightClick = (right: string) => {
+    if (touchedRef.current) { touchedRef.current = false; return; }
+    doRightClick(right);
+  };
+
   return (
     <div>
       <p className="text-xl font-semibold text-gray-800 mb-2">
@@ -1641,64 +1870,78 @@ function MatchingRenderer({ item, onAnswer, disabled }: QProps) {
       </p>
       <div className="grid grid-cols-2 gap-6">
         <div className="space-y-3">
-          {lefts.map((left) => (
-            <button
-              key={left}
-              onClick={() => handleLeftClick(left)}
-              onTouchEnd={(e) => { e.preventDefault(); handleLeftClick(left); }}
-              disabled={disabled || !!matched[left] || submitting}
-              className={`w-full min-h-[56px] p-3 text-lg font-bold rounded-xl border-2 transition-all
-                flex items-center justify-between gap-2
-                ${matched[left]
-                  ? 'bg-green-100 border-green-400 text-green-800'
-                  : selectedLeft === left
-                  ? 'bg-indigo-100 border-indigo-500 text-indigo-800'
-                  : 'bg-white border-gray-200 hover:bg-indigo-50'
-                }`}
-            >
-              <span>{left}</span>
-              <SpeakerIcon text={left} size="sm" />
-            </button>
-          ))}
+          {lefts.map((left) => {
+            const isBeingRead = readingOption === left;
+            return (
+              <button
+                key={left}
+                onClick={() => handleLeftClick(left)}
+                onTouchEnd={(e) => handleLeftTouchEnd(e, left)}
+                disabled={disabled || !!matched[left] || submitting}
+                className={`w-full min-h-[56px] p-3 text-lg font-bold rounded-xl border-2 transition-all
+                  flex items-center justify-between gap-2
+                  ${matched[left]
+                    ? 'bg-green-100 border-green-400 text-green-800'
+                    : isBeingRead
+                    ? 'bg-yellow-100 border-yellow-400 text-gray-800 shadow-md'
+                    : selectedLeft === left
+                    ? 'bg-indigo-100 border-indigo-500 text-indigo-800'
+                    : 'bg-white border-gray-200 hover:bg-indigo-50'
+                  }`}
+              >
+                <span>{left}</span>
+                {isBeingRead ? <ReadingSpeakerBadge /> : <SpeakerIcon text={left} size="sm" />}
+              </button>
+            );
+          })}
         </div>
         <div className="space-y-3">
-          {shuffledRights.map((right) => (
-            <button
-              key={right}
-              onClick={() => handleRightClick(right)}
-              onTouchEnd={(e) => { e.preventDefault(); handleRightClick(right); }}
-              disabled={disabled || Object.values(matched).includes(right) || submitting}
-              className={`w-full min-h-[56px] p-3 text-lg font-bold rounded-xl border-2 transition-all
-                flex items-center justify-between gap-2
-                ${Object.values(matched).includes(right)
-                  ? 'bg-green-100 border-green-400 text-green-800'
-                  : 'bg-white border-gray-200 hover:bg-purple-50'
-                }`}
-            >
-              <span>{right}</span>
-              <SpeakerIcon text={right} size="sm" />
-            </button>
-          ))}
+          {shuffledRights.map((right) => {
+            const isBeingRead = readingOption === right;
+            return (
+              <button
+                key={right}
+                onClick={() => handleRightClick(right)}
+                onTouchEnd={(e) => handleRightTouchEnd(e, right)}
+                disabled={disabled || Object.values(matched).includes(right) || submitting}
+                className={`w-full min-h-[56px] p-3 text-lg font-bold rounded-xl border-2 transition-all
+                  flex items-center justify-between gap-2
+                  ${Object.values(matched).includes(right)
+                    ? 'bg-green-100 border-green-400 text-green-800'
+                    : isBeingRead
+                    ? 'bg-yellow-100 border-yellow-400 text-gray-800 shadow-md'
+                    : 'bg-white border-gray-200 hover:bg-purple-50'
+                  }`}
+              >
+                <span>{right}</span>
+                {isBeingRead ? <ReadingSpeakerBadge /> : <SpeakerIcon text={right} size="sm" />}
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>
   );
 }
 
-/** Sequence: tap in correct order */
-function SequenceRenderer({ item, onAnswer, disabled }: QProps) {
+/** Sequence: tap in correct order — with "tap to hear, tap again to add" */
+function SequenceRenderer({ item, onAnswer, disabled, isTouchRef }: QProps) {
   const [submitting, setSubmitting] = useState(false);
   const submittedRef = useRef(false);
+  const [readingOption, setReadingOption] = useState<string | null>(null);
+  const [lastReadOption, setLastReadOption] = useState<string | null>(null);
+  const touchedRef = useRef(false);
   const qd = item.questionData;
   const items: string[] = qd.items || [];
   const correctOrder: string[] = qd.correctOrder || items;
   const [order, setOrder] = useState<string[]>([]);
   const remaining = items.filter((i) => !order.includes(i));
 
-  useEffect(() => { submittedRef.current = false; setSubmitting(false); setOrder([]); }, [item.id]);
+  useEffect(() => { submittedRef.current = false; setSubmitting(false); setOrder([]); setReadingOption(null); setLastReadOption(null); }, [item.id]);
 
-  const handleTap = (val: string) => {
+  const doTap = (val: string) => {
     if (disabled || submitting) return;
+    setReadingOption(null);
     speakOption(val);
     const newOrder = [...order, val];
     setOrder(newOrder);
@@ -1710,6 +1953,26 @@ function SequenceRenderer({ item, onAnswer, disabled }: QProps) {
       const isCorrect = newOrder.every((v, i) => v === correctOrder[i]);
       setTimeout(() => onAnswer({ order: newOrder }, isCorrect), 200);
     }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent, val: string) => {
+    e.preventDefault();
+    touchedRef.current = true;
+    if (disabled || submitting) return;
+    if (lastReadOption !== val) {
+      setReadingOption(val);
+      setLastReadOption(val);
+      speak(val);
+      setTimeout(() => setReadingOption(null), 2000);
+    } else {
+      doTap(val);
+      setLastReadOption(null);
+    }
+  };
+
+  const handleClick = (val: string) => {
+    if (touchedRef.current) { touchedRef.current = false; return; }
+    doTap(val);
   };
 
   return (
@@ -1730,32 +1993,41 @@ function SequenceRenderer({ item, onAnswer, disabled }: QProps) {
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {remaining.map((val, idx) => (
-          <button
-            key={idx}
-            onClick={() => handleTap(val)}
-            onTouchEnd={(e) => { e.preventDefault(); handleTap(val); }}
-            onMouseEnter={() => speakOption(val)}
-            onFocus={() => speakOption(val)}
-            disabled={disabled || submitting}
-            className="min-h-[64px] p-4 text-lg font-bold rounded-2xl border-2 border-gray-200
-                       bg-white hover:bg-indigo-50 hover:border-indigo-400
-                       active:scale-95 transition-all disabled:opacity-50
-                       flex items-center justify-between gap-2"
-          >
-            <span className="flex-1 text-left">{val}</span>
-            <SpeakerIcon text={val} />
-          </button>
-        ))}
+        {remaining.map((val, idx) => {
+          const isBeingRead = readingOption === val;
+          return (
+            <button
+              key={idx}
+              onClick={() => handleClick(val)}
+              onTouchEnd={(e) => handleTouchEnd(e, val)}
+              onMouseEnter={() => { if (!isTouchRef.current) speakOption(val); }}
+              onFocus={() => speakOption(val)}
+              disabled={disabled || submitting}
+              className={`min-h-[64px] p-4 text-lg font-bold rounded-2xl border-2 transition-all
+                         active:scale-95 disabled:opacity-50
+                         flex items-center justify-between gap-2
+                         ${isBeingRead
+                           ? 'bg-yellow-100 border-yellow-400 shadow-md'
+                           : 'bg-white border-gray-200 hover:bg-indigo-50 hover:border-indigo-400'
+                         }`}
+            >
+              <span className="flex-1 text-left">{val}</span>
+              {isBeingRead ? <ReadingSpeakerBadge /> : <SpeakerIcon text={val} />}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
 }
 
-/** Simplified drag-drop: tap source then tap target */
-function DragDropRenderer({ item, onAnswer, disabled }: QProps) {
+/** Simplified drag-drop: tap source then tap target — with "tap to hear" */
+function DragDropRenderer({ item, onAnswer, disabled, isTouchRef }: QProps) {
   const [submitting, setSubmitting] = useState(false);
   const submittedRef = useRef(false);
+  const [readingOption, setReadingOption] = useState<string | null>(null);
+  const [lastReadOption, setLastReadOption] = useState<string | null>(null);
+  const touchedRef = useRef(false);
   const qd = item.questionData;
   const draggables: string[] = qd.draggables || qd.items || [];
   const targets: string[] = qd.targets || qd.zones || [];
@@ -1763,16 +2035,38 @@ function DragDropRenderer({ item, onAnswer, disabled }: QProps) {
   const [placements, setPlacements] = useState<Record<string, string>>({});
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
 
-  useEffect(() => { submittedRef.current = false; setSubmitting(false); setPlacements({}); setSelectedItem(null); }, [item.id]);
+  useEffect(() => { submittedRef.current = false; setSubmitting(false); setPlacements({}); setSelectedItem(null); setReadingOption(null); setLastReadOption(null); }, [item.id]);
 
-  const handleItemTap = (val: string) => {
+  const doItemTap = (val: string) => {
     if (disabled || submitting) return;
     setSelectedItem(val);
+    setReadingOption(null);
     speakOption(val);
   };
 
-  const handleTargetTap = (target: string) => {
+  const handleItemTouchEnd = (e: React.TouchEvent, val: string) => {
+    e.preventDefault();
+    touchedRef.current = true;
+    if (disabled || submitting) return;
+    if (lastReadOption !== val) {
+      setReadingOption(val);
+      setLastReadOption(val);
+      speak(val);
+      setTimeout(() => setReadingOption(null), 2000);
+    } else {
+      doItemTap(val);
+      setLastReadOption(null);
+    }
+  };
+
+  const handleItemClick = (val: string) => {
+    if (touchedRef.current) { touchedRef.current = false; return; }
+    doItemTap(val);
+  };
+
+  const doTargetTap = (target: string) => {
     if (disabled || !selectedItem || submitting) return;
+    setReadingOption(null);
     speakOption(target);
     const updated = { ...placements, [selectedItem]: target };
     setPlacements(updated);
@@ -1787,6 +2081,26 @@ function DragDropRenderer({ item, onAnswer, disabled }: QProps) {
     }
   };
 
+  const handleTargetTouchEnd = (e: React.TouchEvent, target: string) => {
+    e.preventDefault();
+    touchedRef.current = true;
+    if (disabled || submitting) return;
+    if (lastReadOption !== target) {
+      setReadingOption(target);
+      setLastReadOption(target);
+      speak(target);
+      setTimeout(() => setReadingOption(null), 2000);
+    } else {
+      doTargetTap(target);
+      setLastReadOption(null);
+    }
+  };
+
+  const handleTargetClick = (target: string) => {
+    if (touchedRef.current) { touchedRef.current = false; return; }
+    doTargetTap(target);
+  };
+
   return (
     <div>
       <p className="text-xl font-semibold text-gray-800 mb-2">
@@ -1795,53 +2109,64 @@ function DragDropRenderer({ item, onAnswer, disabled }: QProps) {
       <p className="text-sm text-gray-500 mb-4">Tap an item, then tap where it goes.</p>
 
       <div className="flex flex-wrap gap-3 mb-6">
-        {draggables.filter((d) => !placements[d]).map((d, idx) => (
-          <button
-            key={idx}
-            onClick={() => handleItemTap(d)}
-            onTouchEnd={(e) => { e.preventDefault(); handleItemTap(d); }}
-            disabled={disabled || submitting}
-            className={`px-4 py-3 text-lg font-bold rounded-xl border-2 transition-all active:scale-95
-              flex items-center gap-2
-              ${selectedItem === d
-                ? 'bg-indigo-100 border-indigo-500 text-indigo-800'
-                : 'bg-white border-gray-200 hover:bg-indigo-50'
-              }`}
-          >
-            {d} <SpeakerIcon text={d} size="sm" />
-          </button>
-        ))}
+        {draggables.filter((d) => !placements[d]).map((d, idx) => {
+          const isBeingRead = readingOption === d;
+          return (
+            <button
+              key={idx}
+              onClick={() => handleItemClick(d)}
+              onTouchEnd={(e) => handleItemTouchEnd(e, d)}
+              disabled={disabled || submitting}
+              className={`px-4 py-3 text-lg font-bold rounded-xl border-2 transition-all active:scale-95
+                flex items-center gap-2
+                ${isBeingRead
+                  ? 'bg-yellow-100 border-yellow-400 text-gray-800 shadow-md'
+                  : selectedItem === d
+                  ? 'bg-indigo-100 border-indigo-500 text-indigo-800'
+                  : 'bg-white border-gray-200 hover:bg-indigo-50'
+                }`}
+            >
+              {d} {isBeingRead ? <ReadingSpeakerBadge /> : <SpeakerIcon text={d} size="sm" />}
+            </button>
+          );
+        })}
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        {targets.map((t, idx) => (
-          <button
-            key={idx}
-            onClick={() => handleTargetTap(t)}
-            onTouchEnd={(e) => { e.preventDefault(); handleTargetTap(t); }}
-            disabled={disabled || submitting}
-            className="min-h-[80px] p-4 border-2 border-dashed border-gray-300 rounded-2xl
-                       bg-gray-50 hover:bg-purple-50 hover:border-purple-400 transition-all text-center"
-          >
-            <span className="text-sm text-gray-500 flex items-center justify-center gap-1 mb-1">
-              {t} <SpeakerIcon text={t} size="sm" />
-            </span>
-            <div className="flex flex-wrap gap-1 justify-center">
-              {Object.entries(placements).filter(([, v]) => v === t).map(([k]) => (
-                <span key={k} className="px-3 py-1 bg-purple-200 text-purple-800 rounded-lg font-bold text-sm">
-                  {k}
-                </span>
-              ))}
-            </div>
-          </button>
-        ))}
+        {targets.map((t, idx) => {
+          const isBeingRead = readingOption === t;
+          return (
+            <button
+              key={idx}
+              onClick={() => handleTargetClick(t)}
+              onTouchEnd={(e) => handleTargetTouchEnd(e, t)}
+              disabled={disabled || submitting}
+              className={`min-h-[80px] p-4 border-2 border-dashed rounded-2xl transition-all text-center
+                         ${isBeingRead
+                           ? 'bg-yellow-50 border-yellow-400 shadow-md'
+                           : 'border-gray-300 bg-gray-50 hover:bg-purple-50 hover:border-purple-400'
+                         }`}
+            >
+              <span className="text-sm text-gray-500 flex items-center justify-center gap-1 mb-1">
+                {t} {isBeingRead ? <ReadingSpeakerBadge /> : <SpeakerIcon text={t} size="sm" />}
+              </span>
+              <div className="flex flex-wrap gap-1 justify-center">
+                {Object.entries(placements).filter(([, v]) => v === t).map(([k]) => (
+                  <span key={k} className="px-3 py-1 bg-purple-200 text-purple-800 rounded-lg font-bold text-sm">
+                    {k}
+                  </span>
+                ))}
+              </div>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
 }
 
 /** Teacher-observed: shows task instructions, teacher marks pass/fail */
-function TeacherObservedRenderer({ item, onAnswer, disabled }: QProps) {
+function TeacherObservedRenderer({ item, onAnswer, disabled }: QPropsSimple) {
   const [processing, setProcessing] = useState<string | null>(null);
   const submittedRef = useRef(false);
   const qd = item.questionData;
@@ -1895,7 +2220,7 @@ function TeacherObservedRenderer({ item, onAnswer, disabled }: QProps) {
 }
 
 /** Audio response: play audio prompt, teacher marks correct */
-function AudioResponseRenderer({ item, onAnswer, disabled }: QProps) {
+function AudioResponseRenderer({ item, onAnswer, disabled }: QPropsSimple) {
   const [processing, setProcessing] = useState<string | null>(null);
   const submittedRef = useRef(false);
   const qd = item.questionData;
