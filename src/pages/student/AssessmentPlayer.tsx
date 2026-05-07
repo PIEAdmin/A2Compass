@@ -23,32 +23,34 @@ const speak = (text: string) => {
   // Resume in case synth got stuck in paused state
   synth.resume();
   setTimeout(() => {
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.volume = 1.0;   // MAX volume
-    utterance.rate = 0.82;    // Slightly slower for kids
-    utterance.pitch = 1.15;   // Warm, friendly tone
-    // Pick the friendliest available voice
-    const voices = synth.getVoices();
-    const preferred = [
-      'Google US English',          // Chrome — clear and friendly
-      'Microsoft Aria Online',      // Edge — natural and warm
-      'Samantha',                   // macOS — friendly female voice
-      'Microsoft Zira',             // Windows — clear female voice
-      'Google UK English Female',   // Chrome fallback
-      'Karen',                      // macOS fallback
-    ];
-    let bestVoice = null;
-    for (const name of preferred) {
-      bestVoice = voices.find(v => v.name.includes(name));
-      if (bestVoice) break;
-    }
-    // Fallback: any English voice, prefer non-local (Google voices are better quality)
-    if (!bestVoice) bestVoice = voices.find(v => v.lang.startsWith('en') && !v.localService);
-    if (!bestVoice) bestVoice = voices.find(v => v.lang.startsWith('en'));
-    if (bestVoice) utterance.voice = bestVoice;
-    synth.speak(utterance);
-    // Chrome watchdog: if paused after 10s, resume
-    setTimeout(() => { if (synth.speaking && synth.paused) synth.resume(); }, 10000);
+    try {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.volume = 1.0;   // MAX volume
+      utterance.rate = 0.82;    // Slightly slower for kids
+      utterance.pitch = 1.15;   // Warm, friendly tone
+      // Pick the friendliest available voice
+      const voices = synth.getVoices();
+      const preferred = [
+        'Google US English',          // Chrome — clear and friendly
+        'Microsoft Aria Online',      // Edge — natural and warm
+        'Samantha',                   // macOS — friendly female voice
+        'Microsoft Zira',             // Windows — clear female voice
+        'Google UK English Female',   // Chrome fallback
+        'Karen',                      // macOS fallback
+      ];
+      let bestVoice: SpeechSynthesisVoice | null = null;
+      for (const name of preferred) {
+        bestVoice = voices.find(v => v.name.includes(name)) ?? null;
+        if (bestVoice) break;
+      }
+      // Fallback: any English voice, prefer non-local (Google voices are better quality)
+      if (!bestVoice) bestVoice = voices.find(v => v.lang.startsWith('en') && !v.localService) ?? null;
+      if (!bestVoice) bestVoice = voices.find(v => v.lang.startsWith('en')) ?? null;
+      try { if (bestVoice) utterance.voice = bestVoice; } catch (_) { /* voice not compatible */ }
+      synth.speak(utterance);
+      // Chrome watchdog: if paused after 10s, resume
+      setTimeout(() => { try { if (synth.speaking && synth.paused) synth.resume(); } catch (_) {} }, 10000);
+    } catch (_) { /* TTS not available or crashed — fail silently */ }
   }, 80);
 };
 
