@@ -446,7 +446,8 @@ export default function AssessmentPlayer() {
   }
 
   // ---------- Start Screen (with resume detection) ----------
-  if (!session && !loading && !isComplete) {
+  // NOTE: Must NOT render if warm-up intro/phase is active — those screens take priority
+  if (!session && !loading && !isComplete && !showWarmupIntro && !warmupPhase) {
     if (checkingExisting) {
       return (
         <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center">
