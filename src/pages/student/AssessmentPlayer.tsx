@@ -1480,7 +1480,7 @@ function MultipleChoiceRenderer({ item, onAnswer, disabled, isTouchRef }: QProps
                          }
                          disabled:opacity-50 text-gray-800 shadow-sm`}
             >
-              <span className="flex-1 text-left">{isSelected && '✓ '}{opt}</span>
+              <span className="flex-1 text-left">{opt}</span>
               {isBeingRead ? (
                 <ReadingSpeakerBadge />
               ) : (
@@ -1589,7 +1589,7 @@ function TapSelectRenderer({ item, onAnswer, disabled, isTouchRef }: QProps) {
                          }`}
             >
               <span className="flex-1 text-left">
-                {selected.includes(opt) && '✓ '}{opt}
+                {opt}
               </span>
               {isBeingRead ? <ReadingSpeakerBadge /> : <SpeakerIcon text={opt} />}
             </button>
@@ -1804,7 +1804,7 @@ function FillBlankRenderer({ item, onAnswer, disabled, isTouchRef }: QProps) {
                              }
                              disabled:opacity-50`}
                 >
-                  <span className="flex-1 text-left">{isSelected && '✓ '}{opt}</span>
+                  <span className="flex-1 text-left">{opt}</span>
                   {isBeingRead ? (
                     <ReadingSpeakerBadge />
                   ) : (

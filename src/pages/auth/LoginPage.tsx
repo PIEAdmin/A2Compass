@@ -95,16 +95,6 @@ export default function LoginPage() {
             <label htmlFor="rememberMe" className="text-sm text-gray-600">Remember me for 7 days</label>
           </div>
 
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="rememberMe"
-              onChange={(e) => localStorage.setItem('a2c_remember_me', e.target.checked ? 'true' : 'false')}
-              defaultChecked={typeof window !== 'undefined' && localStorage.getItem('a2c_remember_me') === 'true'}
-              className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-            />
-            <label htmlFor="rememberMe" className="text-sm text-gray-600">Remember me for 7 days</label>
-          </div>
 
           <button
             type="submit"
