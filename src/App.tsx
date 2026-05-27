@@ -135,6 +135,7 @@ export default function App() {
         <Route path="admin/organizations" element={<OrganizationIntake />} />
         <Route path="admin/messages" element={<Inbox />} />
         <Route path="admin/live-monitor" element={<LiveMonitor />} />
+        <Route path="admin/activity" element={<ActivityFeed />} />
 
         {/* Teacher Routes */}
         <Route path="teacher" element={<TeacherDashboard />} />
@@ -162,6 +163,8 @@ export default function App() {
         <Route path="teacher/pacing-guide" element={<PacingGuidePage />} />
         <Route path="teacher/resources" element={<TeacherResources />} />
         <Route path="teacher/subjects" element={<SubjectManager />} />
+        <Route path="teacher/messages" element={<Inbox />} />
+        <Route path="teacher/activity" element={<ActivityFeed />} />
 
         {/* Parent Routes */}
         <Route path="parent" element={<ParentDashboard />} />
@@ -174,7 +177,6 @@ export default function App() {
         <Route path="parent/certificates" element={<ParentDashboard />} />
         <Route path="parent/billing" element={<ParentBillingPage />} />
         <Route path="parent/enroll" element={<EnrollPage />} />
-        <Route path="parent/messages" element={<ParentDashboard />} />
         <Route path="parent/letters" element={<ParentLetters />} />
         <Route path="parent/report-card" element={<UnifiedReportCard />} />
         <Route path="parent/messages" element={<Inbox />} />
@@ -194,6 +196,7 @@ export default function App() {
         <Route path="student/library" element={<StudentLibrary />} />
         <Route path="student/reward-shop" element={<RewardShop />} />
         <Route path="student/locker" element={<MyLocker />} />
+        <Route path="student/messages" element={<Inbox />} />
         <Route path="student/learning-path" element={<LearningPathPage />} />
         <Route path="student/game/:gameType" element={<GameLauncher />} />
         <Route path="student/data-explorer" element={<DataExplorerPage />} />
