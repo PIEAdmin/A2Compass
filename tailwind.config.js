@@ -18,21 +18,21 @@ export default {
         },
         // Tier colors
         explorer: {
-          DEFAULT: '#10B981', // Green - Explorers' Camp (Grades 1-6)
-          light: '#D1FAE5',
+          DEFAULT: '#2E7D32',
+          light: '#FFF8E7',
         },
         scholar: {
-          DEFAULT: '#2563EB', // Blue - Scholars' Guild (Grades 7-9)
-          light: '#DBEAFE',
+          DEFAULT: '#1A237E',
+          light: '#F3E5F5',
         },
         collegium: {
-          DEFAULT: '#7C3AED', // Purple - The Collegium (Grades 10-12)
-          light: '#EDE9FE',
+          DEFAULT: '#0D47A1',
+          light: '#F5F5F5',
         },
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        display: ['Poppins', 'sans-serif'],
+        display: ['Nunito', 'Fredoka One', 'Poppins', 'sans-serif'],
       },
     },
   },

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks';
 import { usePlaylist } from '../../hooks/useSkills';
@@ -8,8 +8,109 @@ import {
   FloatingStars,
   ConfettiBurst,
 } from '../../components/shared/Illustrations';
-import { ReadAloud, ReadAloudBlock } from '../../components/shared/ReadAloud';
+import { ReadAloud } from '../../components/shared/ReadAloud';
 
+/* ═══════════════════════════════════════════════════════════
+   🌲  A² COMPASS — STUDENT DASHBOARD (Magical Redesign)
+   Kid-friendly, tier-themed, gamified dashboard
+   ═══════════════════════════════════════════════════════════ */
+
+// ───── Tier Themes ─────
+type TierKey = 'explorers' | 'scholars' | 'collegium';
+
+interface TierTheme {
+  name: string;
+  icon: string;
+  primary: string;
+  secondary: string;
+  accent: string;
+  bg: string;
+  bgPattern: string;
+  gradientFrom: string;
+  gradientVia: string;
+  gradientTo: string;
+  headerBg: string;
+}
+
+const TIER_THEMES: Record<TierKey, TierTheme> = {
+  explorers: {
+    name: "Explorers' Camp",
+    icon: '🌲',
+    primary: '#2E7D32',
+    secondary: '#F57C00',
+    accent: '#FFEB3B',
+    bg: '#FFF8E7',
+    bgPattern: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%232E7D32' fill-opacity='0.04'%3E%3Cpath d='M30 10 L25 25 L35 25 Z'/%3E%3Ccircle cx='15' cy='45' r='3'/%3E%3Ccircle cx='45' cy='40' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+    gradientFrom: '#2E7D32',
+    gradientVia: '#43A047',
+    gradientTo: '#66BB6A',
+    headerBg: 'linear-gradient(135deg, #2E7D32 0%, #43A047 50%, #66BB6A 100%)',
+  },
+  scholars: {
+    name: "Scholars' Guild",
+    icon: '📚',
+    primary: '#1A237E',
+    secondary: '#7B1FA2',
+    accent: '#FFD700',
+    bg: '#F3E5F5',
+    bgPattern: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%231A237E' fill-opacity='0.04'%3E%3Crect x='20' y='15' width='12' height='16' rx='2'/%3E%3Crect x='35' y='30' width='10' height='14' rx='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+    gradientFrom: '#1A237E',
+    gradientVia: '#283593',
+    gradientTo: '#3F51B5',
+    headerBg: 'linear-gradient(135deg, #1A237E 0%, #283593 50%, #5C6BC0 100%)',
+  },
+  collegium: {
+    name: 'The Collegium',
+    icon: '🧭',
+    primary: '#0D47A1',
+    secondary: '#880E4F',
+    accent: '#FFD700',
+    bg: '#F5F5F5',
+    bgPattern: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%230D47A1' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='10'/%3E%3Cline x1='30' y1='20' x2='30' y2='40' stroke='%230D47A1' stroke-width='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+    gradientFrom: '#0D47A1',
+    gradientVia: '#1565C0',
+    gradientTo: '#1976D2',
+    headerBg: 'linear-gradient(135deg, #0D47A1 0%, #1565C0 50%, #1976D2 100%)',
+  },
+};
+
+function getTierFromGrade(grade: number | null): TierKey {
+  if (!grade || grade <= 6) return 'explorers';
+  if (grade <= 9) return 'scholars';
+  return 'collegium';
+}
+
+// ───── Level System ─────
+interface Level {
+  level: number;
+  title: string;
+  emoji: string;
+  pointsNeeded: number;
+}
+
+const LEVELS: Level[] = [
+  { level: 1, title: 'Explorer', emoji: '🌱', pointsNeeded: 0 },
+  { level: 2, title: 'Adventurer', emoji: '🎒', pointsNeeded: 500 },
+  { level: 3, title: 'Navigator', emoji: '🧭', pointsNeeded: 1500 },
+  { level: 4, title: 'Pioneer', emoji: '🚀', pointsNeeded: 3000 },
+  { level: 5, title: 'Master Explorer', emoji: '👑', pointsNeeded: 5000 },
+];
+
+function getLevel(points: number): Level & { progress: number; nextLevel: Level | null } {
+  let current = LEVELS[0];
+  for (const l of LEVELS) {
+    if (points >= l.pointsNeeded) current = l;
+    else break;
+  }
+  const nextIdx = LEVELS.indexOf(current) + 1;
+  const next = nextIdx < LEVELS.length ? LEVELS[nextIdx] : null;
+  const progress = next
+    ? ((points - current.pointsNeeded) / (next.pointsNeeded - current.pointsNeeded)) * 100
+    : 100;
+  return { ...current, progress: Math.min(100, Math.max(0, progress)), nextLevel: next };
+}
+
+// ───── Helpers ─────
 function getGreeting(): { text: string; emoji: string } {
   const hour = new Date().getHours();
   if (hour < 12) return { text: 'Good Morning', emoji: '☀️' };
@@ -23,109 +124,290 @@ function formatDate(): string {
   });
 }
 
-// ---------- Animation Keyframes ----------
-function DashboardAnimationStyles() {
+function getStreakEmoji(streak: number): string {
+  if (streak >= 7) return '🔥';
+  if (streak >= 3) return '🔥';
+  if (streak >= 1) return '🕯️';
+  return '💤';
+}
+
+function getStreakSize(streak: number): string {
+  if (streak >= 7) return 'text-3xl animate-pulse';
+  if (streak >= 3) return 'text-2xl';
+  return 'text-xl';
+}
+
+const pepperGreetings = [
+  "Let's explore today!",
+  "Ready for an adventure?",
+  "You're going to do great!",
+  "Let's learn something new!",
+  "Today is YOUR day!",
+  "Let's fly!",
+  "Every day is a discovery!",
+];
+
+function randomGreeting() {
+  return pepperGreetings[Math.floor(Math.random() * pepperGreetings.length)];
+}
+
+// ───── Animation Styles ─────
+function DashboardAnimationStyles({ theme }: { theme: TierTheme }) {
   return (
     <style>{`
+      :root {
+        --tier-primary: ${theme.primary};
+        --tier-secondary: ${theme.secondary};
+        --tier-accent: ${theme.accent};
+        --tier-bg: ${theme.bg};
+      }
       @keyframes slideInLeft {
-        0% { transform: translateX(-120px) scale(0.8); opacity: 0; }
-        60% { transform: translateX(10px) scale(1.05); opacity: 1; }
+        0% { transform: translateX(-80px) scale(0.8); opacity: 0; }
+        60% { transform: translateX(6px) scale(1.03); opacity: 1; }
         100% { transform: translateX(0) scale(1); opacity: 1; }
       }
       @keyframes bounceIn {
         0% { transform: scale(0); opacity: 0; }
-        50% { transform: scale(1.15); }
-        70% { transform: scale(0.95); }
+        50% { transform: scale(1.12); }
+        70% { transform: scale(0.96); }
         100% { transform: scale(1); opacity: 1; }
       }
       @keyframes fadeInUp {
-        0% { transform: translateY(15px); opacity: 0; }
+        0% { transform: translateY(20px); opacity: 0; }
         100% { transform: translateY(0); opacity: 1; }
       }
       @keyframes sparkle {
         0%, 100% { opacity: 0.3; transform: scale(0.8) rotate(0deg); }
         50% { opacity: 1; transform: scale(1.2) rotate(180deg); }
       }
+      @keyframes shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+      }
+      @keyframes pointsFloat {
+        0% { transform: translateY(0); opacity: 1; }
+        100% { transform: translateY(-40px); opacity: 0; }
+      }
+      @keyframes flame {
+        0%, 100% { transform: scaleY(1) scaleX(1); }
+        25% { transform: scaleY(1.15) scaleX(0.9); }
+        50% { transform: scaleY(0.95) scaleX(1.05); }
+        75% { transform: scaleY(1.1) scaleX(0.95); }
+      }
+      @keyframes cardEnter {
+        0% { transform: translateY(15px); opacity: 0; }
+        100% { transform: translateY(0); opacity: 1; }
+      }
+      @keyframes firework {
+        0% { transform: scale(0); opacity: 1; }
+        50% { transform: scale(1.2); opacity: 0.8; }
+        100% { transform: scale(1.5); opacity: 0; }
+      }
       .anim-slide-in-left { animation: slideInLeft 0.6s ease-out both; }
       .anim-bounce-in { animation: bounceIn 0.5s ease-out both; }
       .anim-fade-in-up { animation: fadeInUp 0.5s ease-out both; }
       .anim-sparkle { animation: sparkle 2s ease-in-out infinite; }
+      .anim-shimmer {
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+        background-size: 200% 100%;
+        animation: shimmer 2s ease-in-out infinite;
+      }
+      .anim-flame { animation: flame 0.8s ease-in-out infinite; transform-origin: bottom center; }
+      .anim-card-enter { animation: cardEnter 0.4s ease-out both; }
+      .anim-firework { animation: firework 0.8s ease-out both; }
+
+      .dashboard-card {
+        border-radius: 1.25rem;
+        border: 2px solid transparent;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        transition: all 0.2s ease;
+      }
+      .dashboard-card:hover {
+        box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+      }
+      .dashboard-card:active {
+        transform: scale(0.98);
+      }
+
+      .tier-bg {
+        background-color: var(--tier-bg);
+        background-image: ${theme.bgPattern};
+      }
+
+      /* Progress bar shimmer */
+      .progress-bar-fill {
+        background: linear-gradient(90deg, var(--tier-primary), var(--tier-secondary), var(--tier-primary));
+        background-size: 200% 100%;
+        animation: shimmer 3s ease-in-out infinite;
+        border-radius: 9999px;
+        transition: width 0.8s ease;
+      }
+
+      /* Mobile bottom nav */
+      @media (max-width: 768px) {
+        .mobile-bottom-nav {
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          z-index: 50;
+          background: white;
+          border-top: 2px solid #e5e7eb;
+          box-shadow: 0 -2px 10px rgba(0,0,0,0.08);
+          padding: 6px 0 env(safe-area-inset-bottom, 6px);
+        }
+        .dashboard-main-content {
+          padding-bottom: 80px;
+        }
+      }
     `}</style>
   );
 }
 
+// ═══════════════════════════════════════════
+//  MAIN DASHBOARD COMPONENT
+// ═══════════════════════════════════════════
 export default function StudentDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const studentId = user?.id || '';
   const studentName = user?.fullName?.split(' ')[0] || 'Explorer';
   const { items, loading } = usePlaylist(studentId);
+
+  // State
   const [sparkPoints, setSparkPoints] = useState(0);
   const [streak, setStreak] = useState(0);
   const [showWelcome, setShowWelcome] = useState(true);
   const [checkedIn, setCheckedIn] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
-  const greeting = getGreeting();
+  const [gradeLevel, setGradeLevel] = useState<number | null>(null);
+  const [studentProfileId, setStudentProfileId] = useState<string | null>(null);
+  const [pepperSpeech, setPepperSpeech] = useState(randomGreeting());
+  const [checkinCelebrating, setCheckinCelebrating] = useState(false);
+  const [scheduleData, setScheduleData] = useState<{ start: string; end: string; breaks: { time: string; label: string }[] } | null>(null);
 
   // Welcome animation state
-  const [animPhase, setAnimPhase] = useState(0); // 0=not started, 1=pepper in, 2=bubble, 3=goal line
+  const [animPhase, setAnimPhase] = useState(0);
   const [welcomePlayed, setWelcomePlayed] = useState(false);
   const animTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
-  // New sections state
-  const [scheduleData, setScheduleData] = useState<{ start: string; end: string; breaks: { time: string; label: string }[] } | null>(null);
-  const [upcomingAssignments, setUpcomingAssignments] = useState<any[]>([]);
-  const [upcomingTests, setUpcomingTests] = useState<any[]>([]);
-  const [checkinCelebrating, setCheckinCelebrating] = useState(false);
+  const greeting = getGreeting();
+  const tierKey = getTierFromGrade(gradeLevel);
+  const theme = TIER_THEMES[tierKey];
+  const levelInfo = getLevel(sparkPoints);
 
-  // Load spark points & streak
+  // ───── Data Loading ─────
   useEffect(() => {
     if (!studentId) return;
     (async () => {
-      // Spark points
-      const { data: sp } = await supabase
-        .from('spark_points')
-        .select('balance')
-        .eq('student_id', studentId)
-        .maybeSingle();
-      if (sp) setSparkPoints(sp.balance || 0);
-
-      // Streak from activity log
-      const { data: logs } = await supabase
-        .from('activity_log')
-        .select('created_at')
+      // 1. Get student_profile (for grade, tier, and spark points join)
+      const { data: profile } = await supabase
+        .from('student_profiles')
+        .select('id, grade_level, tier_id, theme_color, school_start_time, school_end_time, break_times')
         .eq('user_id', studentId)
-        .eq('event_type', 'login')
-        .order('created_at', { ascending: false })
-        .limit(30);
+        .maybeSingle();
 
-      if (logs && logs.length > 0) {
-        let s = 1;
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        for (let i = 1; i < logs.length; i++) {
-          const d = new Date(logs[i].created_at);
-          d.setHours(0, 0, 0, 0);
-          const expected = new Date(today);
-          expected.setDate(expected.getDate() - i);
-          if (d.getTime() === expected.getTime()) s++;
-          else break;
+      if (profile) {
+        setStudentProfileId(profile.id);
+        setGradeLevel(profile.grade_level);
+
+        // Schedule
+        if (profile.school_start_time || profile.school_end_time) {
+          setScheduleData({
+            start: profile.school_start_time || '08:00',
+            end: profile.school_end_time || '15:00',
+            breaks: Array.isArray(profile.break_times)
+              ? profile.break_times.map((b: any) =>
+                  typeof b === 'object'
+                    ? { time: b.time || '', label: b.label || 'Break' }
+                    : { time: String(b), label: 'Break' }
+                )
+              : [],
+          });
         }
-        setStreak(s);
+
+        // 2. Spark points — use student_profile_id!
+        const { data: spRows } = await supabase
+          .from('spark_points')
+          .select('amount')
+          .eq('student_profile_id', profile.id);
+        if (spRows && spRows.length > 0) {
+          const total = spRows.reduce((sum: number, r: any) => sum + (r.amount || 0), 0);
+          setSparkPoints(total);
+        }
       }
 
-      // Check if already checked in today
+      // 3. Attendance streak — use attendance_records table
       const todayStr = new Date().toISOString().split('T')[0];
-      const { data: todayLog } = await supabase
-        .from('activity_log')
-        .select('id')
-        .eq('user_id', studentId)
-        .eq('event_type', 'login')
-        .gte('created_at', todayStr)
-        .limit(1);
-      if (todayLog && todayLog.length > 0) setCheckedIn(true);
+      const { data: attendanceRecords } = await supabase
+        .from('attendance_records')
+        .select('date, status')
+        .eq('student_id', studentId)
+        .order('date', { ascending: false })
+        .limit(60);
 
-      // Auto-dismiss welcome after played
+      if (attendanceRecords && attendanceRecords.length > 0) {
+        // Check if checked in today
+        const todayRecord = attendanceRecords.find((r: any) => r.date === todayStr);
+        if (todayRecord) setCheckedIn(true);
+
+        // Calculate streak
+        let s = 0;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        for (let i = 0; i < 60; i++) {
+          const checkDate = new Date(today);
+          checkDate.setDate(checkDate.getDate() - i);
+          const dateStr = checkDate.toISOString().split('T')[0];
+          const found = attendanceRecords.find((r: any) => r.date === dateStr && r.status !== 'absent');
+          if (found) {
+            s++;
+          } else if (i > 0) {
+            // Skip today if not checked in yet (don't break streak)
+            break;
+          }
+        }
+        setStreak(s);
+      } else {
+        // Fallback: also check activity_log for legacy check-ins
+        const { data: logs } = await supabase
+          .from('activity_log')
+          .select('created_at, activity_type')
+          .eq('student_id', studentId)
+          .eq('activity_type', 'attendance_checkin')
+          .order('created_at', { ascending: false })
+          .limit(30);
+
+        if (logs && logs.length > 0) {
+          // Check if already checked in today
+          const todayLog = logs.find((l: any) => l.created_at?.startsWith(todayStr));
+          if (todayLog) setCheckedIn(true);
+
+          // Calculate streak from activity_log dates
+          let s = 0;
+          const seen = new Set<string>();
+          for (const log of logs) {
+            const d = log.created_at?.split('T')[0];
+            if (d) seen.add(d);
+          }
+          const today2 = new Date();
+          today2.setHours(0, 0, 0, 0);
+          for (let i = 0; i < 30; i++) {
+            const checkDate = new Date(today2);
+            checkDate.setDate(checkDate.getDate() - i);
+            const dateStr2 = checkDate.toISOString().split('T')[0];
+            if (seen.has(dateStr2)) {
+              s++;
+            } else if (i > 0) {
+              break;
+            }
+          }
+          setStreak(s);
+        }
+      }
+
+      // Auto-dismiss welcome if already seen today
       const lastWelcome = localStorage.getItem(`a2c_welcome_${todayStr}`);
       if (lastWelcome) {
         setShowWelcome(false);
@@ -134,118 +416,67 @@ export default function StudentDashboard() {
     })();
   }, [studentId]);
 
-  // Fetch schedule, assignments, and tests
-  useEffect(() => {
-    if (!studentId) return;
-    (async () => {
-      try {
-        // Get student profile for schedule + linking
-        const { data: profile } = await supabase
-          .from('student_profiles')
-          .select('id, school_start_time, school_end_time, break_times')
-          .eq('user_id', studentId)
-          .maybeSingle();
-
-        if (profile) {
-          if (profile.school_start_time || profile.school_end_time) {
-            setScheduleData({
-              start: profile.school_start_time || '08:00',
-              end: profile.school_end_time || '15:00',
-              breaks: Array.isArray(profile.break_times)
-                ? profile.break_times.map((b: any) => typeof b === 'object' ? { time: b.time || '', label: b.label || 'Break' } : { time: String(b), label: 'Break' })
-                : [],
-            });
-          }
-
-          // Upcoming assignments — due within 7 days, pending or in_progress
-          const nextWeek = new Date();
-          nextWeek.setDate(nextWeek.getDate() + 7);
-          const { data: assignments } = await supabase
-            .from('student_assignments')
-            .select('id, title, due_date, assignment_type, status')
-            .eq('student_id', profile.id)
-            .in('status', ['pending', 'in_progress'])
-            .lte('due_date', nextWeek.toISOString())
-            .order('due_date', { ascending: true })
-            .limit(5);
-          if (assignments) setUpcomingAssignments(assignments);
-        }
-
-        // Upcoming tests — not yet started
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-        const { data: spForTests } = await supabase
-          .from('student_profiles')
-          .select('id')
-          .eq('user_id', studentId)
-          .maybeSingle();
-
-        if (spForTests) {
-          const { data: tests } = await supabase
-            .from('assessment_sessions')
-            .select('id, created_at, updated_at, status')
-            .eq('student_id', spForTests.id)
-            .is('started_at', null)
-            .gte('created_at', sevenDaysAgo.toISOString())
-            .order('created_at', { ascending: false })
-            .limit(5);
-          if (tests) setUpcomingTests(tests);
-        }
-      } catch (e) {
-        console.error('Failed to load dashboard sections:', e);
-      }
-    })();
-  }, [studentId]);
-
-  // Welcome animation sequence
-  const playWelcomeAnimation = () => {
-    // Clear any existing timers
+  // ───── Welcome Animation ─────
+  const playWelcomeAnimation = useCallback(() => {
     animTimersRef.current.forEach(clearTimeout);
     animTimersRef.current = [];
-
     setAnimPhase(0);
     setShowConfetti(true);
+    setPepperSpeech(randomGreeting());
 
-    const t1 = setTimeout(() => setAnimPhase(1), 100); // Pepper slides in
-    const t2 = setTimeout(() => setAnimPhase(2), 700); // Speech bubble appears
-    const t3 = setTimeout(() => setAnimPhase(3), 1700); // Goal line fades in
+    const t1 = setTimeout(() => setAnimPhase(1), 100);
+    const t2 = setTimeout(() => setAnimPhase(2), 700);
+    const t3 = setTimeout(() => setAnimPhase(3), 1700);
     const t4 = setTimeout(() => setShowConfetti(false), 3500);
-
     animTimersRef.current = [t1, t2, t3, t4];
-  };
+  }, []);
 
-  // Auto-play welcome animation on first load
   useEffect(() => {
     if (showWelcome && !welcomePlayed && !loading) {
       setWelcomePlayed(true);
       playWelcomeAnimation();
     }
-  }, [showWelcome, loading]);
+  }, [showWelcome, loading, welcomePlayed, playWelcomeAnimation]);
 
-  // Cleanup timers
   useEffect(() => {
     return () => { animTimersRef.current.forEach(clearTimeout); };
   }, []);
 
-  // Computed data
+  // ───── Computed Data ─────
   const todayItems = useMemo(() => items.filter(i => i.status !== 'completed' && i.status !== 'skipped'), [items]);
   const completedToday = useMemo(() => items.filter(i => i.status === 'completed'), [items]);
   const priorityItems = useMemo(() => todayItems.slice(0, 2), [todayItems]);
-  const leftoverItems = useMemo(() => items.filter(i => i.status === 'in_progress'), [items]);
   const totalGoal = Math.max(3, todayItems.length);
   const completedCount = completedToday.length;
 
+  // ───── Check In ─────
   const handleCheckIn = async () => {
     setCheckedIn(true);
     setCheckinCelebrating(true);
     setShowConfetti(true);
+    setPepperSpeech("You're here! Let's go! 🎉");
     setTimeout(() => { setShowConfetti(false); setCheckinCelebrating(false); }, 3000);
-    // Log attendance
+
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    // Write to attendance_records (proper table)
+    await supabase.from('attendance_records').upsert({
+      student_id: studentId,
+      date: todayStr,
+      check_in_time: new Date().toISOString(),
+      check_in_method: 'self',
+      status: 'present',
+    }, { onConflict: 'student_id,date' });
+
+    // Also log to activity_log for backward compat
     await supabase.from('activity_log').insert({
-      user_id: studentId,
-      event_type: 'attendance_checkin',
-      details: { date: new Date().toISOString().split('T')[0] },
+      student_id: studentId,
+      activity_type: 'attendance_checkin',
+      activity_name: 'Daily Check-In',
+      details: { date: todayStr },
     });
+
+    setStreak(prev => prev + 1);
   };
 
   const dismissWelcome = () => {
@@ -254,7 +485,7 @@ export default function StudentDashboard() {
     localStorage.setItem(`a2c_welcome_${todayStr}`, 'true');
   };
 
-  // Helpers for schedule display
+  // Time helpers
   const formatTime12 = (time24: string) => {
     if (!time24) return '';
     const [h, m] = time24.split(':').map(Number);
@@ -263,437 +494,424 @@ export default function StudentDashboard() {
     return `${h12}:${String(m || 0).padStart(2, '0')} ${ampm}`;
   };
 
-  const getCurrentTimeBlock = () => {
-    if (!scheduleData) return -1;
-    const now = new Date();
-    const nowMinutes = now.getHours() * 60 + now.getMinutes();
-    const parseTime = (t: string) => {
-      const [h, m] = t.split(':').map(Number);
-      return h * 60 + (m || 0);
-    };
-
-    const startMin = parseTime(scheduleData.start);
-    const endMin = parseTime(scheduleData.end);
-
-    if (nowMinutes < startMin) return -1; // before school
-    if (nowMinutes >= endMin) return 999; // after school
-
-    // Check breaks
-    for (let i = 0; i < scheduleData.breaks.length; i++) {
-      const breakTime = parseTime(scheduleData.breaks[i].time);
-      if (Math.abs(nowMinutes - breakTime) < 15) return i + 1; // in a break (±15min)
-    }
-    return 0; // in class
-  };
-
-  const assignmentTypeIcon = (type: string) => {
-    switch (type) {
-      case 'homework': return '📝';
-      case 'project': return '🎨';
-      case 'quiz': return '📋';
-      case 'reading': return '📖';
-      default: return '📌';
-    }
-  };
-
+  // ───── Loading State ─────
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-[400px] tier-bg">
         <div className="text-center">
-          <PepperPenguin pose="waving" size={120} />
-          <p className="mt-4 text-lg text-gray-600 animate-pulse">Loading your day...</p>
+          <PepperPenguin mood="thinking" size={120} />
+          <p className="mt-4 text-lg text-gray-600 animate-pulse font-display font-bold">
+            Packing your backpack...
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
-      <DashboardAnimationStyles />
-      {showConfetti && <ConfettiBurst />}
+    <div className="tier-bg min-h-screen dashboard-main-content">
+      <DashboardAnimationStyles theme={theme} />
+      {showConfetti && <ConfettiBurst active />}
 
-      {/* ===== Animated Welcome Header ===== */}
-      {showWelcome && (
-        <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-3xl p-6 text-white relative overflow-hidden">
-          <FloatingStars count={8} />
+      <div className="max-w-4xl mx-auto px-3 sm:px-4 py-4 space-y-4">
 
-          {/* Sparkle decorations */}
-          {animPhase >= 1 && (
-            <>
-              <span className="absolute top-3 right-8 text-xl anim-sparkle" style={{ animationDelay: '0s' }}>✨</span>
-              <span className="absolute top-8 right-20 text-lg anim-sparkle" style={{ animationDelay: '0.5s' }}>⭐</span>
-              <span className="absolute bottom-4 right-12 text-xl anim-sparkle" style={{ animationDelay: '1s' }}>💫</span>
-            </>
-          )}
-
-          <div className="flex items-center gap-4 relative z-10">
-            {/* Pepper slides in from left */}
-            <div
-              className={`cursor-pointer transform hover:scale-110 transition-transform flex-shrink-0
-                ${animPhase >= 1 ? 'anim-slide-in-left' : 'opacity-0'}`}
-              onClick={() => {
-                // Replay full animation
-                playWelcomeAnimation();
-              }}
-              title="Tap Pepper to replay!"
-            >
-              <PepperPenguin pose="waving" size={100} />
+        {/* ════════ TIER HEADER BAR ════════ */}
+        <div
+          className="rounded-2xl px-4 py-3 flex items-center justify-between text-white shadow-lg"
+          style={{ background: theme.headerBg }}
+        >
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">{theme.icon}</span>
+            <ReadAloud text={theme.name} showIcon={false}>
+              <span className="font-display font-bold text-lg tracking-wide">{theme.name}</span>
+            </ReadAloud>
+          </div>
+          <div className="flex items-center gap-3">
+            {/* Spark Points */}
+            <div className="flex items-center gap-1 bg-white/20 rounded-full px-3 py-1">
+              <span className="text-lg">🪙</span>
+              <span className="font-bold">{sparkPoints}</span>
             </div>
-
-            <div className="flex-1 min-w-0">
-              {/* Speech bubble with bounce-in */}
-              {animPhase >= 2 ? (
-                <div className="relative anim-bounce-in">
-                  {/* Triangle pointer toward Pepper */}
-                  <div className="absolute left-[-10px] top-4 w-0 h-0
-                    border-t-[8px] border-t-transparent
-                    border-r-[12px] border-r-white/20
-                    border-b-[8px] border-b-transparent" />
-                  <div className="bg-white/20 backdrop-blur-sm rounded-2xl px-4 py-3 shadow-lg">
-                    <ReadAloud
-                      text={`${greeting.text}, ${studentName}! Ready to learn?`}
-                      autoRead={true}
-                      showIcon={false}
-                    >
-                      <h1 className="text-2xl md:text-3xl font-bold">
-                        {greeting.emoji} {greeting.text}, {studentName}!
-                      </h1>
-                    </ReadAloud>
-                    <p className="text-white/90 mt-1 text-lg">{formatDate()}</p>
-
-                    {/* Goal line fades in after delay */}
-                    {animPhase >= 3 && (
-                      <div className="anim-fade-in-up mt-2">
-                        <ReadAloud
-                          text={`Today's goal: Complete ${totalGoal} activities. You've done ${completedCount} so far!`}
-                          showIcon={true}
-                          iconSize="sm"
-                        >
-                          <p className="text-white/80">
-                            🎯 Today&apos;s goal: Complete <span className="font-bold">{totalGoal} activities</span>
-                            {completedCount > 0 && <> — <span className="text-yellow-200 font-bold">{completedCount} done!</span></>}
-                          </p>
-                        </ReadAloud>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <div className="h-24" /> /* placeholder before bubble appears */
-              )}
+            {/* Level Badge */}
+            <div className="flex items-center gap-1 bg-white/20 rounded-full px-3 py-1">
+              <span className="text-lg">{levelInfo.emoji}</span>
+              <span className="font-bold text-sm">Lv.{levelInfo.level}</span>
             </div>
           </div>
-
-          {/* Dismiss button */}
-          <button
-            onClick={dismissWelcome}
-            className="absolute top-3 right-3 text-white/60 hover:text-white/90 text-sm z-20 bg-white/10 rounded-full px-3 py-1"
-          >
-            ✕
-          </button>
         </div>
-      )}
 
-      {/* ===== Quick Stats Bar ===== */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatCard icon="🪙" label="Spark Points" value={sparkPoints} color="bg-amber-50 border-amber-200" />
-        <StatCard icon="🔥" label="Day Streak" value={`${streak} day${streak !== 1 ? 's' : ''}`} color="bg-red-50 border-red-200" />
-        <StatCard icon="✅" label="Done Today" value={`${completedCount}/${totalGoal}`} color="bg-green-50 border-green-200" />
-        <StatCard icon="📚" label="Remaining" value={todayItems.length} color="bg-blue-50 border-blue-200" />
-      </div>
+        {/* ════════ PEPPER WELCOME BANNER ════════ */}
+        {showWelcome && (
+          <div
+            className="rounded-3xl p-5 text-white relative overflow-hidden shadow-xl"
+            style={{ background: theme.headerBg }}
+          >
+            <FloatingStars count={8} />
 
-      {/* ===== Attendance Check-In ===== */}
-      {!checkedIn && (
-        <ReadAloudBlock text="Tap the button to check in for today!" autoRead={false}>
-          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl p-5 text-center">
-            <p className="text-lg font-semibold text-green-800 mb-3">🙋 Ready to start your day?</p>
+            {animPhase >= 1 && (
+              <>
+                <span className="absolute top-3 right-8 text-xl anim-sparkle" style={{ animationDelay: '0s' }}>✨</span>
+                <span className="absolute top-8 right-20 text-lg anim-sparkle" style={{ animationDelay: '0.5s' }}>⭐</span>
+                <span className="absolute bottom-4 right-12 text-xl anim-sparkle" style={{ animationDelay: '1s' }}>💫</span>
+              </>
+            )}
+
+            <div className="flex items-center gap-4 relative z-10">
+              <div
+                className={`cursor-pointer transform hover:scale-110 transition-transform flex-shrink-0
+                  ${animPhase >= 1 ? 'anim-slide-in-left' : 'opacity-0'}`}
+                onClick={playWelcomeAnimation}
+                title="Tap Pepper to replay!"
+              >
+                <PepperPenguin mood="waving" size={100} speech={animPhase >= 2 ? pepperSpeech : undefined} />
+              </div>
+
+              <div className="flex-1 min-w-0">
+                {animPhase >= 2 ? (
+                  <div className="anim-bounce-in">
+                    <div className="bg-white/15 backdrop-blur-sm rounded-2xl px-4 py-3">
+                      <ReadAloud
+                        text={`${greeting.text}, ${studentName}! ${pepperSpeech}`}
+                        autoRead={true}
+                        showIcon={false}
+                      >
+                        <h1 className="text-2xl md:text-3xl font-display font-bold">
+                          {greeting.emoji} {greeting.text}, {studentName}!
+                        </h1>
+                      </ReadAloud>
+                      <p className="text-white/80 mt-1">{formatDate()}</p>
+
+                      {animPhase >= 3 && (
+                        <div className="anim-fade-in-up mt-2">
+                          <ReadAloud
+                            text={`Today's goal: Complete ${totalGoal} activities. You've done ${completedCount} so far!`}
+                            showIcon={true}
+                            iconSize="sm"
+                          >
+                            <p className="text-white/80">
+                              🎯 Today&apos;s goal: <span className="font-bold">{totalGoal} activities</span>
+                              {completedCount > 0 && <> — <span className="font-bold" style={{ color: theme.accent }}>{completedCount} done!</span></>}
+                            </p>
+                          </ReadAloud>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="h-24" />
+                )}
+              </div>
+            </div>
+
+            <button
+              onClick={dismissWelcome}
+              className="absolute top-3 right-3 text-white/50 hover:text-white/90 text-sm z-20 bg-white/10 rounded-full px-3 py-1"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
+        {/* ════════ STATS ROW ════════ */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {/* Spark Points */}
+          <div className="dashboard-card bg-white p-3 text-center anim-card-enter" style={{ animationDelay: '0.05s' }}>
+            <div className="text-2xl">🪙</div>
+            <div className="text-xl font-display font-bold" style={{ color: theme.primary }}>{sparkPoints}</div>
+            <ReadAloud text={`Spark Points: ${sparkPoints}`} showIcon={false}>
+              <div className="text-xs text-gray-500 font-medium">Spark Points</div>
+            </ReadAloud>
+          </div>
+
+          {/* Streak */}
+          <div className="dashboard-card bg-white p-3 text-center anim-card-enter" style={{ animationDelay: '0.1s' }}>
+            <div className={`${getStreakSize(streak)} ${streak >= 3 ? 'anim-flame' : ''}`}>
+              {getStreakEmoji(streak)}
+            </div>
+            <div className="text-xl font-display font-bold text-orange-600">
+              {streak} day{streak !== 1 ? 's' : ''}
+            </div>
+            <ReadAloud text={`Day Streak: ${streak} days`} showIcon={false}>
+              <div className="text-xs text-gray-500 font-medium">Day Streak</div>
+            </ReadAloud>
+            {streak >= 3 && (
+              <div className="text-[10px] text-orange-500 font-bold mt-0.5">You&apos;re on a roll!</div>
+            )}
+          </div>
+
+          {/* Done Today */}
+          <div className="dashboard-card bg-white p-3 text-center anim-card-enter" style={{ animationDelay: '0.15s' }}>
+            <div className="text-2xl">✅</div>
+            <div className="text-xl font-display font-bold text-green-600">{completedCount}/{totalGoal}</div>
+            <ReadAloud text={`Done today: ${completedCount} of ${totalGoal}`} showIcon={false}>
+              <div className="text-xs text-gray-500 font-medium">Done Today</div>
+            </ReadAloud>
+          </div>
+
+          {/* Level */}
+          <div className="dashboard-card bg-white p-3 text-center anim-card-enter" style={{ animationDelay: '0.2s' }}>
+            <div className="text-2xl">{levelInfo.emoji}</div>
+            <div className="text-sm font-display font-bold" style={{ color: theme.primary }}>
+              {levelInfo.title}
+            </div>
+            <ReadAloud text={`Level ${levelInfo.level}: ${levelInfo.title}`} showIcon={false}>
+              <div className="text-xs text-gray-500 font-medium">Level {levelInfo.level}</div>
+            </ReadAloud>
+            {/* Level progress bar */}
+            {levelInfo.nextLevel && (
+              <div className="mt-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                <div className="progress-bar-fill h-full" style={{ width: `${levelInfo.progress}%` }} />
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ════════ ATTENDANCE CHECK-IN ════════ */}
+        {!checkedIn && (
+          <div
+            className="dashboard-card p-5 text-center anim-card-enter"
+            style={{
+              background: `linear-gradient(135deg, ${theme.bg}, white)`,
+              borderColor: theme.primary + '40',
+            }}
+          >
+            <PepperPenguin mood="waving" size={70} />
+            <ReadAloud text="Tap the button to check in for today!" showIcon={false}>
+              <p className="text-lg font-display font-bold mt-2" style={{ color: theme.primary }}>
+                🙋 Ready to start your day?
+              </p>
+            </ReadAloud>
             <button
               onClick={handleCheckIn}
-              className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-xl
+              className="mt-3 text-white font-display font-bold py-3 px-8 rounded-2xl
                 text-lg shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 transition-all"
+              style={{ background: theme.headerBg }}
             >
               ✅ I&apos;m Here! Check In
             </button>
           </div>
-        </ReadAloudBlock>
-      )}
+        )}
 
-      {/* Check-in celebration */}
-      {checkedIn && checkinCelebrating && (
-        <div className="bg-gradient-to-r from-green-100 to-emerald-100 border-2 border-green-300 rounded-2xl p-5 text-center anim-bounce-in">
-          <div className="text-4xl mb-2">🎉</div>
-          <p className="text-xl font-bold text-green-700">You&apos;re here!</p>
-          <p className="text-green-600 mt-1">
-            {streak > 1 ? `🔥 ${streak}-day streak! Keep it going!` : 'Great start to the day!'}
-          </p>
-        </div>
-      )}
+        {/* Check-in celebration */}
+        {checkedIn && checkinCelebrating && (
+          <div
+            className="dashboard-card p-5 text-center anim-bounce-in"
+            style={{
+              background: `linear-gradient(135deg, ${theme.bg}, white)`,
+              borderColor: theme.primary + '60',
+            }}
+          >
+            <div className="text-4xl mb-2 anim-firework">🎉</div>
+            <p className="text-xl font-display font-bold" style={{ color: theme.primary }}>You&apos;re here!</p>
+            <p className="mt-1" style={{ color: theme.secondary }}>
+              {streak > 1 ? `🔥 ${streak}-day streak! Keep it going!` : 'Great start to the day!'}
+            </p>
+          </div>
+        )}
 
-      {/* ===== Daily Schedule ===== */}
-      {scheduleData && (
-        <section>
-          <ReadAloud text="Your daily schedule" showIcon={true} iconSize="sm">
-            <h2 className="text-xl font-bold text-gray-800 mb-3">🕐 Daily Schedule</h2>
-          </ReadAloud>
-          <div className="bg-white border border-gray-200 rounded-2xl p-4">
-            <div className="flex items-center gap-2 overflow-x-auto pb-2">
-              {/* Start time */}
-              <TimeBlock
-                label="Start"
-                time={formatTime12(scheduleData.start)}
-                icon="🏫"
-                active={getCurrentTimeBlock() === 0}
-              />
-
-              {/* Break times */}
-              {scheduleData.breaks.map((brk, idx) => (
-                <div key={idx} className="flex items-center gap-2">
-                  <div className="w-8 h-0.5 bg-gray-300 flex-shrink-0" />
-                  <TimeBlock
-                    label={brk.label || `Break ${idx + 1}`}
-                    time={formatTime12(brk.time)}
-                    icon="☕"
-                    active={getCurrentTimeBlock() === idx + 1}
-                  />
+        {/* ════════ TODAY'S MISSION (Priority) ════════ */}
+        {priorityItems.length > 0 && (
+          <section className="anim-card-enter" style={{ animationDelay: '0.25s' }}>
+            <ReadAloud text="Today's Mission: Your most important activities" showIcon={true} iconSize="sm">
+              <h2 className="text-xl font-display font-bold mb-3 flex items-center gap-2" style={{ color: theme.primary }}>
+                ⭐ Today&apos;s Mission
+              </h2>
+            </ReadAloud>
+            <div className="space-y-3">
+              {priorityItems.map((item, idx) => (
+                <div
+                  key={item.id}
+                  onClick={() => navigate('/student/practice', { state: { skillId: item.skillId } })}
+                  className="dashboard-card bg-white p-4 flex items-center gap-4 cursor-pointer"
+                  style={{ borderColor: theme.primary + '30' }}
+                >
+                  <div
+                    className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl font-display font-bold text-white shadow-md"
+                    style={{ background: theme.headerBg }}
+                  >
+                    {idx + 1}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <ReadAloud text={item.skillName || 'Practice activity'} showIcon={true} iconSize="sm">
+                      <p className="font-display font-bold text-gray-800">{item.skillName}</p>
+                    </ReadAloud>
+                    <p className="text-sm text-gray-500">{item.domainName || 'Skill practice'}</p>
+                  </div>
+                  <div
+                    className="font-display font-bold text-sm px-3 py-1 rounded-full text-white"
+                    style={{ background: theme.secondary }}
+                  >
+                    Start →
+                  </div>
                 </div>
               ))}
+            </div>
+          </section>
+        )}
 
-              {/* End time */}
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-0.5 bg-gray-300 flex-shrink-0" />
-                <TimeBlock
-                  label="End"
-                  time={formatTime12(scheduleData.end)}
-                  icon="🏠"
-                  active={getCurrentTimeBlock() === 999}
-                />
+        {/* ════════ QUICK ACTIONS (2-column cards) ════════ */}
+        <div className="grid grid-cols-2 gap-3 anim-card-enter" style={{ animationDelay: '0.3s' }}>
+          <button
+            onClick={() => navigate('/student/subjects')}
+            className="dashboard-card bg-white p-5 text-center"
+          >
+            <div className="text-4xl mb-2">🎮</div>
+            <ReadAloud text="Quick Play" showIcon={false}>
+              <div className="font-display font-bold text-gray-800">Quick Play</div>
+            </ReadAloud>
+            <div className="text-xs text-gray-500 mt-1">Pick a fun activity!</div>
+          </button>
+
+          <button
+            onClick={() => navigate('/student/library')}
+            className="dashboard-card bg-white p-5 text-center"
+          >
+            <div className="text-4xl mb-2">📚</div>
+            <ReadAloud text="Library" showIcon={false}>
+              <div className="font-display font-bold text-gray-800">Library</div>
+            </ReadAloud>
+            <div className="text-xs text-gray-500 mt-1">Explore books &amp; games</div>
+          </button>
+        </div>
+
+        {/* ════════ DAILY SCHEDULE ════════ */}
+        {scheduleData && (
+          <section className="anim-card-enter" style={{ animationDelay: '0.35s' }}>
+            <ReadAloud text="Your daily schedule" showIcon={true} iconSize="sm">
+              <h2 className="text-xl font-display font-bold mb-3 flex items-center gap-2" style={{ color: theme.primary }}>
+                📅 Today&apos;s Schedule
+              </h2>
+            </ReadAloud>
+            <div className="dashboard-card bg-white p-4">
+              <div className="flex items-center justify-between text-center">
+                <div className="flex flex-col items-center">
+                  <span className="text-xl">🏫</span>
+                  <span className="text-sm font-display font-bold text-gray-700">{formatTime12(scheduleData.start)}</span>
+                  <span className="text-[10px] text-gray-400">Start</span>
+                </div>
+                {scheduleData.breaks.map((brk, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <div className="w-6 h-0.5 bg-gray-200" />
+                    <div className="flex flex-col items-center">
+                      <span className="text-xl">☕</span>
+                      <span className="text-sm font-display font-bold text-gray-700">{formatTime12(brk.time)}</span>
+                      <span className="text-[10px] text-gray-400">{brk.label}</span>
+                    </div>
+                  </div>
+                ))}
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-0.5 bg-gray-200" />
+                  <div className="flex flex-col items-center">
+                    <span className="text-xl">🏠</span>
+                    <span className="text-sm font-display font-bold text-gray-700">{formatTime12(scheduleData.end)}</span>
+                    <span className="text-[10px] text-gray-400">End</span>
+                  </div>
+                </div>
               </div>
             </div>
-            <p className="text-xs text-gray-400 mt-2 text-center">School hours set by your teacher</p>
-          </div>
-        </section>
-      )}
-
-      {/* ===== Upcoming Assignments ===== */}
-      <section>
-        <ReadAloud text="Upcoming assignments due this week" showIcon={true} iconSize="sm">
-          <h2 className="text-xl font-bold text-gray-800 mb-3">📝 Upcoming Assignments</h2>
-        </ReadAloud>
-        {upcomingAssignments.length === 0 ? (
-          <div className="bg-white border border-gray-200 rounded-2xl p-6 text-center">
-            <PepperPenguin pose="celebrating" size={70} />
-            <p className="text-gray-500 mt-2">No upcoming assignments — enjoy your free time! 🎉</p>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {upcomingAssignments.map((a) => (
-              <div
-                key={a.id}
-                className="bg-white border border-gray-200 rounded-xl p-3 flex items-center gap-3
-                  hover:border-indigo-300 hover:shadow-md transition-all"
-              >
-                <span className="text-2xl">{assignmentTypeIcon(a.assignment_type)}</span>
-                <div className="flex-1 min-w-0">
-                  <ReadAloud text={a.title || 'Assignment'} showIcon={true} iconSize="sm">
-                    <p className="font-medium text-gray-800 text-sm truncate">
-                      {a.title || 'Assignment'}
-                    </p>
-                  </ReadAloud>
-                  <p className="text-xs text-gray-500">
-                    Due: {a.due_date ? new Date(a.due_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : 'TBD'}
-                  </p>
-                </div>
-                <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                  a.status === 'in_progress' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'
-                }`}>
-                  {a.status === 'in_progress' ? '◐ In Progress' : '○ Pending'}
-                </span>
-              </div>
-            ))}
-          </div>
+          </section>
         )}
-      </section>
 
-      {/* ===== Upcoming Tests ===== */}
-      <section>
-        <ReadAloud text="Upcoming tests" showIcon={true} iconSize="sm">
-          <h2 className="text-xl font-bold text-gray-800 mb-3">📋 Upcoming Tests</h2>
-        </ReadAloud>
-        {upcomingTests.length === 0 ? (
-          <div className="bg-white border border-gray-200 rounded-2xl p-5 text-center">
-            <p className="text-gray-500">No tests scheduled — keep up the good work! 📚</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {upcomingTests.map((test) => (
-              <div
-                key={test.id}
-                className="bg-white border-2 border-purple-200 rounded-2xl p-4 text-center
-                  hover:border-purple-400 hover:shadow-md transition-all"
-              >
-                <span className="text-3xl">📝</span>
-                <p className="text-sm text-gray-500 mt-2">
-                  Created: {new Date(test.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+        {/* ════════ TODAY'S ACTIVITIES ════════ */}
+        <section className="anim-card-enter" style={{ animationDelay: '0.4s' }}>
+          <ReadAloud text="Your activities for today" showIcon={true} iconSize="sm">
+            <h2 className="text-xl font-display font-bold mb-3 flex items-center gap-2" style={{ color: theme.primary }}>
+              📋 Today&apos;s Activities
+            </h2>
+          </ReadAloud>
+
+          {todayItems.length === 0 ? (
+            <div className="dashboard-card bg-white text-center py-8">
+              <PepperPenguin mood="celebrating" size={100} />
+              <ReadAloud text="All done for today! Amazing work!" autoRead={true} showIcon={false}>
+                <p className="text-xl font-display font-bold mt-3" style={{ color: theme.primary }}>
+                  🎉 All done for today!
                 </p>
-                <button
-                  onClick={() => navigate('/student/assessment')}
-                  className="mt-3 bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-6 rounded-xl
-                    text-sm shadow-md hover:shadow-lg transform hover:scale-105 active:scale-95 transition-all"
+              </ReadAloud>
+              <p className="text-gray-500 mt-1">Come back tomorrow for more adventures!</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {todayItems.map((item, idx) => (
+                <div
+                  key={item.id}
+                  onClick={() => navigate('/student/practice', { state: { skillId: item.skillId } })}
+                  className="dashboard-card bg-white p-3 flex items-center gap-3 cursor-pointer"
                 >
-                  🚀 Start Test
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* ===== Today's Priority ===== */}
-      {priorityItems.length > 0 && (
-        <section>
-          <ReadAloud text="Today's Priority: Your most important skills to work on" showIcon={true} iconSize="sm">
-            <h2 className="text-xl font-bold text-gray-800 mb-3">🎯 Today&apos;s Priority</h2>
-          </ReadAloud>
-          <div className="space-y-3">
-            {priorityItems.map((item, idx) => (
-              <div
-                key={item.id}
-                onClick={() => navigate('/student/practice', { state: { skillId: item.skillId } })}
-                className="bg-white border-2 border-indigo-200 rounded-2xl p-4 flex items-center gap-4
-                  cursor-pointer hover:border-indigo-400 hover:shadow-lg transform hover:scale-[1.01]
-                  active:scale-[0.99] transition-all"
-              >
-                <div className="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center text-2xl font-bold text-indigo-600">
-                  {idx + 1}
+                  <div
+                    className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold text-white"
+                    style={{ background: `${theme.primary}80` }}
+                  >
+                    {idx + 1}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <ReadAloud text={item.skillName || 'Activity'} showIcon={true} iconSize="sm">
+                      <p className="font-medium text-gray-800 text-sm">{item.skillName}</p>
+                    </ReadAloud>
+                  </div>
+                  <span
+                    className="text-xs px-2 py-1 rounded-full font-medium"
+                    style={{ background: theme.bg, color: theme.primary }}
+                  >
+                    {item.domainName || 'Skill'}
+                  </span>
                 </div>
-                <div className="flex-1">
-                  <ReadAloud text={item.skillName || 'Practice activity'} showIcon={true} iconSize="sm">
-                    <p className="font-bold text-gray-800">{item.skillName}</p>
-                  </ReadAloud>
-                  <p className="text-sm text-gray-500">{item.domainName || 'Skill practice'}</p>
-                </div>
-                <div className="text-indigo-500 font-bold text-sm">Start →</div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </section>
-      )}
 
-      {/* ===== Left from Yesterday ===== */}
-      {leftoverItems.length > 0 && (
-        <section>
-          <ReadAloud text="Left from yesterday: Activities you started but didn't finish" showIcon={true} iconSize="sm">
-            <h2 className="text-xl font-bold text-gray-800 mb-3">⏰ Left from Yesterday</h2>
-          </ReadAloud>
-          <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4 space-y-2">
-            {leftoverItems.slice(0, 3).map(item => (
-              <div
-                key={item.id}
-                onClick={() => navigate('/student/practice', { state: { skillId: item.skillId } })}
-                className="flex items-center gap-3 p-2 rounded-xl hover:bg-orange-100 cursor-pointer transition-colors"
-              >
-                <span className="text-xl">◐</span>
-                <ReadAloud text={item.skillName || 'Unfinished activity'} showIcon={true} iconSize="sm">
-                  <span className="font-medium text-gray-800">{item.skillName}</span>
-                </ReadAloud>
-                <span className="ml-auto text-orange-600 text-sm font-bold">Continue →</span>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+        {/* ════════ BOTTOM QUICK ACTIONS ════════ */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2 anim-card-enter" style={{ animationDelay: '0.45s' }}>
+          <QuickAction icon="🗺️" label="Flight Plan" color={theme.primary} onClick={() => navigate('/student/flight-plan')} />
+          <QuickAction icon="📊" label="My Progress" color={theme.primary} onClick={() => navigate('/student/progress')} />
+          <QuickAction icon="🏆" label="Achievements" color={theme.primary} onClick={() => navigate('/student/achievements')} />
+          <QuickAction icon="🛍️" label="Reward Shop" color={theme.primary} onClick={() => navigate('/student/reward-shop')} />
+        </div>
 
-      {/* ===== Today's Full Schedule ===== */}
-      <section>
-        <ReadAloud text="Your full list of activities for today" showIcon={true} iconSize="sm">
-          <h2 className="text-xl font-bold text-gray-800 mb-3">📋 Today&apos;s Activities</h2>
-        </ReadAloud>
+      </div>
 
-        {todayItems.length === 0 ? (
-          <div className="text-center py-8">
-            <PepperPenguin pose="celebrating" size={100} />
-            <ReadAloud text="All done for today! Amazing work!" autoRead={true} showIcon={false}>
-              <p className="text-xl font-bold text-green-600 mt-3">🎉 All done for today!</p>
-            </ReadAloud>
-            <p className="text-gray-500 mt-1">Come back tomorrow for more adventures!</p>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {todayItems.map((item, idx) => (
-              <div
-                key={item.id}
-                onClick={() => navigate('/student/practice', { state: { skillId: item.skillId } })}
-                className="bg-white border border-gray-200 rounded-xl p-3 flex items-center gap-3
-                  cursor-pointer hover:border-indigo-300 hover:shadow-md transition-all"
-              >
-                <span className="text-gray-400 text-sm w-6 text-center">{idx + 1}</span>
-                <div className="flex-1">
-                  <ReadAloud text={item.skillName || 'Activity'} showIcon={true} iconSize="sm">
-                    <p className="font-medium text-gray-800 text-sm">{item.skillName}</p>
-                  </ReadAloud>
-                </div>
-                <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">
-                  {item.domainName || 'Skill'}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* ===== Quick Actions ===== */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2">
-        <QuickAction icon="🗺️" label="Flight Plan" onClick={() => navigate('/student/flight-plan')} />
-        <QuickAction icon="📊" label="My Progress" onClick={() => navigate('/student/progress')} />
-        <QuickAction icon="🏆" label="Achievements" onClick={() => navigate('/student/achievements')} />
-        <QuickAction icon="🛍️" label="Reward Shop" onClick={() => navigate('/student/rewards')} />
+      {/* ════════ MOBILE BOTTOM NAV ════════ */}
+      <div className="mobile-bottom-nav md:hidden">
+        <div className="flex items-center justify-around px-2">
+          <MobileNavItem icon="🏠" label="Home" active onClick={() => navigate('/student')} />
+          <MobileNavItem icon="🛍️" label="Shop" onClick={() => navigate('/student/reward-shop')} />
+          <MobileNavItem icon="🔐" label="Locker" onClick={() => navigate('/student/locker')} />
+          <MobileNavItem icon="🏆" label="Badges" onClick={() => navigate('/student/achievements')} />
+          <MobileNavItem icon="👤" label="Me" onClick={() => navigate('/student/progress')} />
+        </div>
       </div>
     </div>
   );
 }
 
-// ---------- Helper Components ----------
+// ───── Helper Components ─────
 
-function TimeBlock({ label, time, icon, active }: { label: string; time: string; icon: string; active: boolean }) {
-  return (
-    <div className={`flex flex-col items-center px-3 py-2 rounded-xl min-w-[80px] flex-shrink-0 border-2 transition-all ${
-      active
-        ? 'bg-indigo-100 border-indigo-400 shadow-md'
-        : 'bg-gray-50 border-gray-200'
-    }`}>
-      <span className="text-xl">{icon}</span>
-      <span className={`text-xs font-bold mt-1 ${active ? 'text-indigo-700' : 'text-gray-700'}`}>{time}</span>
-      <span className={`text-[10px] ${active ? 'text-indigo-500 font-bold' : 'text-gray-400'}`}>
-        {active ? '← Now' : label}
-      </span>
-    </div>
-  );
-}
-
-function StatCard({ icon, label, value, color }: { icon: string; label: string; value: string | number; color: string }) {
-  return (
-    <div className={`${color} border rounded-2xl p-3 text-center`}>
-      <div className="text-2xl">{icon}</div>
-      <div className="text-xl font-bold text-gray-800">{value}</div>
-      <ReadAloud text={`${label}: ${value}`} showIcon={false} iconSize="sm">
-        <div className="text-xs text-gray-500">{label}</div>
-      </ReadAloud>
-    </div>
-  );
-}
-
-function QuickAction({ icon, label, onClick }: { icon: string; label: string; onClick: () => void }) {
+function QuickAction({ icon, label, color, onClick }: { icon: string; label: string; color: string; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="bg-white border border-gray-200 rounded-2xl p-4 text-center
-        hover:border-indigo-300 hover:shadow-md transform hover:scale-105
-        active:scale-95 transition-all"
+      className="dashboard-card bg-white p-4 text-center"
     >
       <div className="text-3xl mb-1">{icon}</div>
       <ReadAloud text={label} showIcon={false}>
-        <div className="text-sm font-medium text-gray-700">{label}</div>
+        <div className="text-sm font-display font-bold" style={{ color }}>{label}</div>
       </ReadAloud>
+    </button>
+  );
+}
+
+function MobileNavItem({ icon, label, active, onClick }: {
+  icon: string; label: string; active?: boolean; onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex flex-col items-center py-1 px-3 min-w-[56px] min-h-[44px] rounded-lg transition-colors
+        ${active ? 'text-green-700 font-bold' : 'text-gray-500'}`}
+    >
+      <span className="text-xl">{icon}</span>
+      <span className="text-[10px] mt-0.5 font-medium">{label}</span>
     </button>
   );
 }
