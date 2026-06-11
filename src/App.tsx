@@ -14,8 +14,12 @@ const ResetPassword = lazy(() => import('./pages/auth/ResetPassword'))
 const RegisterPage = lazy(() => import('./pages/auth/RegisterPage'))
 const DeleteAccount = lazy(() => import('./pages/settings/DeleteAccount'))
 const AdminDashboard = lazy(() => import('./pages/admin/Dashboard'))
+const AdminStudents = lazy(() => import('./pages/admin/Students'))
+const AdminEnrollment = lazy(() => import('./pages/admin/Enrollment'))
+const AdminReports = lazy(() => import('./pages/admin/Reports'))
 const AdminBillingPage = lazy(() => import('./pages/admin/Billing'))
 const ApiSettings = lazy(() => import('./pages/admin/ApiSettings'))
+const ComingSoon = lazy(() => import('./pages/shared/ComingSoon'))
 const TeacherDashboard = lazy(() => import('./pages/teacher/Dashboard'))
 const MissionControl = lazy(() => import('./pages/teacher/MissionControl'))
 const SkillMap = lazy(() => import('./pages/teacher/SkillMap'))
@@ -129,24 +133,23 @@ export default function App() {
 
         {/* Admin Routes */}
         <Route path="admin" element={<AdminDashboard />} />
-        <Route path="admin/students" element={<AdminDashboard />} />
-        <Route path="admin/enrollment" element={<AdminDashboard />} />
+        <Route path="admin/students" element={<AdminStudents />} />
+        <Route path="admin/enrollment" element={<AdminEnrollment />} />
         <Route path="admin/billing" element={<AdminBillingPage />} />
         <Route path="admin/subjects" element={<SubjectManager />} />
-        <Route path="admin/reports" element={<AdminDashboard />} />
+        <Route path="admin/reports" element={<AdminReports />} />
         <Route path="admin/api-settings" element={<ApiSettings />} />
         <Route path="admin/report-card" element={<UnifiedReportCard />} />
         <Route path="admin/organizations" element={<OrganizationIntake />} />
         <Route path="admin/messages" element={<Inbox />} />
         <Route path="admin/live-monitor" element={<LiveMonitor />} />
-        <Route path="admin/activity" element={<ActivityFeed />} />
 
         {/* Teacher Routes */}
         <Route path="teacher" element={<TeacherDashboard />} />
         <Route path="teacher/mission-control" element={<MissionControl />} />
-        <Route path="teacher/students" element={<TeacherDashboard />} />
-        <Route path="teacher/schedule" element={<TeacherDashboard />} />
-        <Route path="teacher/mastery" element={<TeacherDashboard />} />
+        <Route path="teacher/students" element={<ComingSoon title="My Students" description="Student management coming soon." />} />
+        <Route path="teacher/schedule" element={<ComingSoon title="Schedule" description="Class scheduling coming soon." />} />
+        <Route path="teacher/mastery" element={<ComingSoon title="Mastery Tracker" description="Mastery tracking coming soon." />} />
         <Route path="teacher/skill-map" element={<SkillMap />} />
         <Route path="teacher/assessments" element={<AssessmentDashboard />} />
         <Route path="teacher/live-monitor" element={<LiveMonitor />} />
@@ -173,12 +176,12 @@ export default function App() {
         {/* Parent Routes */}
         <Route path="parent" element={<ParentDashboard />} />
         <Route path="parent/orientation" element={<ParentOrientation />} />
-        <Route path="parent/progress" element={<ParentDashboard />} />
+        <Route path="parent/progress" element={<ComingSoon title="Progress" description="Detailed progress view coming soon." />} />
         <Route path="parent/growth" element={<GrowthTimeline />} />
         <Route path="parent/assessments" element={<AssessmentSummary />} />
         <Route path="parent/curriculum" element={<ParentCurriculum />} />
-        <Route path="parent/milestones" element={<ParentDashboard />} />
-        <Route path="parent/certificates" element={<ParentDashboard />} />
+        <Route path="parent/milestones" element={<ComingSoon title="Milestones" description="Milestone tracking coming soon." />} />
+        <Route path="parent/certificates" element={<ComingSoon title="Certificates" description="Certificate gallery coming soon." />} />
         <Route path="parent/billing" element={<ParentBillingPage />} />
         <Route path="parent/enroll" element={<EnrollPage />} />
         <Route path="parent/letters" element={<ParentLetters />} />
