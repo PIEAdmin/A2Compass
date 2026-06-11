@@ -65,6 +65,10 @@ const UnifiedReportCard = lazy(() => import('./pages/shared/UnifiedReportCard'))
 const Inbox = lazy(() => import('./pages/shared/Inbox'))
 const OrganizationIntake = lazy(() => import('./pages/admin/OrganizationIntake'))
 const MyLocker = lazy(() => import('./pages/student/MyLocker'))
+const PlayMode = lazy(() => import('./pages/student/PlayMode'))
+const VideoLibrary = lazy(() => import('./pages/student/VideoLibrary'))
+const InteractiveStory = lazy(() => import('./pages/student/InteractiveStory'))
+const BalloonPopDemo = lazy(() => import('./pages/student/games/BalloonPopDemo'))
 const SessionTimeout = lazy(() => import('./components/shared/SessionTimeout'))
 
 
@@ -200,6 +204,10 @@ export default function App() {
         <Route path="student/learning-path" element={<LearningPathPage />} />
         <Route path="student/game/:gameType" element={<GameLauncher />} />
         <Route path="student/data-explorer" element={<DataExplorerPage />} />
+        <Route path="student/play" element={<PlayMode />} />
+        <Route path="student/videos" element={<VideoLibrary />} />
+        <Route path="student/story" element={<InteractiveStory />} />
+        <Route path="student/game/balloon-pop-demo" element={<BalloonPopDemo />} />
 
         {/* Settings */}
         <Route path="settings/delete-account" element={<DeleteAccount />} />
