@@ -1,7 +1,12 @@
 // ============================================================
 // A² Compass — Assessment Service Layer
 // ============================================================
+// Hybrid approach: uses the new adaptive engine for skill/item
+// selection and response processing, keeps direct table queries
+// for reporting and session management.
+// ============================================================
 import { supabase } from './supabase';
+import { adaptiveEngine } from './adaptive-assessment-engine';
 import type {
   AssessmentItem,
   AssessmentSession,
@@ -17,22 +22,16 @@ import type {
 
 export const assessmentService = {
   // ----------------------------------------------------------------
-  // Session Lifecycle (RPC calls)
+  // Session Lifecycle — now powered by adaptive engine
   // ----------------------------------------------------------------
 
-  /** Start a new assessment session via the DB engine */
+  /** Start a new assessment session — always begins at Pre-K level */
   async startAssessmentSession(
     studentId: string,
     type: SessionType,
     targetSkillIds?: string[]
   ): Promise<StartSessionResult> {
-    const { data, error } = await supabase.rpc('start_assessment_session', {
-      p_student_id: studentId,
-      p_session_type: type,
-      p_target_skill_ids: targetSkillIds ?? null,
-    });
-    if (error) throw error;
-    return data as StartSessionResult;
+    return adaptiveEngine.startSession(studentId, type, targetSkillIds);
   },
 
   /** Submit a student response and get the next-action decision */
@@ -45,40 +44,29 @@ export const assessmentService = {
     timeSpent?: number,
     hintUsed?: boolean
   ): Promise<ProcessResponseResult> {
-    const { data, error } = await supabase.rpc('process_assessment_response', {
-      p_session_id: sessionId,
-      p_item_id: itemId,
-      p_student_response: response,
-      p_is_correct: isCorrect,
-      p_score: score ?? (isCorrect ? 1 : 0),
-      p_time_spent: timeSpent ?? 0,
-      p_hint_used: hintUsed ?? false,
-    });
-    if (error) throw error;
-    return data as ProcessResponseResult;
+    return adaptiveEngine.processResponse(
+      sessionId,
+      itemId,
+      response,
+      isCorrect,
+      score,
+      timeSpent,
+      hintUsed
+    );
   },
 
   /** Fetch the next item for the current skill in a session */
   async getNextItem(sessionId: string, skillId: string): Promise<NextItemResult> {
-    const { data, error } = await supabase.rpc('get_next_assessment_item', {
-      p_session_id: sessionId,
-      p_skill_id: skillId,
-    });
-    if (error) throw error;
-    return data as NextItemResult;
+    return adaptiveEngine.getNextItem(sessionId, skillId);
   },
 
   /** Determine the next skill to assess in a session */
   async getNextSkill(sessionId: string): Promise<NextSkillResult> {
-    const { data, error } = await supabase.rpc('get_next_skill_for_assessment', {
-      p_session_id: sessionId,
-    });
-    if (error) throw error;
-    return data as NextSkillResult;
+    return adaptiveEngine.getNextSkill(sessionId);
   },
 
   // ----------------------------------------------------------------
-  // Session State Management (direct table updates)
+  // Session State Management (direct table updates — unchanged)
   // ----------------------------------------------------------------
 
   /** Pause an in-progress session */
@@ -109,10 +97,10 @@ export const assessmentService = {
   },
 
   // ----------------------------------------------------------------
-  // Results & Reporting
+  // Results & Reporting (unchanged)
   // ----------------------------------------------------------------
 
-  /** Fetch skill-level results for a completed session */
+  /** Fetch skill-level results for a session */
   async getSessionResults(sessionId: string): Promise<AssessmentSkillResult[]> {
     const { data, error } = await supabase
       .from('assessment_skill_results')
@@ -149,8 +137,7 @@ export const assessmentService = {
 
   /** Aggregated assessment summary for a student */
   async getAssessmentSummary(studentId: string): Promise<AssessmentSummary> {
-    // FIX: Include completed, paused, AND in_progress sessions — not just completed
-    // Students may have paused sessions with real data that should be visible
+    // Include completed, paused, AND in_progress sessions
     const { data: sessions, error: sessErr } = await supabase
       .from('assessment_sessions')
       .select('id, started_at, completed_at, status, skills_assessed, skills_mastered, items_attempted, items_correct')
@@ -205,12 +192,9 @@ export const assessmentService = {
     });
 
     const allSessions = sessions || [];
-    
-    // Also compute totals from session data (items_attempted, items_correct)
-    // so parent can see question-level stats even before completion
     const totalItemsAttempted = allSessions.reduce((sum, s: any) => sum + (s.items_attempted || 0), 0);
     const totalItemsCorrect = allSessions.reduce((sum, s: any) => sum + (s.items_correct || 0), 0);
-    
+
     return {
       totalSessions: allSessions.length,
       totalSkillsAssessed: latestBySkill.size,
@@ -219,14 +203,13 @@ export const assessmentService = {
       ).length,
       latestSessionDate: allSessions[0]?.started_at,
       domainBreakdown: Array.from(domainMap.values()),
-      // Extra fields for richer parent display
       totalItemsAttempted,
       totalItemsCorrect,
-    };
+    } as any;
   },
 
   // ----------------------------------------------------------------
-  // Item Bank Management (Teacher)
+  // Item Bank Management (Teacher — unchanged)
   // ----------------------------------------------------------------
 
   /** Browse items, optionally filtered by skill */
