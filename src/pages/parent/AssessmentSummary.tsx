@@ -85,6 +85,15 @@ export default function AssessmentSummary() {
     (d) => d.skillsMastered <= d.skillsTotal * 0.5
   );
 
+  // Question-level stats from the summary
+  const totalQuestions = (summary as any)?.totalItemsAttempted || 0;
+  const totalCorrect = (summary as any)?.totalItemsCorrect || 0;
+  const accuracy = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
+
+  // Session status for display
+  const activeSessions = sessions.filter(s => s.status === 'paused' || s.status === 'in_progress');
+  const completedSessions = sessions.filter(s => s.status === 'completed');
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header
@@ -115,14 +124,14 @@ export default function AssessmentSummary() {
 
         {dashLoading ? (
           <LoadingSpinner size="lg" />
-        ) : !summary || summary.totalSessions === 0 ? (
+        ) : !summary || (summary.totalSessions === 0 && totalQuestions === 0) ? (
           <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
             <div className="text-5xl mb-4">📋</div>
             <h3 className="text-lg font-semibold text-gray-800 mb-2">
               No assessment results yet
             </h3>
             <p className="text-gray-500">
-              Once your child completes their first assessment, you'll see their
+              Once your child completes their first assessment, you&apos;ll see their
               results here in an easy-to-understand format.
             </p>
           </div>
@@ -131,22 +140,39 @@ export default function AssessmentSummary() {
             {/* Summary Card */}
             <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg">
               <h2 className="text-2xl font-bold mb-1">
-                {profileDisplayName(selectedChild?.profile, 'Your Child')}'s Learning
+                {profileDisplayName(selectedChild?.profile, 'Your Child')}&apos;s Learning
                 Snapshot
               </h2>
               <p className="text-indigo-100 text-sm mb-4">
                 Based on {summary.totalSessions} assessment
                 {summary.totalSessions === 1 ? '' : 's'}
+                {activeSessions.length > 0 && ` (${activeSessions.length} in progress)`}
                 {summary.latestSessionDate &&
-                  ` • Last assessed ${new Date(summary.latestSessionDate).toLocaleDateString()}`}
+                  ` • Last active ${new Date(summary.latestSessionDate).toLocaleDateString()}`}
               </p>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="bg-white/20 rounded-xl p-4 text-center">
                   <div className="text-3xl font-bold">
-                    {summary.totalSkillsAssessed}
+                    {totalQuestions}
                   </div>
                   <div className="text-xs text-indigo-100 mt-1">
-                    Skills Checked
+                    Questions Answered
+                  </div>
+                </div>
+                <div className="bg-white/20 rounded-xl p-4 text-center">
+                  <div className="text-3xl font-bold text-green-200">
+                    {totalCorrect}
+                  </div>
+                  <div className="text-xs text-indigo-100 mt-1">
+                    Correct Answers
+                  </div>
+                </div>
+                <div className="bg-white/20 rounded-xl p-4 text-center">
+                  <div className="text-3xl font-bold">
+                    {accuracy}%
+                  </div>
+                  <div className="text-xs text-indigo-100 mt-1">
+                    Accuracy
                   </div>
                 </div>
                 <div className="bg-white/20 rounded-xl p-4 text-center">
@@ -154,25 +180,59 @@ export default function AssessmentSummary() {
                     {summary.totalSkillsMastered}
                   </div>
                   <div className="text-xs text-indigo-100 mt-1">
-                    Skills Strong
-                  </div>
-                </div>
-                <div className="bg-white/20 rounded-xl p-4 text-center">
-                  <div className="text-3xl font-bold">
-                    {summary.domainBreakdown.length}
-                  </div>
-                  <div className="text-xs text-indigo-100 mt-1">
-                    Areas Covered
+                    Skills Mastered
                   </div>
                 </div>
               </div>
             </div>
 
+            {/* Assessment Status */}
+            {activeSessions.length > 0 && (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xl">⏸️</span>
+                  <h3 className="font-semibold text-amber-800">Assessment In Progress</h3>
+                </div>
+                <p className="text-sm text-amber-700">
+                  Your child has {activeSessions.length} assessment{activeSessions.length > 1 ? 's' : ''} that 
+                  {activeSessions.length > 1 ? ' are ' : ' is '} paused. They can continue anytime from 
+                  the &quot;My Assessment&quot; page. Results shown below include progress so far.
+                </p>
+              </div>
+            )}
+
+            {/* Skills Summary */}
+            {summary.totalSkillsAssessed > 0 && (
+              <div className="bg-white rounded-xl border border-gray-200 p-6">
+                <h3 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+                  🧠 Skills Overview
+                </h3>
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  <div className="bg-green-50 rounded-xl p-4">
+                    <div className="text-2xl font-bold text-green-600">{summary.totalSkillsMastered}</div>
+                    <div className="text-xs text-green-700 mt-1">⭐ Mastered</div>
+                  </div>
+                  <div className="bg-blue-50 rounded-xl p-4">
+                    <div className="text-2xl font-bold text-blue-600">
+                      {summary.domainBreakdown.reduce((s, d) => s + d.skillsNeedsPractice, 0)}
+                    </div>
+                    <div className="text-xs text-blue-700 mt-1">📝 Needs Practice</div>
+                  </div>
+                  <div className="bg-orange-50 rounded-xl p-4">
+                    <div className="text-2xl font-bold text-orange-600">
+                      {summary.domainBreakdown.reduce((s, d) => s + d.skillsNotReady, 0)}
+                    </div>
+                    <div className="text-xs text-orange-700 mt-1">🌱 Building</div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Strengths */}
             {strengths.length > 0 && (
               <div className="bg-white rounded-xl border border-gray-200 p-6">
                 <h3 className="text-lg font-bold text-green-700 mb-1 flex items-center gap-2">
-                  ⭐ Your Child's Strengths
+                  ⭐ Your Child&apos;s Strengths
                 </h3>
                 <p className="text-sm text-gray-500 mb-4">
                   These are areas where your child is doing really well!
@@ -192,7 +252,7 @@ export default function AssessmentSummary() {
                   🎯 Next Learning Goals
                 </h3>
                 <p className="text-sm text-gray-500 mb-4">
-                  These areas are where we'll focus next. Your child is making
+                  These areas are where we&apos;ll focus next. Your child is making
                   progress!
                 </p>
                 <div className="space-y-4">
@@ -204,76 +264,88 @@ export default function AssessmentSummary() {
             )}
 
             {/* All Domains Progress */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h3 className="text-lg font-bold text-gray-800 mb-4">
-                📊 Domain-by-Domain Progress
-              </h3>
-              <div className="space-y-5">
-                {summary.domainBreakdown.map((d) => {
-                  const total =
-                    d.skillsMastered +
-                    d.skillsNeedsPractice +
-                    d.skillsNotReady +
-                    d.skillsNotAssessed;
-                  const pct = total > 0 ? Math.round((d.skillsMastered / total) * 100) : 0;
+            {summary.domainBreakdown.length > 0 && (
+              <div className="bg-white rounded-xl border border-gray-200 p-6">
+                <h3 className="text-lg font-bold text-gray-800 mb-4">
+                  📊 Domain-by-Domain Progress
+                </h3>
+                <div className="space-y-5">
+                  {summary.domainBreakdown.map((d) => {
+                    const total =
+                      d.skillsMastered +
+                      d.skillsNeedsPractice +
+                      d.skillsNotReady +
+                      d.skillsNotAssessed;
+                    const pct = total > 0 ? Math.round((d.skillsMastered / total) * 100) : 0;
 
-                  return (
-                    <div key={d.domainId}>
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="font-medium text-gray-700 text-sm">
-                          {d.domainName}
-                        </span>
-                        <span className="text-xs text-gray-400">{pct}% strong</span>
+                    return (
+                      <div key={d.domainId}>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="font-medium text-gray-700 text-sm">
+                            {d.domainName}
+                          </span>
+                          <span className="text-xs text-gray-400">{pct}% strong</span>
+                        </div>
+                        <div className="h-3 rounded-full bg-gray-100 overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-green-400 to-emerald-500 rounded-full transition-all duration-500"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                        <p className="text-xs text-gray-400 mt-1">
+                          {getDomainExplainer(d.domainName)}
+                        </p>
                       </div>
-                      <div className="h-3 rounded-full bg-gray-100 overflow-hidden">
-                        <div
-                          className="h-full bg-gradient-to-r from-green-400 to-emerald-500 rounded-full transition-all duration-500"
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                      <p className="text-xs text-gray-400 mt-1">
-                        {getDomainExplainer(d.domainName)}
-                      </p>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Shareable Snapshot Card */}
             <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-2xl p-6 text-center">
               <div className="text-4xl mb-2">🏆</div>
               <h3 className="font-bold text-gray-800 text-lg mb-1">
-                {profileDisplayName(selectedChild?.profile, 'Your child')} has mastered{' '}
-                {summary.totalSkillsMastered} skills!
+                {profileDisplayName(selectedChild?.profile, 'Your child')} answered {totalCorrect} out of {totalQuestions} questions correctly!
               </h3>
               <p className="text-gray-500 text-sm">
-                Keep up the great work! Learning is an adventure.
+                {summary.totalSkillsMastered > 0
+                  ? `They've already mastered ${summary.totalSkillsMastered} skill${summary.totalSkillsMastered > 1 ? 's' : ''}! Keep up the great work!`
+                  : 'Every question is a step forward. Keep up the great work!'}
               </p>
             </div>
 
             {/* Assessment History */}
-            {sessions.length > 1 && (
+            {sessions.length > 0 && (
               <div className="bg-white rounded-xl border border-gray-200 p-6">
                 <h3 className="font-bold text-gray-800 mb-3">
                   📅 Assessment History
                 </h3>
                 <div className="space-y-2">
-                  {sessions.slice(0, 5).map((s) => (
-                    <div
-                      key={s.id}
-                      className="flex items-center justify-between px-3 py-2 rounded-lg bg-gray-50"
-                    >
-                      <span className="text-sm text-gray-700">
-                        {s.started_at
-                          ? new Date(s.started_at).toLocaleDateString()
-                          : '—'}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        {s.skills_assessed} skills • {s.items_attempted} questions
-                      </span>
-                    </div>
-                  ))}
+                  {sessions.slice(0, 5).map((s) => {
+                    const statusEmoji = s.status === 'completed' ? '✅' : s.status === 'paused' ? '⏸️' : s.status === 'in_progress' ? '📝' : '⏹️';
+                    const statusLabel = s.status === 'completed' ? 'Complete' : s.status === 'paused' ? 'Paused' : s.status === 'in_progress' ? 'In Progress' : s.status;
+                    return (
+                      <div
+                        key={s.id}
+                        className="flex items-center justify-between px-3 py-2 rounded-lg bg-gray-50"
+                      >
+                        <span className="text-sm text-gray-700">
+                          {s.started_at
+                            ? new Date(s.started_at).toLocaleDateString()
+                            : '—'}
+                        </span>
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs text-gray-500">
+                            {s.items_attempted || 0} questions • {s.items_correct || 0} correct
+                          </span>
+                          <span className="text-xs font-medium">
+                            {statusEmoji} {statusLabel}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}

@@ -149,13 +149,14 @@ export const assessmentService = {
 
   /** Aggregated assessment summary for a student */
   async getAssessmentSummary(studentId: string): Promise<AssessmentSummary> {
-    // Fetch latest completed sessions
+    // FIX: Include completed, paused, AND in_progress sessions — not just completed
+    // Students may have paused sessions with real data that should be visible
     const { data: sessions, error: sessErr } = await supabase
       .from('assessment_sessions')
-      .select('id, started_at, skills_assessed, skills_mastered')
+      .select('id, started_at, completed_at, status, skills_assessed, skills_mastered, items_attempted, items_correct')
       .eq('student_id', studentId)
-      .eq('status', 'completed')
-      .order('completed_at', { ascending: false });
+      .in('status', ['completed', 'paused', 'in_progress'])
+      .order('started_at', { ascending: false });
     if (sessErr) throw sessErr;
 
     // Fetch all skill results for the student (latest per skill)
@@ -204,6 +205,12 @@ export const assessmentService = {
     });
 
     const allSessions = sessions || [];
+    
+    // Also compute totals from session data (items_attempted, items_correct)
+    // so parent can see question-level stats even before completion
+    const totalItemsAttempted = allSessions.reduce((sum, s: any) => sum + (s.items_attempted || 0), 0);
+    const totalItemsCorrect = allSessions.reduce((sum, s: any) => sum + (s.items_correct || 0), 0);
+    
     return {
       totalSessions: allSessions.length,
       totalSkillsAssessed: latestBySkill.size,
@@ -212,6 +219,9 @@ export const assessmentService = {
       ).length,
       latestSessionDate: allSessions[0]?.started_at,
       domainBreakdown: Array.from(domainMap.values()),
+      // Extra fields for richer parent display
+      totalItemsAttempted,
+      totalItemsCorrect,
     };
   },
 
