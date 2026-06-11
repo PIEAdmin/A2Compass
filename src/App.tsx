@@ -73,6 +73,7 @@ const PlayMode = lazy(() => import('./pages/student/PlayMode'))
 const VideoLibrary = lazy(() => import('./pages/student/VideoLibrary'))
 const InteractiveStory = lazy(() => import('./pages/student/InteractiveStory'))
 const BalloonPopDemo = lazy(() => import('./pages/student/games/BalloonPopDemo'))
+const SpanishVillage = lazy(() => import('./pages/student/SpanishVillage'))
 const SessionTimeout = lazy(() => import('./components/shared/SessionTimeout'))
 
 
@@ -211,6 +212,7 @@ export default function App() {
         <Route path="student/videos" element={<VideoLibrary />} />
         <Route path="student/story" element={<InteractiveStory />} />
         <Route path="student/game/balloon-pop-demo" element={<BalloonPopDemo />} />
+        <Route path="student/spanish-village" element={<SpanishVillage />} />
 
         {/* Settings */}
         <Route path="settings/delete-account" element={<DeleteAccount />} />

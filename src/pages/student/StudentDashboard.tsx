@@ -170,6 +170,7 @@ const WORLD_ZONES: WorldZone[] = [
   { domainName: 'Data & Patterns', emoji: '📊', zoneName: 'Pattern Park', color: '#F97316' },
   { domainName: 'Daily Living Skills', emoji: '🏠', zoneName: 'Life Skills Lodge', color: '#84CC16' },
   { domainName: 'Social-Emotional Learning', emoji: '💛', zoneName: 'Kindness Corner', color: '#E879F9' },
+  { domainName: 'Heritage Spanish', emoji: '🇪🇸', zoneName: 'Spanish Village', color: '#C2591A' },
 ];
 
 // ───── Animation Styles ─────
@@ -782,7 +783,10 @@ export default function StudentDashboard() {
                   key={zone.domainName}
                   className="dashboard-card bg-white p-3 sm:p-4 cursor-pointer anim-card-enter"
                   style={{ animationDelay: `${0.32 + idx * 0.04}s`, borderColor: zone.color + '40' }}
-                  onClick={() => navigate('/student/practice', { state: { domain: zone.domainName } })}
+                  onClick={() => zone.domainName === 'Heritage Spanish'
+                    ? navigate('/student/spanish-village')
+                    : navigate('/student/practice', { state: { domain: zone.domainName } })
+                  }
                 >
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-2xl sm:text-3xl">{zone.emoji}</span>
