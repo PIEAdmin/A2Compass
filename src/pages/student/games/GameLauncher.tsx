@@ -12,6 +12,60 @@ interface GameState {
   playlistItemId?: string
 }
 
+// ─── Demo Data ───────────────────────────────────────────────────────
+const DEMO_DATA: Record<string, GameState> = {
+  'memory-match': {
+    gameType: 'memory',
+    title: '🧠 Memory Match Demo',
+    data: {
+      cards: [
+        { id: 'a1', content: '🍎' }, { id: 'a2', content: 'Apple' },
+        { id: 'b1', content: '🐱' }, { id: 'b2', content: 'Cat' },
+        { id: 'c1', content: '🌟' }, { id: 'c2', content: 'Star' },
+        { id: 'd1', content: '🎵' }, { id: 'd2', content: 'Music' },
+        { id: 'e1', content: '🌈' }, { id: 'e2', content: 'Rainbow' },
+        { id: 'f1', content: '🦋' }, { id: 'f2', content: 'Butterfly' },
+      ],
+    },
+  },
+  'drag-drop-sort': {
+    gameType: 'sorting',
+    title: '📦 Drag & Drop Sort Demo',
+    data: {
+      categories: [
+        { id: 'fruits', label: '🍎 Fruits' },
+        { id: 'animals', label: '🐾 Animals' },
+        { id: 'colors', label: '🎨 Colors' },
+      ],
+      items: [
+        { id: 'i1', content: 'Apple', categoryId: 'fruits' },
+        { id: 'i2', content: 'Dog', categoryId: 'animals' },
+        { id: 'i3', content: 'Red', categoryId: 'colors' },
+        { id: 'i4', content: 'Banana', categoryId: 'fruits' },
+        { id: 'i5', content: 'Cat', categoryId: 'animals' },
+        { id: 'i6', content: 'Blue', categoryId: 'colors' },
+        { id: 'i7', content: 'Orange', categoryId: 'fruits' },
+        { id: 'i8', content: 'Fish', categoryId: 'animals' },
+        { id: 'i9', content: 'Green', categoryId: 'colors' },
+      ],
+    },
+  },
+  'matching-pairs': {
+    gameType: 'matching',
+    title: '🔗 Matching Pairs Demo',
+    data: {
+      pairs: [
+        { id: 'p1', left: '1 + 1', right: '2' },
+        { id: 'p2', left: '2 + 3', right: '5' },
+        { id: 'p3', left: '4 + 4', right: '8' },
+        { id: 'p4', left: '3 + 3', right: '6' },
+        { id: 'p5', left: '5 + 5', right: '10' },
+        { id: 'p6', left: '7 - 4', right: '3' },
+      ],
+    },
+  },
+}
+
 // ─── Main Component ──────────────────────────────────────────────────
 export default function GameLauncher() {
   const navigate = useNavigate()
@@ -30,11 +84,18 @@ export default function GameLauncher() {
       setGameState(state)
       setLoading(false)
     } else if (gameType) {
-      // No state passed — show a friendly error
-      setError(
-        'Game data was not found. Please go back to your Flight Plan and try again.'
-      )
-      setLoading(false)
+      // No state passed — check for built-in demo data
+      const demo = DEMO_DATA[gameType]
+      if (demo) {
+        setGameState(demo)
+        setLoading(false)
+      } else {
+        // Truly unknown game type
+        setError(
+          'Game data was not found. Please go back to your Flight Plan and try again.'
+        )
+        setLoading(false)
+      }
     } else {
       setError('No game type specified.')
       setLoading(false)

@@ -11,7 +11,7 @@ import {
 import { ReadAloud } from '../../components/shared/ReadAloud';
 
 /* ═══════════════════════════════════════════════════════════
-   🌲  A² COMPASS — STUDENT DASHBOARD (Magical Redesign)
+   🌲  A² COMPASS — STUDENT DASHBOARD (Visual World Map)
    Kid-friendly, tier-themed, gamified dashboard
    ═══════════════════════════════════════════════════════════ */
 
@@ -125,7 +125,6 @@ function formatDate(): string {
 }
 
 function getStreakEmoji(streak: number): string {
-  if (streak >= 7) return '🔥';
   if (streak >= 3) return '🔥';
   if (streak >= 1) return '🕯️';
   return '💤';
@@ -150,6 +149,28 @@ const pepperGreetings = [
 function randomGreeting() {
   return pepperGreetings[Math.floor(Math.random() * pepperGreetings.length)];
 }
+
+// ───── World Map Zones ─────
+interface WorldZone {
+  domainName: string;
+  emoji: string;
+  zoneName: string;
+  color: string;
+}
+
+const WORLD_ZONES: WorldZone[] = [
+  { domainName: 'Phonological Awareness', emoji: '🎵', zoneName: 'Sound Garden', color: '#8B5CF6' },
+  { domainName: 'Phonics', emoji: '🔤', zoneName: 'Letter Land', color: '#3B82F6' },
+  { domainName: 'Vocabulary', emoji: '📖', zoneName: 'Word World', color: '#10B981' },
+  { domainName: 'Reading Comprehension', emoji: '📚', zoneName: 'Story Castle', color: '#F59E0B' },
+  { domainName: 'Writing', emoji: '✏️', zoneName: 'Writing Workshop', color: '#EF4444' },
+  { domainName: 'Number Sense', emoji: '🔢', zoneName: 'Number Mountain', color: '#6366F1' },
+  { domainName: 'Operations', emoji: '➕', zoneName: 'Math Lab', color: '#EC4899' },
+  { domainName: 'Geometry & Measurement', emoji: '📐', zoneName: 'Shape City', color: '#14B8A6' },
+  { domainName: 'Data & Patterns', emoji: '📊', zoneName: 'Pattern Park', color: '#F97316' },
+  { domainName: 'Daily Living Skills', emoji: '🏠', zoneName: 'Life Skills Lodge', color: '#84CC16' },
+  { domainName: 'Social-Emotional Learning', emoji: '💛', zoneName: 'Kindness Corner', color: '#E879F9' },
+];
 
 // ───── Animation Styles ─────
 function DashboardAnimationStyles({ theme }: { theme: TierTheme }) {
@@ -183,10 +204,6 @@ function DashboardAnimationStyles({ theme }: { theme: TierTheme }) {
       @keyframes shimmer {
         0% { background-position: -200% 0; }
         100% { background-position: 200% 0; }
-      }
-      @keyframes pointsFloat {
-        0% { transform: translateY(0); opacity: 1; }
-        100% { transform: translateY(-40px); opacity: 0; }
       }
       @keyframes flame {
         0%, 100% { transform: scaleY(1) scaleX(1); }
@@ -235,7 +252,6 @@ function DashboardAnimationStyles({ theme }: { theme: TierTheme }) {
         background-image: ${theme.bgPattern};
       }
 
-      /* Progress bar shimmer */
       .progress-bar-fill {
         background: linear-gradient(90deg, var(--tier-primary), var(--tier-secondary), var(--tier-primary));
         background-size: 200% 100%;
@@ -244,7 +260,6 @@ function DashboardAnimationStyles({ theme }: { theme: TierTheme }) {
         transition: width 0.8s ease;
       }
 
-      /* Mobile bottom nav */
       @media (max-width: 768px) {
         .mobile-bottom-nav {
           position: fixed;
@@ -286,6 +301,7 @@ export default function StudentDashboard() {
   const [pepperSpeech, setPepperSpeech] = useState(randomGreeting());
   const [checkinCelebrating, setCheckinCelebrating] = useState(false);
   const [scheduleData, setScheduleData] = useState<{ start: string; end: string; breaks: { time: string; label: string }[] } | null>(null);
+  const [domainMastery, setDomainMastery] = useState<Record<string, number>>({});
 
   // Welcome animation state
   const [animPhase, setAnimPhase] = useState(0);
@@ -301,7 +317,7 @@ export default function StudentDashboard() {
   useEffect(() => {
     if (!studentId) return;
     (async () => {
-      // 1. Get student_profile (for grade, tier, and spark points join)
+      // 1. Get student_profile
       const { data: profile } = await supabase
         .from('student_profiles')
         .select('id, grade_level, tier_id, theme_color, school_start_time, school_end_time, break_times')
@@ -327,7 +343,7 @@ export default function StudentDashboard() {
           });
         }
 
-        // 2. Spark points — use student_profile_id!
+        // 2. Spark points
         const { data: spRows } = await supabase
           .from('spark_points')
           .select('amount')
@@ -336,9 +352,57 @@ export default function StudentDashboard() {
           const total = spRows.reduce((sum: number, r: any) => sum + (r.amount || 0), 0);
           setSparkPoints(total);
         }
+
+        // 3. Mastery data for world map
+        const [masteryRes, skillNodesRes, domainsRes] = await Promise.all([
+          supabase
+            .from('student_mastery')
+            .select('skill_node_id, mastery_level, attempts')
+            .eq('student_profile_id', profile.id),
+          supabase
+            .from('skill_nodes')
+            .select('id, skill_domain_id, display_name'),
+          supabase
+            .from('skill_domains')
+            .select('id, name'),
+        ]);
+
+        const masteryData = masteryRes.data || [];
+        const skillNodes = skillNodesRes.data || [];
+        const domains = domainsRes.data || [];
+
+        // Build mastery % per domain name
+        const domainMap: Record<string, string> = {};
+        for (const d of domains) domainMap[d.id] = d.name;
+
+        const domainSkillCounts: Record<string, number> = {};
+        const domainMasteredCounts: Record<string, number> = {};
+
+        const masteryByNode: Record<string, number> = {};
+        for (const m of masteryData) {
+          masteryByNode[m.skill_node_id] = m.mastery_level ?? 0;
+        }
+
+        for (const node of skillNodes) {
+          const dName = domainMap[node.skill_domain_id];
+          if (!dName) continue;
+          domainSkillCounts[dName] = (domainSkillCounts[dName] || 0) + 1;
+          const mLevel = masteryByNode[node.id] ?? 0;
+          if (mLevel >= 0.8) {
+            domainMasteredCounts[dName] = (domainMasteredCounts[dName] || 0) + 1;
+          }
+        }
+
+        const computed: Record<string, number> = {};
+        for (const dName of Object.keys(domainSkillCounts)) {
+          const total = domainSkillCounts[dName];
+          const mastered = domainMasteredCounts[dName] || 0;
+          computed[dName] = total > 0 ? Math.round((mastered / total) * 100) : 0;
+        }
+        setDomainMastery(computed);
       }
 
-      // 3. Attendance streak — use attendance_records table
+      // 4. Attendance streak
       const todayStr = new Date().toISOString().split('T')[0];
       const { data: attendanceRecords } = await supabase
         .from('attendance_records')
@@ -348,11 +412,9 @@ export default function StudentDashboard() {
         .limit(60);
 
       if (attendanceRecords && attendanceRecords.length > 0) {
-        // Check if checked in today
         const todayRecord = attendanceRecords.find((r: any) => r.date === todayStr);
         if (todayRecord) setCheckedIn(true);
 
-        // Calculate streak
         let s = 0;
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -361,16 +423,10 @@ export default function StudentDashboard() {
           checkDate.setDate(checkDate.getDate() - i);
           const dateStr = checkDate.toISOString().split('T')[0];
           const found = attendanceRecords.find((r: any) => r.date === dateStr && r.status !== 'absent');
-          if (found) {
-            s++;
-          } else if (i > 0) {
-            // Skip today if not checked in yet (don't break streak)
-            break;
-          }
+          if (found) { s++; } else if (i > 0) { break; }
         }
         setStreak(s);
       } else {
-        // Fallback: also check activity_log for legacy check-ins
         const { data: logs } = await supabase
           .from('activity_log')
           .select('created_at, activity_type')
@@ -380,11 +436,9 @@ export default function StudentDashboard() {
           .limit(30);
 
         if (logs && logs.length > 0) {
-          // Check if already checked in today
           const todayLog = logs.find((l: any) => l.created_at?.startsWith(todayStr));
           if (todayLog) setCheckedIn(true);
 
-          // Calculate streak from activity_log dates
           let s = 0;
           const seen = new Set<string>();
           for (const log of logs) {
@@ -397,11 +451,7 @@ export default function StudentDashboard() {
             const checkDate = new Date(today2);
             checkDate.setDate(checkDate.getDate() - i);
             const dateStr2 = checkDate.toISOString().split('T')[0];
-            if (seen.has(dateStr2)) {
-              s++;
-            } else if (i > 0) {
-              break;
-            }
+            if (seen.has(dateStr2)) { s++; } else if (i > 0) { break; }
           }
           setStreak(s);
         }
@@ -445,7 +495,6 @@ export default function StudentDashboard() {
   // ───── Computed Data ─────
   const todayItems = useMemo(() => items.filter(i => i.status !== 'completed' && i.status !== 'skipped'), [items]);
   const completedToday = useMemo(() => items.filter(i => i.status === 'completed'), [items]);
-  const priorityItems = useMemo(() => todayItems.slice(0, 2), [todayItems]);
   const totalGoal = Math.max(3, todayItems.length);
   const completedCount = completedToday.length;
 
@@ -459,7 +508,6 @@ export default function StudentDashboard() {
 
     const todayStr = new Date().toISOString().split('T')[0];
 
-    // Write to attendance_records (proper table)
     await supabase.from('attendance_records').upsert({
       student_id: studentId,
       date: todayStr,
@@ -468,7 +516,6 @@ export default function StudentDashboard() {
       status: 'present',
     }, { onConflict: 'student_id,date' });
 
-    // Also log to activity_log for backward compat
     await supabase.from('activity_log').insert({
       student_id: studentId,
       activity_type: 'attendance_checkin',
@@ -485,7 +532,6 @@ export default function StudentDashboard() {
     localStorage.setItem(`a2c_welcome_${todayStr}`, 'true');
   };
 
-  // Time helpers
   const formatTime12 = (time24: string) => {
     if (!time24) return '';
     const [h, m] = time24.split(':').map(Number);
@@ -527,12 +573,10 @@ export default function StudentDashboard() {
             </ReadAloud>
           </div>
           <div className="flex items-center gap-3">
-            {/* Spark Points */}
             <div className="flex items-center gap-1 bg-white/20 rounded-full px-3 py-1">
               <span className="text-lg">🪙</span>
               <span className="font-bold">{sparkPoints}</span>
             </div>
-            {/* Level Badge */}
             <div className="flex items-center gap-1 bg-white/20 rounded-full px-3 py-1">
               <span className="text-lg">{levelInfo.emoji}</span>
               <span className="font-bold text-sm">Lv.{levelInfo.level}</span>
@@ -547,7 +591,6 @@ export default function StudentDashboard() {
             style={{ background: theme.headerBg }}
           >
             <FloatingStars count={8} />
-
             {animPhase >= 1 && (
               <>
                 <span className="absolute top-3 right-8 text-xl anim-sparkle" style={{ animationDelay: '0s' }}>✨</span>
@@ -555,7 +598,6 @@ export default function StudentDashboard() {
                 <span className="absolute bottom-4 right-12 text-xl anim-sparkle" style={{ animationDelay: '1s' }}>💫</span>
               </>
             )}
-
             <div className="flex items-center gap-4 relative z-10">
               <div
                 className={`cursor-pointer transform hover:scale-110 transition-transform flex-shrink-0
@@ -565,7 +607,6 @@ export default function StudentDashboard() {
               >
                 <PepperPenguin mood="waving" size={100} speech={animPhase >= 2 ? pepperSpeech : undefined} />
               </div>
-
               <div className="flex-1 min-w-0">
                 {animPhase >= 2 ? (
                   <div className="anim-bounce-in">
@@ -580,7 +621,6 @@ export default function StudentDashboard() {
                         </h1>
                       </ReadAloud>
                       <p className="text-white/80 mt-1">{formatDate()}</p>
-
                       {animPhase >= 3 && (
                         <div className="anim-fade-in-up mt-2">
                           <ReadAloud
@@ -602,7 +642,6 @@ export default function StudentDashboard() {
                 )}
               </div>
             </div>
-
             <button
               onClick={dismissWelcome}
               className="absolute top-3 right-3 text-white/50 hover:text-white/90 text-sm z-20 bg-white/10 rounded-full px-3 py-1"
@@ -614,7 +653,6 @@ export default function StudentDashboard() {
 
         {/* ════════ STATS ROW ════════ */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {/* Spark Points */}
           <div className="dashboard-card bg-white p-3 text-center anim-card-enter" style={{ animationDelay: '0.05s' }}>
             <div className="text-2xl">🪙</div>
             <div className="text-xl font-display font-bold" style={{ color: theme.primary }}>{sparkPoints}</div>
@@ -622,8 +660,6 @@ export default function StudentDashboard() {
               <div className="text-xs text-gray-500 font-medium">Spark Points</div>
             </ReadAloud>
           </div>
-
-          {/* Streak */}
           <div className="dashboard-card bg-white p-3 text-center anim-card-enter" style={{ animationDelay: '0.1s' }}>
             <div className={`${getStreakSize(streak)} ${streak >= 3 ? 'anim-flame' : ''}`}>
               {getStreakEmoji(streak)}
@@ -638,8 +674,6 @@ export default function StudentDashboard() {
               <div className="text-[10px] text-orange-500 font-bold mt-0.5">You&apos;re on a roll!</div>
             )}
           </div>
-
-          {/* Done Today */}
           <div className="dashboard-card bg-white p-3 text-center anim-card-enter" style={{ animationDelay: '0.15s' }}>
             <div className="text-2xl">✅</div>
             <div className="text-xl font-display font-bold text-green-600">{completedCount}/{totalGoal}</div>
@@ -647,8 +681,6 @@ export default function StudentDashboard() {
               <div className="text-xs text-gray-500 font-medium">Done Today</div>
             </ReadAloud>
           </div>
-
-          {/* Level */}
           <div className="dashboard-card bg-white p-3 text-center anim-card-enter" style={{ animationDelay: '0.2s' }}>
             <div className="text-2xl">{levelInfo.emoji}</div>
             <div className="text-sm font-display font-bold" style={{ color: theme.primary }}>
@@ -657,7 +689,6 @@ export default function StudentDashboard() {
             <ReadAloud text={`Level ${levelInfo.level}: ${levelInfo.title}`} showIcon={false}>
               <div className="text-xs text-gray-500 font-medium">Level {levelInfo.level}</div>
             </ReadAloud>
-            {/* Level progress bar */}
             {levelInfo.nextLevel && (
               <div className="mt-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                 <div className="progress-bar-fill h-full" style={{ width: `${levelInfo.progress}%` }} />
@@ -692,7 +723,6 @@ export default function StudentDashboard() {
           </div>
         )}
 
-        {/* Check-in celebration */}
         {checkedIn && checkinCelebrating && (
           <div
             className="dashboard-card p-5 text-center anim-bounce-in"
@@ -709,74 +739,84 @@ export default function StudentDashboard() {
           </div>
         )}
 
-        {/* ════════ TODAY'S MISSION (Priority) ════════ */}
-        {priorityItems.length > 0 && (
-          <section className="anim-card-enter" style={{ animationDelay: '0.25s' }}>
-            <ReadAloud text="Today's Mission: Your most important activities" showIcon={true} iconSize="sm">
-              <h2 className="text-xl font-display font-bold mb-3 flex items-center gap-2" style={{ color: theme.primary }}>
-                ⭐ Today&apos;s Mission
-              </h2>
+        {/* ════════ QUICK ACTIONS ROW (4-col) ════════ */}
+        <div className="grid grid-cols-4 gap-2 sm:gap-3 anim-card-enter" style={{ animationDelay: '0.25s' }}>
+          <button onClick={() => navigate('/student/play')} className="dashboard-card bg-white p-3 sm:p-4 text-center">
+            <div className="text-3xl sm:text-4xl mb-1">🎮</div>
+            <ReadAloud text="Free Play" showIcon={false}>
+              <div className="font-display font-bold text-gray-800 text-xs sm:text-sm">Free Play</div>
             </ReadAloud>
-            <div className="space-y-3">
-              {priorityItems.map((item, idx) => (
-                <div
-                  key={item.id}
-                  onClick={() => navigate('/student/practice', { state: { skillId: item.skillId } })}
-                  className="dashboard-card bg-white p-4 flex items-center gap-4 cursor-pointer"
-                  style={{ borderColor: theme.primary + '30' }}
-                >
-                  <div
-                    className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl font-display font-bold text-white shadow-md"
-                    style={{ background: theme.headerBg }}
-                  >
-                    {idx + 1}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <ReadAloud text={item.skillName || 'Practice activity'} showIcon={true} iconSize="sm">
-                      <p className="font-display font-bold text-gray-800">{item.skillName}</p>
-                    </ReadAloud>
-                    <p className="text-sm text-gray-500">{item.domainName || 'Skill practice'}</p>
-                  </div>
-                  <div
-                    className="font-display font-bold text-sm px-3 py-1 rounded-full text-white"
-                    style={{ background: theme.secondary }}
-                  >
-                    Start →
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* ════════ QUICK ACTIONS (2-column cards) ════════ */}
-        <div className="grid grid-cols-2 gap-3 anim-card-enter" style={{ animationDelay: '0.3s' }}>
-          <button
-            onClick={() => navigate('/student/subjects')}
-            className="dashboard-card bg-white p-5 text-center"
-          >
-            <div className="text-4xl mb-2">🎮</div>
-            <ReadAloud text="Quick Play" showIcon={false}>
-              <div className="font-display font-bold text-gray-800">Quick Play</div>
-            </ReadAloud>
-            <div className="text-xs text-gray-500 mt-1">Pick a fun activity!</div>
           </button>
-
-          <button
-            onClick={() => navigate('/student/library')}
-            className="dashboard-card bg-white p-5 text-center"
-          >
-            <div className="text-4xl mb-2">📚</div>
+          <button onClick={() => navigate('/student/library')} className="dashboard-card bg-white p-3 sm:p-4 text-center">
+            <div className="text-3xl sm:text-4xl mb-1">📚</div>
             <ReadAloud text="Library" showIcon={false}>
-              <div className="font-display font-bold text-gray-800">Library</div>
+              <div className="font-display font-bold text-gray-800 text-xs sm:text-sm">Library</div>
             </ReadAloud>
-            <div className="text-xs text-gray-500 mt-1">Explore books &amp; games</div>
+          </button>
+          <button onClick={() => navigate('/student/learning-path')} className="dashboard-card bg-white p-3 sm:p-4 text-center">
+            <div className="text-3xl sm:text-4xl mb-1">🗺️</div>
+            <ReadAloud text="Learning Path" showIcon={false}>
+              <div className="font-display font-bold text-gray-800 text-xs sm:text-sm">Learning Path</div>
+            </ReadAloud>
+          </button>
+          <button onClick={() => navigate('/student/achievements')} className="dashboard-card bg-white p-3 sm:p-4 text-center">
+            <div className="text-3xl sm:text-4xl mb-1">🏆</div>
+            <ReadAloud text="Trophies" showIcon={false}>
+              <div className="font-display font-bold text-gray-800 text-xs sm:text-sm">Trophies</div>
+            </ReadAloud>
           </button>
         </div>
 
+        {/* ════════ VISUAL WORLD MAP ════════ */}
+        <section className="anim-card-enter" style={{ animationDelay: '0.3s' }}>
+          <ReadAloud text="Explore the World Map! Pick a zone to practice." showIcon={true} iconSize="sm">
+            <h2 className="text-xl font-display font-bold mb-3 flex items-center gap-2" style={{ color: theme.primary }}>
+              🌍 World Map
+            </h2>
+          </ReadAloud>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {WORLD_ZONES.map((zone, idx) => {
+              const pct = domainMastery[zone.domainName] ?? 0;
+              return (
+                <div
+                  key={zone.domainName}
+                  className="dashboard-card bg-white p-3 sm:p-4 cursor-pointer anim-card-enter"
+                  style={{ animationDelay: `${0.32 + idx * 0.04}s`, borderColor: zone.color + '40' }}
+                  onClick={() => navigate('/student/practice', { state: { domain: zone.domainName } })}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-2xl sm:text-3xl">{zone.emoji}</span>
+                    <ReadAloud text={zone.zoneName} showIcon={false}>
+                      <span className="font-display font-bold text-sm sm:text-base text-gray-800">{zone.zoneName}</span>
+                    </ReadAloud>
+                  </div>
+                  {/* Mini progress bar */}
+                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden mb-1">
+                    <div
+                      className="h-full rounded-full transition-all duration-700"
+                      style={{ width: `${pct}%`, backgroundColor: zone.color }}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-gray-500 font-medium">
+                      {pct > 0 ? `${pct}% mastered` : 'Ready to explore!'}
+                    </span>
+                    <span
+                      className="text-xs font-display font-bold px-2 py-0.5 rounded-full text-white"
+                      style={{ backgroundColor: zone.color }}
+                    >
+                      Go!
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
         {/* ════════ DAILY SCHEDULE ════════ */}
         {scheduleData && (
-          <section className="anim-card-enter" style={{ animationDelay: '0.35s' }}>
+          <section className="anim-card-enter" style={{ animationDelay: '0.55s' }}>
             <ReadAloud text="Your daily schedule" showIcon={true} iconSize="sm">
               <h2 className="text-xl font-display font-bold mb-3 flex items-center gap-2" style={{ color: theme.primary }}>
                 📅 Today&apos;s Schedule
@@ -812,60 +852,11 @@ export default function StudentDashboard() {
           </section>
         )}
 
-        {/* ════════ TODAY'S ACTIVITIES ════════ */}
-        <section className="anim-card-enter" style={{ animationDelay: '0.4s' }}>
-          <ReadAloud text="Your activities for today" showIcon={true} iconSize="sm">
-            <h2 className="text-xl font-display font-bold mb-3 flex items-center gap-2" style={{ color: theme.primary }}>
-              📋 Today&apos;s Activities
-            </h2>
-          </ReadAloud>
-
-          {todayItems.length === 0 ? (
-            <div className="dashboard-card bg-white text-center py-8">
-              <PepperPenguin mood="celebrating" size={100} />
-              <ReadAloud text="All done for today! Amazing work!" autoRead={true} showIcon={false}>
-                <p className="text-xl font-display font-bold mt-3" style={{ color: theme.primary }}>
-                  🎉 All done for today!
-                </p>
-              </ReadAloud>
-              <p className="text-gray-500 mt-1">Come back tomorrow for more adventures!</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {todayItems.map((item, idx) => (
-                <div
-                  key={item.id}
-                  onClick={() => navigate('/student/practice', { state: { skillId: item.skillId } })}
-                  className="dashboard-card bg-white p-3 flex items-center gap-3 cursor-pointer"
-                >
-                  <div
-                    className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold text-white"
-                    style={{ background: `${theme.primary}80` }}
-                  >
-                    {idx + 1}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <ReadAloud text={item.skillName || 'Activity'} showIcon={true} iconSize="sm">
-                      <p className="font-medium text-gray-800 text-sm">{item.skillName}</p>
-                    </ReadAloud>
-                  </div>
-                  <span
-                    className="text-xs px-2 py-1 rounded-full font-medium"
-                    style={{ background: theme.bg, color: theme.primary }}
-                  >
-                    {item.domainName || 'Skill'}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-
         {/* ════════ BOTTOM QUICK ACTIONS ════════ */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2 anim-card-enter" style={{ animationDelay: '0.45s' }}>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2 anim-card-enter" style={{ animationDelay: '0.6s' }}>
           <QuickAction icon="🗺️" label="Flight Plan" color={theme.primary} onClick={() => navigate('/student/flight-plan')} />
           <QuickAction icon="📊" label="My Progress" color={theme.primary} onClick={() => navigate('/student/progress')} />
-          <QuickAction icon="🏆" label="Achievements" color={theme.primary} onClick={() => navigate('/student/achievements')} />
+          <QuickAction icon="🎯" label="Assessment" color={theme.primary} onClick={() => navigate('/student/assessment')} />
           <QuickAction icon="🛍️" label="Reward Shop" color={theme.primary} onClick={() => navigate('/student/reward-shop')} />
         </div>
 
@@ -889,10 +880,7 @@ export default function StudentDashboard() {
 
 function QuickAction({ icon, label, color, onClick }: { icon: string; label: string; color: string; onClick: () => void }) {
   return (
-    <button
-      onClick={onClick}
-      className="dashboard-card bg-white p-4 text-center"
-    >
+    <button onClick={onClick} className="dashboard-card bg-white p-4 text-center">
       <div className="text-3xl mb-1">{icon}</div>
       <ReadAloud text={label} showIcon={false}>
         <div className="text-sm font-display font-bold" style={{ color }}>{label}</div>
