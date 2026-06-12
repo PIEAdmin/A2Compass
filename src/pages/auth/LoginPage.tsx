@@ -6,6 +6,8 @@ import { PepperPenguin, FloatingStars, FloatingClouds } from '../../components/s
 export default function LoginPage() {
   const { signIn, loading, error, clearError, isAuthenticated } = useAuth()
   const navigate = useNavigate()
+  const [loginMode, setLoginMode] = useState<'username' | 'email'>('username')
+  const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
@@ -17,7 +19,8 @@ export default function LoginPage() {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
-    signIn(email, password)
+    const loginEmail = loginMode === 'username' ? `${username.toLowerCase().trim()}@a2compass.app` : email
+    signIn(loginEmail, password)
   }
 
   return (
@@ -37,7 +40,7 @@ export default function LoginPage() {
             <PepperPenguin size={120} mood="waving" className="illust-bob" />
           </div>
           <h1 className="font-display text-4xl font-bold text-white tracking-tight">A² Compass</h1>
-          <p className="text-blue-200/80 mt-1 text-sm">Achievement Academy — aaacademy.us</p>
+          <p className="text-blue-200/80 mt-1 text-sm">Your Learning Adventure Awaits!</p>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-8 space-y-5 illust-scale-in" style={{ animationDelay: '0.2s' }}>
@@ -52,17 +55,60 @@ export default function LoginPage() {
             </div>
           )}
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-transparent bg-gray-50/50 transition-all"
-              placeholder="you@example.com"
-              required
-            />
+          {/* Login mode toggle */}
+          <div className="flex bg-gray-100 rounded-xl p-1 gap-1">
+            <button
+              type="button"
+              onClick={() => setLoginMode('username')}
+              className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
+                loginMode === 'username'
+                  ? 'bg-white text-indigo-700 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              👤 Username
+            </button>
+            <button
+              type="button"
+              onClick={() => setLoginMode('email')}
+              className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
+                loginMode === 'email'
+                  ? 'bg-white text-indigo-700 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              ✉️ Email
+            </button>
           </div>
+
+          {loginMode === 'username' ? (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-transparent bg-gray-50/50 transition-all text-lg"
+                placeholder="e.g. Adela"
+                required
+                autoComplete="username"
+                autoCapitalize="none"
+              />
+              <p className="text-xs text-gray-400 mt-1">Your username is your first name!</p>
+            </div>
+          ) : (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-transparent bg-gray-50/50 transition-all"
+                placeholder="you@example.com"
+                required
+              />
+            </div>
+          )}
 
           <div>
             <div className="flex items-center justify-between mb-1">

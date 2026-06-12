@@ -13,10 +13,7 @@ import { supabase } from '../../services/supabase';
 const CATEGORIES = [
   { key: 'all', label: 'All Rewards', emoji: '🎁' },
   { key: 'fun', label: 'Fun Time', emoji: '🎮' },
-  { key: 'hat', label: 'Hats', emoji: '🧢' },
-  { key: 'glasses', label: 'Glasses', emoji: '👓' },
-  { key: 'scarf', label: 'Scarves', emoji: '🧣' },
-  { key: 'wings', label: 'Wings & Jets', emoji: '🦋' },
+  { key: 'family', label: 'Family Rewards', emoji: '🏠' },
   { key: 'background', label: 'Backgrounds', emoji: '🖼️' },
   { key: 'sticker', label: 'Stickers', emoji: '⭐' },
   { key: 'special', label: 'Special', emoji: '🎁' },
@@ -32,6 +29,18 @@ const FUN_REWARDS: RewardItem[] = [
   { id: 'fun-dance', name: 'Dance Break', description: 'A 5-minute dance party! 💃🕺', emoji: '💃', cost: 30, category: 'fun', rarity: 'common' },
   { id: 'fun-explore', name: 'Free Explore', description: '15 min to explore any subject you want!', emoji: '🔭', cost: 90, category: 'fun', rarity: 'uncommon' },
   { id: 'fun-music', name: 'Music Time', description: '10 minutes of music and rhythm games!', emoji: '🎵', cost: 70, category: 'fun', rarity: 'common' },
+];
+
+// Family rewards — parents can customize these in settings!
+const FAMILY_REWARDS: RewardItem[] = [
+  { id: 'fam-pizza', name: 'Pizza Night!', description: 'You earned a pizza night with the family! 🍕', emoji: '🍕', cost: 200, category: 'family', rarity: 'rare' },
+  { id: 'fam-movie', name: 'Movie Pick!', description: 'YOU get to pick the family movie tonight! 🎬', emoji: '🎬', cost: 150, category: 'family', rarity: 'uncommon' },
+  { id: 'fam-story', name: 'Bedtime Story', description: 'A special bedtime story read by Mom or Dad! 📚', emoji: '📚', cost: 100, category: 'family', rarity: 'uncommon' },
+  { id: 'fam-treat', name: 'Favorite Treat', description: 'Pick your favorite snack or dessert! 🍦', emoji: '🍦', cost: 120, category: 'family', rarity: 'uncommon' },
+  { id: 'fam-park', name: 'Park Day!', description: 'An extra trip to the park this week! 🏞️', emoji: '🏞️', cost: 250, category: 'family', rarity: 'rare' },
+  { id: 'fam-stayup', name: 'Stay Up Late!', description: '30 extra minutes before bedtime! 🌙', emoji: '🌙', cost: 180, category: 'family', rarity: 'rare' },
+  { id: 'fam-cook', name: 'Chef\'s Choice', description: 'Help cook your favorite meal with a parent! 👨‍🍳', emoji: '👨‍🍳', cost: 130, category: 'family', rarity: 'uncommon' },
+  { id: 'fam-game', name: 'Family Game Night', description: 'Choose the board game for family game night! 🎲', emoji: '🎲', cost: 160, category: 'family', rarity: 'uncommon' },
 ];
 
 const RARITY_GLOW: Record<string, string> = {
@@ -57,7 +66,7 @@ export default function RewardShop() {
       getRewardCatalog(),
       getStudentInventory(),
     ]);
-    setCatalog([...FUN_REWARDS, ...items]);
+    setCatalog([...FUN_REWARDS, ...FAMILY_REWARDS, ...items]);
     setOwnedIds(new Set(inventory.map(i => i.item_id)));
 
     // Get balance
@@ -65,8 +74,9 @@ export default function RewardShop() {
     if (user) {
       const { data: sp } = await supabase.from('student_profiles').select('id').eq('user_id', user.id).single();
       if (sp) {
-        const { data: pts } = await supabase.from('spark_points').select('balance').eq('student_id', sp.id).single();
-        setBalance(pts?.balance || 0);
+        const { data: pts } = await supabase.from('spark_points').select('amount').eq('student_profile_id', sp.id);
+        const totalPts = (pts || []).reduce((sum: number, p: { amount: number }) => sum + p.amount, 0);
+        setBalance(totalPts || 0);
       }
     }
     setLoading(false);
@@ -84,7 +94,7 @@ export default function RewardShop() {
     if (result.success) {
       setConfetti(true);
       setTimeout(() => setConfetti(false), 3000);
-      setMessage({ text: `🎉 You bought ${item.emoji} ${item.name}! Go to My Locker to equip it!`, type: 'success' });
+      setMessage({ text: `🎉 You bought ${item.emoji} ${item.name}! Enjoy your reward!`, type: 'success' });
     } else {
       setMessage({ text: result.message, type: 'error' });
     }
@@ -152,11 +162,11 @@ export default function RewardShop() {
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold">
                 <ReadAloud text="Reward Shop">🛍️ Reward Shop</ReadAloud>
-                <p className="text-sm text-gray-500 mt-1">Spend your Spark Points on game time, activities, and cool gear!</p>
+                <p className="text-sm text-gray-500 mt-1">Spend your Spark Points on game time, family rewards, and personalization!</p>
               </h1>
               <p className="text-amber-100">
-                <ReadAloud text="Spend your Spark Points on cool accessories for Pepper!">
-                  Spend your Spark Points on cool accessories!
+                <ReadAloud text="Spend your Spark Points on fun activities and family rewards!">
+                  Spend your Spark Points on fun activities and family rewards!
                 </ReadAloud>
               </p>
             </div>
@@ -166,13 +176,7 @@ export default function RewardShop() {
               <p className="text-xs text-amber-100">Your Balance</p>
               <p className="text-2xl font-bold">✨ {balance.toLocaleString()}</p>
             </div>
-            <Link
-              to="/student/locker"
-              className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-xl hover:bg-white/30 transition-all text-center"
-            >
-              <p className="text-xs text-amber-100">My Locker</p>
-              <p className="text-lg font-bold">🔐 Go</p>
-            </Link>
+
           </div>
         </div>
       </div>
@@ -247,12 +251,9 @@ export default function RewardShop() {
 
               {/* Price / Buy */}
               {owned ? (
-                <Link
-                  to="/student/locker"
-                  className="w-full mt-auto px-3 py-2 rounded-xl text-sm font-bold bg-green-100 text-green-700 hover:bg-green-200 transition-all text-center active:scale-95"
-                >
-                  🔐 Equip in Locker
-                </Link>
+                <div className="w-full mt-auto px-3 py-2 rounded-xl text-sm font-bold bg-green-100 text-green-700 text-center">
+                  ✅ You own this!
+                </div>
               ) : (
                 <button
                   onClick={() => handlePurchase(item)}

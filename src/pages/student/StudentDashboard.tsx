@@ -948,51 +948,7 @@ export default function StudentDashboard() {
           </div>
         )}
 
-        {/* ════════ STATS ROW ════════ */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="dashboard-card bg-white p-3 text-center anim-card-enter" style={{ animationDelay: '0.05s' }}>
-            <div className="text-2xl">🪙</div>
-            <div className="text-xl font-display font-bold" style={{ color: theme.primary }}>{sparkPoints}</div>
-            <ReadAloud text={`Spark Points: ${sparkPoints}`} showIcon={false}>
-              <div className="text-xs text-gray-500 font-medium">Spark Points</div>
-            </ReadAloud>
-          </div>
-          <div className="dashboard-card bg-white p-3 text-center anim-card-enter" style={{ animationDelay: '0.1s' }}>
-            <div className={`${getStreakSize(streak)} ${streak >= 3 ? 'anim-flame' : ''}`}>
-              {getStreakEmoji(streak)}
-            </div>
-            <div className="text-xl font-display font-bold text-orange-600">
-              {streak} day{streak !== 1 ? 's' : ''}
-            </div>
-            <ReadAloud text={`Day Streak: ${streak} days`} showIcon={false}>
-              <div className="text-xs text-gray-500 font-medium">Day Streak</div>
-            </ReadAloud>
-            {streak >= 3 && (
-              <div className="text-[10px] text-orange-500 font-bold mt-0.5">You&apos;re on a roll!</div>
-            )}
-          </div>
-          <div className="dashboard-card bg-white p-3 text-center anim-card-enter" style={{ animationDelay: '0.15s' }}>
-            <div className="text-2xl">✅</div>
-            <div className="text-xl font-display font-bold text-green-600">{completedCount}/{totalGoal}</div>
-            <ReadAloud text={`Done today: ${completedCount} of ${totalGoal}`} showIcon={false}>
-              <div className="text-xs text-gray-500 font-medium">Done Today</div>
-            </ReadAloud>
-          </div>
-          <div className="dashboard-card bg-white p-3 text-center anim-card-enter" style={{ animationDelay: '0.2s' }}>
-            <div className="text-2xl">{levelInfo.emoji}</div>
-            <div className="text-sm font-display font-bold" style={{ color: theme.primary }}>
-              {levelInfo.title}
-            </div>
-            <ReadAloud text={`Level ${levelInfo.level}: ${levelInfo.title}`} showIcon={false}>
-              <div className="text-xs text-gray-500 font-medium">Level {levelInfo.level}</div>
-            </ReadAloud>
-            {levelInfo.nextLevel && (
-              <div className="mt-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                <div className="progress-bar-fill h-full" style={{ width: `${levelInfo.progress}%` }} />
-              </div>
-            )}
-          </div>
-        </div>        {/* ════════ CLASSROOM WALL ════════ */}
+        {/* ════════ CLASSROOM WALL ════════ */}
         <section className="anim-card-enter" style={{ animationDelay: '0.22s' }}>
           <div className="relative rounded-2xl overflow-hidden shadow-lg" style={{ background: 'linear-gradient(135deg, #D2B48C, #C4A882)' }}>
             {/* Pushpin decorations */}
@@ -1081,7 +1037,52 @@ export default function StudentDashboard() {
 
 
 
-        {/* ════════ ATTENDANCE CHECK-IN ════════ */}
+
+        {/* ════════ STATS ROW ════════ */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="dashboard-card bg-white p-3 text-center anim-card-enter" style={{ animationDelay: '0.05s' }}>
+            <div className="text-2xl">🪙</div>
+            <div className="text-xl font-display font-bold" style={{ color: theme.primary }}>{sparkPoints}</div>
+            <ReadAloud text={`Spark Points: ${sparkPoints}`} showIcon={false}>
+              <div className="text-xs text-gray-500 font-medium">Spark Points</div>
+            </ReadAloud>
+          </div>
+          <div className="dashboard-card bg-white p-3 text-center anim-card-enter" style={{ animationDelay: '0.1s' }}>
+            <div className={`${getStreakSize(streak)} ${streak >= 3 ? 'anim-flame' : ''}`}>
+              {getStreakEmoji(streak)}
+            </div>
+            <div className="text-xl font-display font-bold text-orange-600">
+              {streak} day{streak !== 1 ? 's' : ''}
+            </div>
+            <ReadAloud text={`Day Streak: ${streak} days`} showIcon={false}>
+              <div className="text-xs text-gray-500 font-medium">Day Streak</div>
+            </ReadAloud>
+            {streak >= 3 && (
+              <div className="text-[10px] text-orange-500 font-bold mt-0.5">You&apos;re on a roll!</div>
+            )}
+          </div>
+          <div className="dashboard-card bg-white p-3 text-center anim-card-enter" style={{ animationDelay: '0.15s' }}>
+            <div className="text-2xl">✅</div>
+            <div className="text-xl font-display font-bold text-green-600">{completedCount}/{totalGoal}</div>
+            <ReadAloud text={`Done today: ${completedCount} of ${totalGoal}`} showIcon={false}>
+              <div className="text-xs text-gray-500 font-medium">Done Today</div>
+            </ReadAloud>
+          </div>
+          <div className="dashboard-card bg-white p-3 text-center anim-card-enter" style={{ animationDelay: '0.2s' }}>
+            <div className="text-2xl">{levelInfo.emoji}</div>
+            <div className="text-sm font-display font-bold" style={{ color: theme.primary }}>
+              {levelInfo.title}
+            </div>
+            <ReadAloud text={`Level ${levelInfo.level}: ${levelInfo.title}`} showIcon={false}>
+              <div className="text-xs text-gray-500 font-medium">Level {levelInfo.level}</div>
+            </ReadAloud>
+            {levelInfo.nextLevel && (
+              <div className="mt-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                <div className="progress-bar-fill h-full" style={{ width: `${levelInfo.progress}%` }} />
+              </div>
+            )}
+          </div>
+        </div>        {/* ════════ ATTENDANCE CHECK-IN ════════ */}
         {!checkedIn && (
           <div
             className="dashboard-card p-5 text-center anim-card-enter"
@@ -1150,56 +1151,6 @@ export default function StudentDashboard() {
             </ReadAloud>
           </button>
         </div>
-
-        {/* ════════ MY SUBJECTS ════════ */}
-        <section className="anim-card-enter" style={{ animationDelay: '0.3s' }}>
-          <ReadAloud text="Here are your subjects! Pick one to practice." showIcon={true} iconSize="sm">
-            <h2 className="text-xl font-display font-bold mb-3 flex items-center gap-2" style={{ color: theme.primary }}>
-              📚 My Subjects
-            </h2>
-          </ReadAloud>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {WORLD_ZONES.map((zone, idx) => {
-              const pct = domainMastery[zone.domainName] ?? 0;
-              return (
-                <div
-                  key={zone.domainName}
-                  className="dashboard-card bg-white p-3 sm:p-4 cursor-pointer anim-card-enter"
-                  style={{ animationDelay: `${0.32 + idx * 0.04}s`, borderColor: zone.color + '40' }}
-                  onClick={() => zone.domainName === 'Heritage Spanish'
-                    ? navigate('/student/spanish-village')
-                    : navigate('/student/practice', { state: { domain: zone.domainName } })
-                  }
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-2xl sm:text-3xl">{zone.emoji}</span>
-                    <ReadAloud text={zone.zoneName} showIcon={false}>
-                      <span className="font-display font-bold text-sm sm:text-base text-gray-800">{zone.zoneName}</span>
-                    </ReadAloud>
-                  </div>
-                  {/* Mini progress bar */}
-                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden mb-1">
-                    <div
-                      className="h-full rounded-full transition-all duration-700"
-                      style={{ width: `${pct}%`, backgroundColor: zone.color }}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-gray-500 font-medium">
-                      {pct > 0 ? `${pct}% mastered` : 'Ready to explore!'}
-                    </span>
-                    <span
-                      className="text-xs font-display font-bold px-2 py-0.5 rounded-full text-white"
-                      style={{ backgroundColor: zone.color }}
-                    >
-                      Go!
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
 
         {/* ════════ TODAY'S ACTIVITY PLAN (Age-Appropriate) ════════ */}
         {(() => {
@@ -1425,82 +1376,165 @@ export default function StudentDashboard() {
           )}
         </section>
 
-        {/* ════════ DAILY REFLECTION / JOURNAL ════════ */}
+        {/* ════════ MY SUBJECTS ════════ */}
+        <section className="anim-card-enter" style={{ animationDelay: '0.3s' }}>
+          <ReadAloud text="Here are your subjects! Pick one to practice." showIcon={true} iconSize="sm">
+            <h2 className="text-xl font-display font-bold mb-3 flex items-center gap-2" style={{ color: theme.primary }}>
+              📚 My Subjects
+            </h2>
+          </ReadAloud>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {WORLD_ZONES.map((zone, idx) => {
+              const pct = domainMastery[zone.domainName] ?? 0;
+              return (
+                <div
+                  key={zone.domainName}
+                  className="dashboard-card bg-white p-3 sm:p-4 cursor-pointer anim-card-enter"
+                  style={{ animationDelay: `${0.32 + idx * 0.04}s`, borderColor: zone.color + '40' }}
+                  onClick={() => zone.domainName === 'Heritage Spanish'
+                    ? navigate('/student/spanish-village')
+                    : navigate('/student/practice', { state: { domain: zone.domainName } })
+                  }
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-2xl sm:text-3xl">{zone.emoji}</span>
+                    <ReadAloud text={zone.zoneName} showIcon={false}>
+                      <span className="font-display font-bold text-sm sm:text-base text-gray-800">{zone.zoneName}</span>
+                    </ReadAloud>
+                  </div>
+                  {/* Mini progress bar */}
+                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden mb-1">
+                    <div
+                      className="h-full rounded-full transition-all duration-700"
+                      style={{ width: `${pct}%`, backgroundColor: zone.color }}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-gray-500 font-medium">
+                      {pct > 0 ? `${pct}% mastered` : 'Ready to explore!'}
+                    </span>
+                    <span
+                      className="text-xs font-display font-bold px-2 py-0.5 rounded-full text-white"
+                      style={{ backgroundColor: zone.color }}
+                    >
+                      Go!
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+
+        {/* ════════ DAILY REFLECTION / JOURNAL (Animated Book) ════════ */}
         <section className="anim-card-enter" style={{ animationDelay: '0.55s' }}>
-          {!showReflection ? (
+          {/* Closed Journal — tap to open */}
+          {!journalOpen ? (
             <button
-              onClick={() => setShowReflection(true)}
-              className="w-full dashboard-card p-4 text-center hover:shadow-lg transition-all group"
-              style={{ background: `linear-gradient(135deg, #FFF8E1, #FFF3E0)`, borderColor: '#FFB74D40' }}
+              onClick={() => setJournalOpen(true)}
+              className="w-full bg-gradient-to-br from-amber-700 to-amber-900 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all hover:scale-[1.01] active:scale-[0.99] border-2 border-amber-600 relative overflow-hidden group"
             >
-              <span className="text-2xl">📓</span>
-              <ReadAloud text="How was your learning today? Tap to write in your journal!" showIcon={false}>
-                <p className="text-sm font-display font-bold text-amber-800 mt-1">
-                  📓 My Daily Journal
-                </p>
-              </ReadAloud>
-              <p className="text-xs text-amber-600 mt-0.5">How was your learning today? Tap to write!</p>
+              {/* Book spine effect */}
+              <div className="absolute left-0 top-0 bottom-0 w-4 bg-amber-950/30 rounded-l-2xl" />
+              <div className="absolute left-4 top-0 bottom-0 w-px bg-amber-600/40" />
+
+              {/* Book cover content */}
+              <div className="ml-6 text-left">
+                <div className="flex items-center gap-3 mb-2">
+                  <span className="text-4xl" style={{ animation: 'pepperBounce 2s ease-in-out infinite' }}>📓</span>
+                  <div>
+                    <h3 className="text-xl font-bold text-amber-100">My Journal</h3>
+                    <p className="text-amber-300/80 text-sm">Tap to open & write your thoughts!</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 mt-3">
+                  <span className="text-xs bg-amber-600/30 text-amber-200 px-3 py-1 rounded-full">✏️ Private — just for you</span>
+                  <span className="text-xs bg-amber-600/30 text-amber-200 px-3 py-1 rounded-full group-hover:animate-pulse">📖 Tap to open</span>
+                </div>
+              </div>
+
+              {/* Page peek effect */}
+              <div className="absolute right-2 top-3 bottom-3 w-1 bg-amber-100/20 rounded-full" />
+              <div className="absolute right-4 top-4 bottom-4 w-0.5 bg-amber-100/10 rounded-full" />
             </button>
           ) : (
-            <div className="dashboard-card p-5 anim-bounce-in" style={{ background: 'linear-gradient(135deg, #FFF8E1, #FFF3E0)', borderColor: '#FFB74D40' }}>
-              {reflectionSaved ? (
-                <div className="text-center py-4">
-                  <span className="text-4xl">✨</span>
-                  <p className="text-lg font-display font-bold text-amber-800 mt-2">Journal saved!</p>
-                  <p className="text-sm text-amber-600">Great reflection today! 🌟</p>
-                </div>
-              ) : (
-                <>
-                  <div className="flex items-center justify-between mb-3">
-                    <ReadAloud text="My Daily Journal. How are you feeling?" showIcon={false}>
-                      <h3 className="text-lg font-display font-bold text-amber-800">📓 My Daily Journal</h3>
-                    </ReadAloud>
-                    <button onClick={() => setShowReflection(false)} className="text-amber-400 hover:text-amber-600 text-lg">✕</button>
+            /* Open Journal — book opened */
+            <div className="bg-amber-50 rounded-2xl border-2 border-amber-300 shadow-xl overflow-hidden" style={{ animation: 'bookOpen 0.4s ease-out' }}>
+              {/* Book header */}
+              <div className="bg-gradient-to-r from-amber-700 to-amber-800 px-6 py-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl">📖</span>
+                  <div>
+                    <h3 className="text-lg font-bold text-amber-100">My Journal</h3>
+                    <p className="text-amber-300/80 text-xs">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
                   </div>
-                  <ReadAloud text="How are you feeling today?" showIcon={false}>
-                    <p className="text-sm text-amber-700 font-medium mb-2">How are you feeling today?</p>
-                  </ReadAloud>
-                  <div className="flex gap-2 justify-center mb-3">
+                </div>
+                <button onClick={() => setJournalOpen(false)} className="text-amber-300 hover:text-white transition-colors text-xl">✕</button>
+              </div>
+
+              <div className="p-6 space-y-5" style={{ background: 'repeating-linear-gradient(transparent, transparent 27px, #e5d5b0 28px)', minHeight: '200px' }}>
+                {/* Mood picker */}
+                <div>
+                  <p className="text-sm font-bold text-amber-900 mb-2">How are you feeling today?</p>
+                  <div className="flex gap-2 flex-wrap">
                     {[
-                      { emoji: '😊', label: 'Great' },
-                      { emoji: '🙂', label: 'Good' },
-                      { emoji: '😐', label: 'Okay' },
-                      { emoji: '😢', label: 'Sad' },
-                      { emoji: '😤', label: 'Frustrated' },
+                      { emoji: '😊', label: 'Happy' },
                       { emoji: '🤩', label: 'Excited' },
+                      { emoji: '😌', label: 'Calm' },
+                      { emoji: '🤔', label: 'Thinking' },
                       { emoji: '😴', label: 'Tired' },
+                      { emoji: '😤', label: 'Frustrated' },
+                      { emoji: '🥰', label: 'Loved' },
+                      { emoji: '💪', label: 'Strong' },
                     ].map(m => (
                       <button
                         key={m.emoji}
-                        onClick={() => setReflectionMood(m.emoji)}
-                        className={`flex flex-col items-center p-2 rounded-xl transition-all ${reflectionMood === m.emoji ? 'bg-amber-200 shadow-md scale-110 ring-2 ring-amber-400' : 'bg-white hover:bg-amber-50'}`}
+                        onClick={() => {
+                          const el = document.getElementById('journal-mood') as HTMLInputElement;
+                          if (el) el.value = m.emoji;
+                        }}
+                        className="flex flex-col items-center gap-0.5 p-2 rounded-xl hover:bg-amber-200/50 transition-all active:scale-90"
                       >
                         <span className="text-2xl">{m.emoji}</span>
-                        <span className="text-[10px] text-amber-700 font-medium mt-0.5">{m.label}</span>
+                        <span className="text-[9px] text-amber-700">{m.label}</span>
                       </button>
                     ))}
                   </div>
-                  <ReadAloud text="What did you learn or do today? Write about it!" showIcon={false}>
-                    <p className="text-sm text-amber-700 font-medium mb-1">What did you learn today?</p>
-                  </ReadAloud>
+                  <input id="journal-mood" type="hidden" />
+                </div>
+
+                {/* Morning prompt */}
+                <div>
+                  <p className="text-sm font-bold text-amber-900 mb-1">✨ What are you looking forward to today?</p>
                   <textarea
-                    value={reflectionText}
-                    onChange={(e) => setReflectionText(e.target.value)}
-                    placeholder="I learned about... / Today was fun because... / I need help with..."
-                    className="w-full p-3 rounded-xl border-2 border-amber-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-200 outline-none text-sm resize-none"
+                    className="w-full p-3 rounded-xl border border-amber-200 bg-white/80 text-sm resize-none focus:ring-2 focus:ring-amber-400 focus:border-transparent"
                     rows={3}
-                    style={{ fontFamily: "'Caveat', cursive, sans-serif", fontSize: '1rem' }}
+                    placeholder="I'm excited about..."
                   />
+                </div>
+
+                {/* End of day prompt */}
+                <div>
+                  <p className="text-sm font-bold text-amber-900 mb-1">🌟 What did you learn today?</p>
+                  <textarea
+                    className="w-full p-3 rounded-xl border border-amber-200 bg-white/80 text-sm resize-none focus:ring-2 focus:ring-amber-400 focus:border-transparent"
+                    rows={3}
+                    placeholder="Today I learned..."
+                  />
+                </div>
+
+                {/* Save button */}
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-amber-600/60">🔒 Private — only you and your teacher can see this</p>
                   <button
-                    onClick={saveReflection}
-                    disabled={!reflectionMood}
-                    className="mt-3 w-full py-3 rounded-xl text-white font-display font-bold shadow-md transition-all disabled:opacity-40"
-                    style={{ background: reflectionMood ? 'linear-gradient(135deg, #FF8F00, #F57C00)' : '#ccc' }}
+                    onClick={() => { setJournalOpen(false); }}
+                    className="px-6 py-2.5 bg-gradient-to-r from-amber-600 to-amber-700 text-white font-bold rounded-xl hover:shadow-lg transition-all active:scale-95 text-sm"
                   >
-                    {reflectionMood ? '✨ Save My Journal Entry' : 'Pick a mood first! ☝️'}
+                    📝 Save Entry
                   </button>
-                </>
-              )}
+                </div>
+              </div>
             </div>
           )}
         </section>
@@ -1511,6 +1545,7 @@ export default function StudentDashboard() {
           <QuickAction icon="📊" label="My Progress" color={theme.primary} onClick={() => navigate('/student/progress')} />
           <QuickAction icon="🎯" label="Assessment" color={theme.primary} onClick={() => navigate('/student/assessment')} />
           <QuickAction icon="🏆" label="Trophy Case" color={theme.primary} onClick={() => navigate('/student/achievements')} />
+          <QuickAction icon="❓" label="How To Use" color="#8B5CF6" onClick={() => setShowTutorial(true)} />
         </div>
 
       </div>
@@ -1593,6 +1628,51 @@ export default function StudentDashboard() {
                     ))}
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+
+      {/* ════════ TUTORIAL / HOW TO USE MODAL ════════ */}
+      {showTutorial && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setShowTutorial(false)}>
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+          <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()} style={{ animation: 'bounceIn 0.3s ease-out' }}>
+            <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-t-2xl px-6 py-4 flex items-center justify-between sticky top-0 z-10">
+              <div className="flex items-center gap-3">
+                <span className="text-3xl" style={{ animation: 'pepperBounce 1.5s ease-in-out infinite' }}>🐧</span>
+                <h3 className="text-lg font-bold text-white">How to Use A² Compass</h3>
+              </div>
+              <button onClick={() => setShowTutorial(false)} className="text-white/80 hover:text-white text-xl">✕</button>
+            </div>
+            <div className="p-6 space-y-4">
+              {[
+                { icon: '🏠', title: 'Home', desc: 'Your dashboard — see today\'s plan, check the weather, and write in your journal!' },
+                { icon: '📚', title: 'My Subjects', desc: 'All your subjects in one place. Tap a subject to start learning!' },
+                { icon: '📝', title: 'Assessments', desc: 'Short quizzes that help us know what you\'re ready to learn next.' },
+                { icon: '📈', title: 'My Progress', desc: 'See how far you\'ve come! Stars, streaks, and milestones.' },
+                { icon: '🏆', title: 'Trophy Case', desc: 'Your badges and achievements. You earned them!' },
+                { icon: '🛍️', title: 'Reward Shop', desc: 'Spend Spark Points on fun rewards and family activities!' },
+                { icon: '📓', title: 'My Journal', desc: 'Write about your day. It\'s private — just for you!' },
+                { icon: '🐧', title: 'Pepper', desc: 'Tap the penguin anytime for tips and to ask for help!' },
+              ].map(item => (
+                <div key={item.title} className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 hover:bg-indigo-50 transition-all">
+                  <span className="text-2xl">{item.icon}</span>
+                  <div>
+                    <p className="font-bold text-gray-800">{item.title}</p>
+                    <p className="text-sm text-gray-600">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+              <div className="text-center pt-2">
+                <button
+                  onClick={() => setShowTutorial(false)}
+                  className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold rounded-xl hover:shadow-lg transition-all active:scale-95"
+                >
+                  Got it! Let's go! 🚀
+                </button>
               </div>
             </div>
           </div>
