@@ -104,26 +104,12 @@ const speakWithChoices = (questionText: string, questionData: Record<string, any
   const pairs: any[] = questionData?.pairs || [];
   const draggables: any[] = questionData?.draggables || [];
 
-  if (opts.length > 0) {
-    const labels = opts.map((o: any) => typeof o === 'object' ? (o.text || o.label || String(o)) : String(o));
-    fullText += '. The choices are: ' + labels.map((l: string, i: number) => String.fromCharCode(65 + i) + ', ' + l).join('. ') + '.';
-  } else if (items.length > 0 && questionType !== 'sequence') {
-    const labels = items.map((it: any) => it.label || it.text || String(it));
-    fullText += '. The choices are: ' + labels.join(', ') + '.';
-  } else if (items.length > 0 && questionType === 'sequence') {
-    const labels = items.map((it: any) => it.label || it.text || String(it));
-    fullText += '. The items are: ' + labels.join(', ') + '.';
-  } else if (questionType === 'counting') {
+  // Only read question text — children can tap 🔊 on individual answers to hear them
+  if (questionType === 'counting') {
     fullText += '. Count the objects you see and tap the right number.';
-  } else if (pairs.length > 0) {
-    const leftItems = pairs.map((p: any) => p.left || '').filter(Boolean);
-    const rightItems = pairs.map((p: any) => p.right || '').filter(Boolean);
-    if (leftItems.length) fullText += '. On the left: ' + leftItems.join(', ') + '.';
-    if (rightItems.length) fullText += ' On the right: ' + rightItems.join(', ') + '.';
-  } else if (draggables.length > 0) {
-    const dragLabels = draggables.map((d: any) => typeof d === 'object' ? (d.label || d.id) : d);
-    fullText += '. The items to sort are: ' + dragLabels.join(', ') + '.';
   }
+  // Append a hint about tapping speaker icons
+  fullText += ' Tap the speaker icon on any answer to hear it.';
   speak(fullText);
 };
 
@@ -1508,17 +1494,8 @@ function MultipleChoiceRenderer({ item, onAnswer, disabled, isTouchRef }: QProps
     e.preventDefault();
     touchedRef.current = true;
     if (disabled || submittedRef.current || processing) return;
-    if (lastReadOption !== opt) {
-      // First tap: read aloud, don't select
-      setReadingOption(opt);
-      setLastReadOption(opt);
-      speak(opt);
-      setTimeout(() => setReadingOption(null), 2000);
-    } else {
-      // Second tap: select (highlight)
-      doSelect(opt);
-      setLastReadOption(null);
-    }
+    // First tap selects the answer — tap 🔊 icon to hear it read aloud
+    doSelect(opt);
   };
 
   const handleClick = (opt: string) => {
@@ -1618,15 +1595,8 @@ function TapSelectRenderer({ item, onAnswer, disabled, isTouchRef }: QProps) {
     e.preventDefault();
     touchedRef.current = true;
     if (disabled || submitting) return;
-    if (lastReadOption !== opt) {
-      setReadingOption(opt);
-      setLastReadOption(opt);
-      speak(opt);
-      setTimeout(() => setReadingOption(null), 2000);
-    } else {
-      toggle(opt);
-      setLastReadOption(null);
-    }
+    // First tap toggles selection — tap 🔊 icon to hear it read aloud
+    toggle(opt);
   };
 
   const handleClick = (opt: string) => {
@@ -1832,13 +1802,9 @@ function FillBlankRenderer({ item, onAnswer, disabled, isTouchRef }: QProps) {
     touchedRef.current = true;
     if (disabled || submittedRef.current || processing) return;
     if (lastReadOption !== opt) {
-      setReadingOption(opt);
-      setLastReadOption(opt);
-      speak(opt);
-      setTimeout(() => setReadingOption(null), 2000);
-    } else {
-      doSelect(opt);
-      setLastReadOption(null);
+    // First tap selects — tap 🔊 icon to hear it read aloud
+    doSelect(opt);
+    void(opt); // keep lint happy
     }
   };
 

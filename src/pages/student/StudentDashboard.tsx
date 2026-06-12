@@ -576,6 +576,17 @@ export default function StudentDashboard() {
       details: { date: todayStr },
     });
 
+    // Award +5 Spark Points for daily login
+    if (studentProfileId) {
+      await supabase.from('spark_points').insert({
+        student_profile_id: studentProfileId,
+        amount: 5,
+        reason: 'daily_login',
+        details: { date: todayStr },
+      });
+      setSparkPoints(prev => prev + 5);
+    }
+
     setStreak(prev => prev + 1);
   };
 

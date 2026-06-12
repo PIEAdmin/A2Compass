@@ -420,10 +420,38 @@ export default function StudentLibrary() {
 
         {/* Empty state */}
         {!loading && !error && filtered.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <span className="text-5xl mb-4">🔍</span>
-            <p className="text-lg font-semibold text-gray-600">No activities found</p>
-            <p className="text-gray-400 mt-1">Try a different filter!</p>
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <span className="text-5xl mb-4">{showFavoritesOnly ? '❤️' : items.length === 0 ? '📚' : '🔍'}</span>
+            <p className="text-lg font-semibold text-gray-600">
+              {showFavoritesOnly ? 'No favorites yet!' : items.length === 0 ? 'Your library is getting ready!' : 'No activities match this filter'}
+            </p>
+            <p className="text-gray-400 mt-2 max-w-sm">
+              {showFavoritesOnly
+                ? 'Tap the ❤️ on any activity to save it here.'
+                : items.length === 0
+                  ? 'Activities will appear here as your teacher adds lessons. In the meantime, explore these!'
+                  : 'Try a different filter or search term.'}
+            </p>
+            {items.length === 0 && !showFavoritesOnly && (
+              <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-lg">
+                {[
+                  { emoji: '🎮', label: 'Free Play', path: '/student/play' },
+                  { emoji: '📺', label: 'Video Library', path: '/student/videos' },
+                  { emoji: '🗺️', label: 'Learning Path', path: '/student/learning-path' },
+                  { emoji: '🎯', label: 'Assessment', path: '/student/assessment' },
+                ].map(item => (
+                  <button
+                    key={item.path}
+                    type="button"
+                    onClick={() => window.location.href = item.path}
+                    className="flex flex-col items-center gap-1 p-4 bg-white rounded-xl border border-gray-200 hover:border-indigo-300 hover:shadow-md transition-all"
+                  >
+                    <span className="text-3xl">{item.emoji}</span>
+                    <span className="text-sm font-medium text-gray-700">{item.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
 

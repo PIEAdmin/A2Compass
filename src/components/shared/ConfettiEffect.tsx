@@ -30,8 +30,13 @@ export const ConfettiEffect: React.FC<ConfettiEffectProps> = ({
   const [particles, setParticles] = useState<Particle[]>([]);
   const [visible, setVisible] = useState(false);
 
+  const prevActiveRef = React.useRef(false);
+
   useEffect(() => {
-    if (!active) return;
+    // Only trigger on rising edge (false → true)
+    if (!active) { prevActiveRef.current = false; return; }
+    if (prevActiveRef.current) return; // Already active, skip
+    prevActiveRef.current = true;
     setVisible(true);
 
     const ps: Particle[] = Array.from({ length: count }, (_, i) => ({

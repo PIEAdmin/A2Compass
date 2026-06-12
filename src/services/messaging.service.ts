@@ -113,7 +113,8 @@ export const messagingService = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Not authenticated');
 
-    const { data, error } = await supabase
+    // Try with FK joins first
+    let { data, error } = await supabase
       .from('messages')
       .select(`
         *,
@@ -124,7 +125,43 @@ export const messagingService = {
       .or(`sender_id.eq.${user.id},recipient_id.eq.${user.id}`)
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
+    // Fallback: if FK join fails, try without explicit FK names
+    if (error) {
+      console.warn('Messages FK join failed, trying fallback:', error.message);
+      const fallback = await supabase
+        .from('messages')
+        .select('*')
+        .or(`sender_id.eq.${user.id},recipient_id.eq.${user.id}`)
+        .order('created_at', { ascending: false });
+
+      if (fallback.error) throw fallback.error;
+      data = fallback.data;
+
+      // Manually resolve sender/recipient names
+      if (data && data.length > 0) {
+        const userIds = new Set<string>();
+        for (const msg of data) {
+          if (msg.sender_id) userIds.add(msg.sender_id);
+          if (msg.recipient_id) userIds.add(msg.recipient_id);
+          if (msg.related_student_id) userIds.add(msg.related_student_id);
+        }
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name, role')
+          .in('id', [...userIds]);
+        const profileMap = new Map((profiles || []).map(p => [p.id, p]));
+
+        for (const msg of data) {
+          const s = profileMap.get(msg.sender_id);
+          const r = profileMap.get(msg.recipient_id);
+          const rs = msg.related_student_id ? profileMap.get(msg.related_student_id) : null;
+          (msg as any).sender = s ? { first_name: s.first_name, last_name: s.last_name, role: s.role } : null;
+          (msg as any).recipient = r ? { first_name: r.first_name, last_name: r.last_name, role: r.role } : null;
+          (msg as any).related_student = rs ? { first_name: rs.first_name, last_name: rs.last_name } : null;
+        }
+      }
+    }
+
     return data || [];
   },
 
@@ -135,7 +172,7 @@ export const messagingService = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Not authenticated');
 
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from('messages')
       .select(`
         *,
@@ -148,7 +185,35 @@ export const messagingService = {
       )
       .order('created_at', { ascending: true });
 
-    if (error) throw error;
+    // Fallback without FK joins
+    if (error) {
+      console.warn('Conversation FK join failed, trying fallback:', error.message);
+      const fallback = await supabase
+        .from('messages')
+        .select('*')
+        .or(
+          `and(sender_id.eq.${user.id},recipient_id.eq.${partnerId}),and(sender_id.eq.${partnerId},recipient_id.eq.${user.id})`
+        )
+        .order('created_at', { ascending: true });
+      if (fallback.error) throw fallback.error;
+      data = fallback.data;
+
+      // Resolve names
+      if (data && data.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name, role')
+          .in('id', [user.id, partnerId]);
+        const profileMap = new Map((profiles || []).map(p => [p.id, p]));
+        for (const msg of data) {
+          const s = profileMap.get(msg.sender_id);
+          const r = profileMap.get(msg.recipient_id);
+          (msg as any).sender = s ? { first_name: s.first_name, last_name: s.last_name, role: s.role } : null;
+          (msg as any).recipient = r ? { first_name: r.first_name, last_name: r.last_name, role: r.role } : null;
+        }
+      }
+    }
+
     return data || [];
   },
 

@@ -176,7 +176,7 @@ export default function RewardShop() {
       </div>
 
       {/* Items grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
         {filtered.map(item => {
           const owned = ownedIds.has(item.id);
           const isPurchasing = purchasing === item.id;
@@ -184,7 +184,7 @@ export default function RewardShop() {
           return (
             <div
               key={item.id}
-              className={`relative rounded-2xl border-2 p-4 flex flex-col items-center gap-2 bg-white transition-all hover:scale-105 ${
+              className={`relative rounded-2xl border-2 p-3 sm:p-4 flex flex-col items-center gap-1.5 sm:gap-2 bg-white transition-all hover:scale-105 overflow-hidden ${
                 owned ? 'border-green-400 bg-green-50' : RARITY_GLOW[item.rarity] || ''
               } ${!owned && !canAfford ? 'opacity-60' : ''}`}
             >
@@ -207,11 +207,11 @@ export default function RewardShop() {
               )}
 
               {/* Item */}
-              <span className="text-5xl mt-2" role="img" aria-label={item.name}>{item.emoji}</span>
-              <p className="font-bold text-sm text-center">
+              <span className="text-4xl sm:text-5xl mt-1 sm:mt-2" role="img" aria-label={item.name}>{item.emoji}</span>
+              <p className="font-bold text-xs sm:text-sm text-center leading-tight">
                 <ReadAloud text={item.name}>{item.name}</ReadAloud>
               </p>
-              <p className="text-xs text-gray-500 text-center line-clamp-2">
+              <p className="text-xs text-gray-500 text-center line-clamp-2 leading-snug hidden sm:block">
                 {item.description}
               </p>
 
