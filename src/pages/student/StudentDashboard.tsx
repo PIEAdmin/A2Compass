@@ -303,6 +303,8 @@ export default function StudentDashboard() {
   const [checkinCelebrating, setCheckinCelebrating] = useState(false);
   const [scheduleData, setScheduleData] = useState<{ start: string; end: string; breaks: { time: string; label: string }[] } | null>(null);
   const [domainMastery, setDomainMastery] = useState<Record<string, number>>({});
+  const [upcomingAssessments, setUpcomingAssessments] = useState<any[]>([]);
+  const [yesterdayIncomplete, setYesterdayIncomplete] = useState<any[]>([]);
 
   // Welcome animation state
   const [animPhase, setAnimPhase] = useState(0);
@@ -402,6 +404,35 @@ export default function StudentDashboard() {
         }
         setDomainMastery(computed);
       }
+
+      // 3b. Upcoming assessments (next 7 days)
+        const { data: upcomingSessions } = await supabase
+          .from('assessment_sessions')
+          .select('id, created_at, status, skills_assessed, target_skill_ids')
+          .eq('student_id', studentId)
+          .eq('status', 'scheduled')
+          .order('created_at', { ascending: true })
+          .limit(5);
+        if (upcomingSessions) setUpcomingAssessments(upcomingSessions);
+
+        // 3c. Yesterday's incomplete activities
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split('T')[0];
+        const { data: yesterdayLogs } = await supabase
+          .from('activity_log')
+          .select('id, activity_name, activity_type, details, created_at')
+          .eq('student_id', studentId)
+          .gte('created_at', yesterdayStr + 'T00:00:00')
+          .lt('created_at', yesterdayStr + 'T23:59:59')
+          .limit(10);
+        if (yesterdayLogs) {
+          // Show activities from yesterday as "pick up where you left off"
+          const incomplete = yesterdayLogs.filter((l: any) =>
+            l.activity_type !== 'completed' && l.activity_type !== 'attendance_checkin'
+          ).slice(0, 3);
+          setYesterdayIncomplete(incomplete);
+        }
 
       // 4. Attendance streak
       const todayStr = new Date().toISOString().split('T')[0];
@@ -852,6 +883,112 @@ export default function StudentDashboard() {
                   </div>
                 </div>
               </div>
+            </div>
+          </section>
+        )}
+
+        {/* ════════ PICK UP WHERE YOU LEFT OFF ════════ */}
+        {yesterdayIncomplete.length > 0 && (
+          <section className="anim-card-enter" style={{ animationDelay: '0.5s' }}>
+            <ReadAloud text="Pick up where you left off from yesterday!" showIcon={true} iconSize="sm">
+              <h2 className="text-xl font-display font-bold mb-3 flex items-center gap-2" style={{ color: theme.primary }}>
+                ⏪ Left from Yesterday
+              </h2>
+            </ReadAloud>
+            <div className="space-y-2">
+              {yesterdayIncomplete.map((item: any, idx: number) => (
+                <div
+                  key={item.id || idx}
+                  className="dashboard-card bg-white p-4 flex items-center justify-between cursor-pointer hover:border-amber-300"
+                  onClick={() => navigate('/student/play')}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">📝</span>
+                    <div>
+                      <p className="font-display font-bold text-gray-800 text-sm">{item.activity_name || 'Unfinished Activity'}</p>
+                      <p className="text-xs text-gray-500">From yesterday — let&apos;s finish it!</p>
+                    </div>
+                  </div>
+                  <span className="text-amber-500 font-bold text-sm">Continue →</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ════════ UPCOMING ASSESSMENTS ════════ */}
+        {upcomingAssessments.length > 0 && (
+          <section className="anim-card-enter" style={{ animationDelay: '0.52s' }}>
+            <ReadAloud text="You have upcoming assessments!" showIcon={true} iconSize="sm">
+              <h2 className="text-xl font-display font-bold mb-3 flex items-center gap-2" style={{ color: theme.primary }}>
+                📋 Upcoming Assessments
+              </h2>
+            </ReadAloud>
+            <div className="space-y-2">
+              {upcomingAssessments.map((session: any, idx: number) => (
+                <div
+                  key={session.id || idx}
+                  className="dashboard-card bg-white p-4 flex items-center justify-between cursor-pointer hover:border-indigo-300"
+                  onClick={() => navigate('/student/assessment')}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">🎯</span>
+                    <div>
+                      <p className="font-display font-bold text-gray-800 text-sm">
+                        Discovery Assessment
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {session.target_skill_ids?.length || 0} skills to check
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    className="px-4 py-2 text-white text-sm font-bold rounded-xl"
+                    style={{ background: theme.headerBg }}
+                  >
+                    Start →
+                  </button>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ════════ TODAY'S PLAYLIST ════════ */}
+        {todayItems.length > 0 && (
+          <section className="anim-card-enter" style={{ animationDelay: '0.54s' }}>
+            <ReadAloud text={`You have ${todayItems.length} activities for today!`} showIcon={true} iconSize="sm">
+              <h2 className="text-xl font-display font-bold mb-3 flex items-center gap-2" style={{ color: theme.primary }}>
+                📋 Today&apos;s Activities ({todayItems.length})
+              </h2>
+            </ReadAloud>
+            <div className="space-y-2">
+              {todayItems.slice(0, 5).map((item: any, idx: number) => (
+                <div
+                  key={item.id || idx}
+                  className="dashboard-card bg-white p-3 flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-xl">{item.status === 'in_progress' ? '🔄' : '📌'}</span>
+                    <div>
+                      <p className="font-display font-bold text-gray-800 text-sm">{item.title || item.skill_name || 'Activity'}</p>
+                      <p className="text-xs text-gray-500">{item.status === 'in_progress' ? 'In progress' : 'Ready to start'}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => navigate('/student/play')}
+                    className="px-3 py-1.5 text-white text-xs font-bold rounded-xl"
+                    style={{ background: theme.headerBg }}
+                  >
+                    Go!
+                  </button>
+                </div>
+              ))}
+              {todayItems.length > 5 && (
+                <p className="text-center text-sm text-gray-400 mt-1">
+                  +{todayItems.length - 5} more activities
+                </p>
+              )}
             </div>
           </section>
         )}

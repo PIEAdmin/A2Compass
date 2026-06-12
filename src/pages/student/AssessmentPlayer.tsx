@@ -186,6 +186,64 @@ function randomMessage(arr: string[]) {
 // ==========================================================
 // Main Assessment Player Page
 // ==========================================================
+
+// ---------- Question Illustration (emoji-based for non-readers) ----------
+function getQuestionIllustration(questionData: any, questionType: string): string {
+  const text = (questionData?.questionText || questionData?.prompt || '').toLowerCase();
+  const display = (questionData?.display || questionData?.stimulus || '').toLowerCase();
+  const combined = text + ' ' + display;
+
+  // Number/math questions
+  if (/\d/.test(display) || /count|add|subtract|plus|minus|number|math/.test(combined)) {
+    const nums = ['🔢', '🧮', '🎲', '➕', '✖️', '🔟'];
+    return nums[Math.floor(Math.random() * nums.length)];
+  }
+  // Letter/phonics questions
+  if (/letter|sound|rhyme|phon|spell|word|read/.test(combined)) {
+    const letters = ['🔤', '📖', '🅰️', '✏️', '📝', '🔠'];
+    return letters[Math.floor(Math.random() * letters.length)];
+  }
+  // Color questions
+  if (/color|red|blue|green|yellow|orange|purple|pink/.test(combined)) return '🎨';
+  // Animal questions
+  if (/animal|dog|cat|bird|fish|bear|lion|elephant/.test(combined)) return '🐾';
+  // Food questions
+  if (/food|eat|fruit|apple|banana|pizza|cook/.test(combined)) return '🍎';
+  // Shape questions
+  if (/shape|circle|square|triangle|rectangle/.test(combined)) return '📐';
+  // Family/people
+  if (/family|mom|dad|brother|sister|friend/.test(combined)) return '👨‍👩‍👧‍👦';
+  // Nature
+  if (/tree|flower|sun|rain|cloud|weather|plant/.test(combined)) return '🌿';
+  // Body
+  if (/body|hand|foot|eye|ear|nose|mouth/.test(combined)) return '🧍';
+  // Emotions/feelings
+  if (/feel|happy|sad|angry|scared|emotion/.test(combined)) return '😊';
+  // Spanish
+  if (/hola|gracias|buenos|spanish|español/.test(combined)) return '🇪🇸';
+  // Music
+  if (/music|sing|song|listen/.test(combined)) return '🎵';
+  // Default by question type
+  if (questionType === 'true_false') return '✅';
+  if (questionType === 'drag_drop' || questionType === 'sorting') return '🧩';
+  if (questionType === 'matching') return '🔗';
+
+  // Generic fun illustrations
+  const generic = ['🌟', '💡', '🎯', '🧠', '🌈', '🚀', '🎪', '✨'];
+  return generic[Math.floor(Math.random() * generic.length)];
+}
+
+function QuestionIllustration({ questionData, questionType }: { questionData: any; questionType: string }) {
+  const emoji = getQuestionIllustration(questionData, questionType);
+  return (
+    <div className="flex justify-center mb-4">
+      <div className="text-5xl sm:text-6xl p-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl border-2 border-indigo-100 shadow-inner animate-bounce-gentle">
+        {emoji}
+      </div>
+    </div>
+  );
+}
+
 // ---------- Floating Decorations ----------
 function FloatingDecorations({ emojis }: { emojis: string[] }) {
   return (
@@ -243,6 +301,8 @@ function AnimationStyles() {
       }
       .slide-up { animation: slide-up 0.4s ease-out; }
       .bounce-in { animation: bounce-in 0.5s ease-out; }
+      @keyframes bounceGentle { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+      .animate-bounce-gentle { animation: bounceGentle 2s ease-in-out infinite; }
       .pulse-soft { animation: pulse-soft 2s ease-in-out infinite; }
       .shimmer-bar {
         background: linear-gradient(90deg, #818cf8, #c084fc, #818cf8);
@@ -925,6 +985,13 @@ export default function AssessmentPlayer() {
         {/* Question Content */}
         {item && !showFeedback && (
           <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-lg p-8 relative z-10 slide-up">
+            {/* Tap-to-hear hint for non-readers */}
+            <div className="text-center mb-2">
+              <span className="inline-block text-xs font-semibold text-indigo-400 bg-indigo-50 rounded-full px-3 py-1">
+                👆 Tap 🔊 to hear answers read aloud!
+              </span>
+            </div>
+
             {/* Audio button — reads question AND choices */}
             <button
               onClick={() => {
@@ -946,6 +1013,9 @@ export default function AssessmentPlayer() {
               <span className="text-3xl group-hover:scale-110 transition-transform animate-pulse">🔊</span>
               <span className="text-base font-bold">Hear Question</span>
             </button>
+
+            {/* Question Illustration */}
+            <QuestionIllustration questionData={item.questionData} questionType={item.questionType || 'multiple_choice'} />
 
             {/* Render the appropriate question type — key forces fresh state per question */}
             <QuestionRenderer
@@ -1361,22 +1431,23 @@ function SpeakerIcon({ text, size = 'md' }: { text: string; size?: 'sm' | 'md' }
     setShowRipple(true);
     speakOption(text);
     setTimeout(() => setShowRipple(false), 800);
-    setTimeout(() => setReading(false), 1500);
+    setTimeout(() => setReading(false), 2000);
   };
   return (
     <button
       onClick={handleRead}
       onTouchEnd={handleRead}
       className={`inline-flex items-center justify-center rounded-full flex-shrink-0 relative
-        ${reading ? 'text-indigo-600 speaker-active' : 'text-gray-400 hover:text-indigo-500'}
+        ${reading
+          ? 'bg-indigo-100 text-indigo-600 ring-2 ring-indigo-300 speaker-active scale-110'
+          : 'bg-indigo-50 text-indigo-400 hover:bg-indigo-100 hover:text-indigo-600 hover:scale-105'}
         ${showRipple ? 'speaker-ripple' : ''}
-        transition-colors ${size === 'sm' ? 'p-0.5' : 'p-1'}`}
+        transition-all duration-200 ${size === 'sm' ? 'p-1.5' : 'p-2'}`}
       aria-label={`Read aloud: ${text}`}
       type="button"
+      title="Tap to hear"
     >
-      <svg className={size === 'sm' ? 'w-4 h-4' : 'w-5 h-5'} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15.536 8.464a5 5 0 010 7.072M11 5L6 9H2v6h4l5 4V5z" />
-      </svg>
+      <span className={size === 'sm' ? 'text-base' : 'text-lg'}>🔊</span>
     </button>
   );
 }
