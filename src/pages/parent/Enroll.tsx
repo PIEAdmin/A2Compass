@@ -192,6 +192,18 @@ export default function Enroll() {
       <BillingToggle />
       <FamilyDiscountBanner />
 
+      {/* Single trial banner */}
+      <div className="max-w-4xl mx-auto mb-6">
+        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 border border-emerald-200 dark:border-emerald-700 rounded-xl p-4 text-center">
+          <p className="text-emerald-800 dark:text-emerald-300 font-semibold text-sm">
+            🎉 All plans include a <strong>7-day free trial</strong> — no charge until day 8!
+          </p>
+          <p className="text-emerald-600 dark:text-emerald-400 text-xs mt-1">
+            Try A² Compass risk-free. Cancel anytime during your trial.
+          </p>
+        </div>
+      </div>
+
       <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
         {/* ── Spark Card ──────────────────── */}
         <div className="relative bg-white dark:bg-gray-800 rounded-2xl border-2 border-gray-200 dark:border-gray-700 overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
@@ -212,6 +224,9 @@ export default function Enroll() {
                   <div className="text-xs text-sky-200 mt-1">= $8.25/mo · Save 45%!</div>
                 )}
               </div>
+            </div>
+            <div className="bg-sky-600/80 px-3 py-1.5 text-center">
+              <p className="text-sky-100 text-xs">Includes 7-day free trial</p>
             </div>
           </div>
 
@@ -234,7 +249,7 @@ export default function Enroll() {
               disabled={loading}
               className="w-full py-3 bg-sky-600 hover:bg-sky-700 text-white rounded-xl font-semibold transition-colors disabled:opacity-50"
             >
-              {loading ? 'Processing...' : 'Get Started with Spark'}
+              {loading ? 'Processing...' : '✨ Choose Spark'}
             </button>
           </div>
         </div>
@@ -264,6 +279,9 @@ export default function Enroll() {
                 )}
               </div>
             </div>
+            <div className="bg-violet-600/80 px-3 py-1.5 text-center">
+              <p className="text-violet-100 text-xs">Includes 7-day free trial</p>
+            </div>
           </div>
 
           <div className="p-6">
@@ -287,7 +305,7 @@ export default function Enroll() {
               disabled={loading}
               className="w-full py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-semibold transition-colors disabled:opacity-50"
             >
-              {loading ? 'Processing...' : 'Get Started with Launch'}
+              {loading ? 'Processing...' : '🚀 Choose Launch'}
             </button>
           </div>
 
