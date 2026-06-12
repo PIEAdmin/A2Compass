@@ -183,6 +183,23 @@ export default function FlightPlan() {
   };
 
   if (checkingOnboarding || loading) {
+
+  // ───── Pepper Help ─────
+  const [pepperTipFP, setPepperTipFP] = useState('');
+  const [showPepperFP, setShowPepperFP] = useState(false);
+  const pepperFPTips = [
+    "Your lesson plan shows what\'s next on your learning adventure! 🗺️",
+    "Try the skills marked \'Ready to Learn\' first! 🌟",
+    "Watch the teaching videos — they help a lot! 🎬",
+    "If something is hard, that\'s okay — practice makes progress! 💪",
+    "You can always ask for help — just tap my button on the dashboard! 🐧",
+    "Complete activities to unlock new adventures! 🚀"
+  ];
+  const showPepperFPTip = () => {
+    setPepperTipFP(pepperFPTips[Math.floor(Math.random() * pepperFPTips.length)]);
+    setShowPepperFP(true);
+  };
+
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50">
         <PepperPenguin size={100} mood="thinking" className="mb-4 illust-bob" />
@@ -455,6 +472,38 @@ export default function FlightPlan() {
           onClose={() => setVideoItem(null)}
         />
       )}
+    
+      {/* Floating Pepper */}
+      <button
+        onClick={showPepperFPTip}
+        className="fixed bottom-24 right-4 md:bottom-8 md:right-8 z-40 w-14 h-14 rounded-full shadow-xl flex items-center justify-center bg-gradient-to-br from-green-500 to-green-700 hover:scale-110 active:scale-95 transition-all"
+        title="Ask Pepper!"
+      >
+        <span className="text-2xl" style={{ animation: 'pepperBounce 2s ease-in-out infinite' }}>🐧</span>
+      </button>
+      {showPepperFP && (
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-4" onClick={() => setShowPepperFP(false)}>
+          <div className="absolute inset-0 bg-black/20" />
+          <div className="relative bg-white rounded-2xl shadow-2xl max-w-xs w-full p-5" onClick={(e) => e.stopPropagation()} style={{ animation: 'bounceIn 0.3s ease-out' }}>
+            <button onClick={() => setShowPepperFP(false)} className="absolute top-2 right-3 text-gray-400 hover:text-gray-600">✕</button>
+            <div className="text-center">
+              <span className="text-5xl inline-block" style={{ animation: 'pepperBounce 1s ease-in-out infinite' }}>🐧</span>
+              <p className="text-sm font-bold text-green-800 mt-2">Pepper says:</p>
+              <div className="mt-2 bg-green-50 border border-green-100 rounded-xl p-3">
+                <p className="text-sm text-green-800">{pepperTipFP}</p>
+              </div>
+              <button onClick={showPepperFPTip} className="mt-3 px-4 py-2 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-green-500 to-green-700 hover:shadow-md transition-all">
+                💡 Another tip!
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+    <style>{`
+        @keyframes pepperBounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        @keyframes bounceIn { 0% { transform: scale(0.8) translateY(20px); opacity: 0; } 100% { transform: scale(1) translateY(0); opacity: 1; } }
+      `}</style>
     </div>
   );
 }

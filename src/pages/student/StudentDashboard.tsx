@@ -329,6 +329,11 @@ function DashboardAnimationStyles({ theme }: { theme: TierTheme }) {
       .tier-bg {
         background-color: var(--tier-bg);
         background-image: ${theme.bgPattern};
+        
+        @keyframes swim {
+          0% { transform: translateX(0px) scaleX(1); }
+          100% { transform: translateX(30px) scaleX(-1); }
+        }
       }
 
       .progress-bar-fill {
@@ -388,6 +393,79 @@ export default function StudentDashboard() {
   const [showPepperHelp, setShowPepperHelp] = useState(false);
   const [helpSent, setHelpSent] = useState(false);
   const [pepperTip, setPepperTip] = useState('');
+  const [showReflection, setShowReflection] = useState(false);
+  const [reflectionMood, setReflectionMood] = useState('');
+  const [reflectionText, setReflectionText] = useState('');
+  const [reflectionSaved, setReflectionSaved] = useState(false);
+  const [selectedColorTheme, setSelectedColorTheme] = useState(() => localStorage.getItem('a2c_color_theme') || 'auto');
+
+  // ───── Seasonal/Holiday Awareness ─────
+  const getSeasonalInfo = () => {
+    const now = new Date();
+    const month = now.getMonth(); // 0-indexed
+    const day = now.getDate();
+    const dayOfYear = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / 86400000);
+
+    // Check holidays first (approximate dates)
+    const holidays: { check: boolean; name: string; emoji: string; decor: string[]; colors: string[] }[] = [
+      { check: month === 0 && day >= 15 && day <= 21, name: "MLK Day", emoji: "✊", decor: ["🕊️","✊","💫","🌍"], colors: ["#4A90D9","#FFD700"] },
+      { check: month === 1 && day >= 1 && day <= 14, name: "Valentine's Day", emoji: "💝", decor: ["💝","💕","🌹","💌"], colors: ["#E91E63","#F48FB1"] },
+      { check: month === 1 && day >= 1 && day <= 28, name: "Black History Month", emoji: "✊🏿", decor: ["✊🏿","📖","🌍","⭐"], colors: ["#4A4A4A","#FFD700"] },
+      { check: month === 2 && day >= 14 && day <= 17, name: "St. Patrick's Day", emoji: "☘️", decor: ["☘️","🌈","🍀","💚"], colors: ["#2E7D32","#81C784"] },
+      { check: month === 3 && day >= 22, name: "Earth Day", emoji: "🌍", decor: ["🌍","🌱","♻️","🌿"], colors: ["#2E7D32","#1B5E20"] },
+      { check: month === 4 && day >= 1 && day <= 5, name: "Cinco de Mayo", emoji: "🎉", decor: ["🎉","🇲🇽","🌮","💃"], colors: ["#D32F2F","#388E3C"] },
+      { check: month === 4 && day >= 5 && day <= 12, name: "Mother's Day Week", emoji: "💐", decor: ["💐","🌷","💕","🌸"], colors: ["#E91E63","#CE93D8"] },
+      { check: month === 5 && day >= 19, name: "Juneteenth", emoji: "✊🏿", decor: ["✊🏿","🌟","🔔","⭐"], colors: ["#D32F2F","#1B5E20"] },
+      { check: month === 6 && day >= 1 && day <= 4, name: "Independence Day", emoji: "🇺🇸", decor: ["🇺🇸","🎆","⭐","🗽"], colors: ["#1565C0","#D32F2F"] },
+      { check: month === 8 && day >= 15 && day <= 30, name: "Hispanic Heritage", emoji: "🌎", decor: ["🌎","💃","🎶","🌺"], colors: ["#D32F2F","#FF8F00"] },
+      { check: month === 9 && day >= 25 && day <= 31, name: "Halloween", emoji: "🎃", decor: ["🎃","👻","🦇","🕸️"], colors: ["#FF6F00","#4A148C"] },
+      { check: month === 10 && day >= 1 && day <= 11, name: "Veterans Day", emoji: "🎖️", decor: ["🎖️","🇺🇸","⭐","🦅"], colors: ["#1565C0","#B71C1C"] },
+      { check: month === 10 && day >= 20 && day <= 28, name: "Thanksgiving", emoji: "🦃", decor: ["🦃","🍂","🌽","🥧"], colors: ["#E65100","#795548"] },
+      { check: month === 11 && day >= 1 && day <= 31, name: "Holiday Season", emoji: "🎄", decor: ["🎄","⭐","❄️","🎁"], colors: ["#D32F2F","#2E7D32"] },
+    ];
+    const holiday = holidays.find(h => h.check);
+    if (holiday) return { name: holiday.name, emoji: holiday.emoji, decor: holiday.decor, colors: holiday.colors };
+
+    // Seasons
+    if (month >= 2 && month <= 4) return { name: "Spring", emoji: "🌸", decor: ["🌸","🦋","🌷","🌈","🐝"], colors: ["#E91E63","#81C784"] };
+    if (month >= 5 && month <= 7) return { name: "Summer", emoji: "☀️", decor: ["☀️","🏖️","🍦","🌊","🐚"], colors: ["#FF8F00","#0288D1"] };
+    if (month >= 8 && month <= 10) return { name: "Fall", emoji: "🍂", decor: ["🍂","🍎","🌾","🍁","🎃"], colors: ["#E65100","#795548"] };
+    return { name: "Winter", emoji: "❄️", decor: ["❄️","⛄","🧤","🌟","☃️"], colors: ["#1565C0","#90CAF9"] };
+  };
+
+  const seasonal = getSeasonalInfo();
+
+  // ───── Save Daily Reflection ─────
+  const saveReflection = async () => {
+    if (!reflectionMood) return;
+    try {
+      const studentId = user?.student_profile_id || user?.id;
+      await supabase.from('activity_log').insert({
+        student_id: studentId,
+        activity_type: 'daily_reflection',
+        activity_name: 'Daily Reflection',
+        details: { mood: reflectionMood, text: reflectionText, date: new Date().toISOString().split('T')[0] },
+        metadata: { mood: reflectionMood, journal_entry: reflectionText },
+      });
+      setReflectionSaved(true);
+      setTimeout(() => { setShowReflection(false); setReflectionSaved(false); }, 2000);
+    } catch (e) { console.error('Reflection save error:', e); }
+  };
+
+  // ───── Theme Picker ─────
+  const colorThemes = [
+    { id: 'auto', label: 'Auto (Seasonal)', emoji: '🌈' },
+    { id: 'ocean', label: 'Ocean Blue', emoji: '🌊' },
+    { id: 'forest', label: 'Forest Green', emoji: '🌲' },
+    { id: 'sunset', label: 'Sunset Orange', emoji: '🌅' },
+    { id: 'galaxy', label: 'Galaxy Purple', emoji: '🌌' },
+    { id: 'candy', label: 'Candy Pink', emoji: '🍬' },
+    { id: 'arctic', label: 'Arctic Ice', emoji: '🧊' },
+  ];
+  const handleColorThemeChange = (id: string) => {
+    setSelectedColorTheme(id);
+    localStorage.setItem('a2c_color_theme', id);
+  };
 
   // Live clock
   useEffect(() => {
@@ -914,36 +992,94 @@ export default function StudentDashboard() {
               </div>
             )}
           </div>
-        </div>
-
-
-        {/* ════════ CLASSROOM WALL ════════ */}
+        </div>        {/* ════════ CLASSROOM WALL ════════ */}
         <section className="anim-card-enter" style={{ animationDelay: '0.22s' }}>
           <div className="relative rounded-2xl overflow-hidden shadow-lg" style={{ background: 'linear-gradient(135deg, #D2B48C, #C4A882)' }}>
             {/* Pushpin decorations */}
             <div className="absolute top-2 left-4 text-lg" style={{ filter: 'drop-shadow(1px 1px 1px rgba(0,0,0,0.3))' }}>📌</div>
             <div className="absolute top-2 right-4 text-lg" style={{ filter: 'drop-shadow(1px 1px 1px rgba(0,0,0,0.3))' }}>📌</div>
-            <div className="relative z-10 p-5">
-              <div className="flex items-center justify-between flex-wrap gap-3">
-                {/* Left: Day & Date on a "sticky note" */}
+            <div className="relative z-10 p-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {/* Sticky Note: Day & Date */}
                 <div className="bg-yellow-100 rounded-lg p-3 shadow-md transform -rotate-1 border border-yellow-200">
                   <p className="text-[10px] text-yellow-700 font-bold tracking-wider uppercase">📅 Today is</p>
-                  <h2 className="text-xl font-bold text-gray-800" style={{ fontFamily: "'Caveat', cursive, sans-serif" }}>{dayOfWeek}</h2>
-                  <p className="text-sm text-gray-600">{dateDisplay}</p>
+                  <h2 className="text-lg font-bold text-gray-800" style={{ fontFamily: "'Caveat', cursive, sans-serif" }}>{dayOfWeek}</h2>
+                  <p className="text-xs text-gray-600">{dateDisplay}</p>
                 </div>
-                {/* Right: Clock on a "blue note" */}
+                {/* Blue Note: Clock */}
                 <div className="bg-blue-100 rounded-lg p-3 shadow-md transform rotate-1 border border-blue-200 text-center">
                   <p className="text-[10px] text-blue-700 font-bold tracking-wider uppercase">🕐 Time</p>
-                  <span className="text-2xl font-bold text-gray-800 tabular-nums" style={{ fontFamily: "'Caveat', cursive, sans-serif" }}>{timeDisplay}</span>
+                  <span className="text-xl font-bold text-gray-800 tabular-nums" style={{ fontFamily: "'Caveat', cursive, sans-serif" }}>{timeDisplay}</span>
+                </div>
+                {/* Green Note: Mini Calendar (week view) */}
+                <div className="bg-green-100 rounded-lg p-3 shadow-md transform -rotate-1 border border-green-200 text-center">
+                  <p className="text-[10px] text-green-700 font-bold tracking-wider uppercase">📆 This Week</p>
+                  <div className="flex gap-1 mt-1 justify-center">
+                    {['S','M','T','W','T','F','S'].map((d, i) => (
+                      <div key={i} className={`w-5 h-5 rounded-full text-[10px] flex items-center justify-center font-bold ${ currentTime.getDay() === i ? 'bg-green-600 text-white' : 'bg-green-200 text-green-800'}`}>
+                        {d}
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-green-600 mt-1 font-medium">Day {currentTime.getDay() + 1} of 7</p>
+                </div>
+                {/* Pink Note: Season/Holiday */}
+                <div className="bg-pink-100 rounded-lg p-3 shadow-md transform rotate-1 border border-pink-200 text-center">
+                  <p className="text-[10px] text-pink-700 font-bold tracking-wider uppercase">{seasonal.emoji} Season</p>
+                  <p className="text-sm font-bold text-gray-800" style={{ fontFamily: "'Caveat', cursive, sans-serif" }}>{seasonal.name}</p>
+                  <div className="flex gap-1 mt-1 justify-center text-sm">
+                    {seasonal.decor.slice(0, 4).map((e, i) => <span key={i} className="illust-float" style={{ animationDelay: `${i * 0.3}s` }}>{e}</span>)}
+                  </div>
                 </div>
               </div>
-              {/* Decorative classroom items */}
-              <div className="flex items-center justify-center gap-4 mt-3 text-lg opacity-50">
-                <span>🍎</span><span>✏️</span><span>📚</span><span>🎨</span><span>⭐</span>
+
+              {/* ── Classroom Decorations Row ── */}
+              <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
+                {/* Fish Aquarium */}
+                <div className="bg-gradient-to-b from-blue-200 to-blue-400 rounded-xl p-3 shadow-inner relative overflow-hidden" style={{ minHeight: '80px' }}>
+                  <p className="text-[10px] text-blue-800 font-bold tracking-wider uppercase text-center">🐠 Class Aquarium</p>
+                  <div className="relative mt-1" style={{ height: '50px' }}>
+                    {['🐠','🐟','🐡','🦀','🐙'].map((fish, i) => (
+                      <span key={i} className="absolute text-lg" style={{
+                        animation: `swim ${3 + i * 0.7}s ease-in-out infinite alternate`,
+                        top: `${10 + (i * 8) % 30}px`,
+                        left: `${(i * 20) % 80}%`,
+                        animationDelay: `${i * 0.5}s`,
+                      }}>{fish}</span>
+                    ))}
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 flex justify-around text-sm opacity-60">
+                    <span>🪸</span><span>🌿</span><span>🐚</span><span>🪨</span><span>🌿</span>
+                  </div>
+                </div>
+                {/* Globe / Wall Map */}
+                <div className="bg-gradient-to-br from-emerald-100 to-teal-200 rounded-xl p-3 shadow-inner text-center">
+                  <p className="text-[10px] text-teal-800 font-bold tracking-wider uppercase">🌍 Our World</p>
+                  <div className="text-4xl mt-1 illust-bob">🌎</div>
+                  <p className="text-[10px] text-teal-700 mt-1 font-medium">Learning connects us all!</p>
+                </div>
+                {/* Seasonal decoration / bulletin */}
+                <div className="rounded-xl p-3 shadow-inner text-center" style={{ background: `linear-gradient(135deg, ${seasonal.colors[0]}22, ${seasonal.colors[1]}22)` }}>
+                  <p className="text-[10px] font-bold tracking-wider uppercase" style={{ color: seasonal.colors[0] }}>
+                    {seasonal.emoji} {seasonal.name} Board
+                  </p>
+                  <div className="flex flex-wrap gap-1 mt-1 justify-center text-xl">
+                    {seasonal.decor.map((e, i) => (
+                      <span key={i} className="illust-float" style={{ animationDelay: `${i * 0.4}s`, fontSize: '1.5rem' }}>{e}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Decorative shelf items */}
+              <div className="flex items-center justify-center gap-3 mt-2 text-lg opacity-50">
+                <span>🍎</span><span>✏️</span><span>📚</span><span>🎨</span><span>⭐</span><span>📐</span><span>🖍️</span>
               </div>
             </div>
           </div>
         </section>
+
+
 
         {/* ════════ ATTENDANCE CHECK-IN ════════ */}
         {!checkedIn && (
@@ -1289,6 +1425,86 @@ export default function StudentDashboard() {
           )}
         </section>
 
+        {/* ════════ DAILY REFLECTION / JOURNAL ════════ */}
+        <section className="anim-card-enter" style={{ animationDelay: '0.55s' }}>
+          {!showReflection ? (
+            <button
+              onClick={() => setShowReflection(true)}
+              className="w-full dashboard-card p-4 text-center hover:shadow-lg transition-all group"
+              style={{ background: `linear-gradient(135deg, #FFF8E1, #FFF3E0)`, borderColor: '#FFB74D40' }}
+            >
+              <span className="text-2xl">📓</span>
+              <ReadAloud text="How was your learning today? Tap to write in your journal!" showIcon={false}>
+                <p className="text-sm font-display font-bold text-amber-800 mt-1">
+                  📓 My Daily Journal
+                </p>
+              </ReadAloud>
+              <p className="text-xs text-amber-600 mt-0.5">How was your learning today? Tap to write!</p>
+            </button>
+          ) : (
+            <div className="dashboard-card p-5 anim-bounce-in" style={{ background: 'linear-gradient(135deg, #FFF8E1, #FFF3E0)', borderColor: '#FFB74D40' }}>
+              {reflectionSaved ? (
+                <div className="text-center py-4">
+                  <span className="text-4xl">✨</span>
+                  <p className="text-lg font-display font-bold text-amber-800 mt-2">Journal saved!</p>
+                  <p className="text-sm text-amber-600">Great reflection today! 🌟</p>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between mb-3">
+                    <ReadAloud text="My Daily Journal. How are you feeling?" showIcon={false}>
+                      <h3 className="text-lg font-display font-bold text-amber-800">📓 My Daily Journal</h3>
+                    </ReadAloud>
+                    <button onClick={() => setShowReflection(false)} className="text-amber-400 hover:text-amber-600 text-lg">✕</button>
+                  </div>
+                  <ReadAloud text="How are you feeling today?" showIcon={false}>
+                    <p className="text-sm text-amber-700 font-medium mb-2">How are you feeling today?</p>
+                  </ReadAloud>
+                  <div className="flex gap-2 justify-center mb-3">
+                    {[
+                      { emoji: '😊', label: 'Great' },
+                      { emoji: '🙂', label: 'Good' },
+                      { emoji: '😐', label: 'Okay' },
+                      { emoji: '😢', label: 'Sad' },
+                      { emoji: '😤', label: 'Frustrated' },
+                      { emoji: '🤩', label: 'Excited' },
+                      { emoji: '😴', label: 'Tired' },
+                    ].map(m => (
+                      <button
+                        key={m.emoji}
+                        onClick={() => setReflectionMood(m.emoji)}
+                        className={`flex flex-col items-center p-2 rounded-xl transition-all ${reflectionMood === m.emoji ? 'bg-amber-200 shadow-md scale-110 ring-2 ring-amber-400' : 'bg-white hover:bg-amber-50'}`}
+                      >
+                        <span className="text-2xl">{m.emoji}</span>
+                        <span className="text-[10px] text-amber-700 font-medium mt-0.5">{m.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                  <ReadAloud text="What did you learn or do today? Write about it!" showIcon={false}>
+                    <p className="text-sm text-amber-700 font-medium mb-1">What did you learn today?</p>
+                  </ReadAloud>
+                  <textarea
+                    value={reflectionText}
+                    onChange={(e) => setReflectionText(e.target.value)}
+                    placeholder="I learned about... / Today was fun because... / I need help with..."
+                    className="w-full p-3 rounded-xl border-2 border-amber-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-200 outline-none text-sm resize-none"
+                    rows={3}
+                    style={{ fontFamily: "'Caveat', cursive, sans-serif", fontSize: '1rem' }}
+                  />
+                  <button
+                    onClick={saveReflection}
+                    disabled={!reflectionMood}
+                    className="mt-3 w-full py-3 rounded-xl text-white font-display font-bold shadow-md transition-all disabled:opacity-40"
+                    style={{ background: reflectionMood ? 'linear-gradient(135deg, #FF8F00, #F57C00)' : '#ccc' }}
+                  >
+                    {reflectionMood ? '✨ Save My Journal Entry' : 'Pick a mood first! ☝️'}
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+        </section>
+
         {/* ════════ BOTTOM QUICK ACTIONS ════════ */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2 anim-card-enter" style={{ animationDelay: '0.6s' }}>
           <QuickAction icon="📝" label="Lesson Plan" color={theme.primary} onClick={() => navigate('/student/flight-plan')} />
@@ -1362,6 +1578,21 @@ export default function StudentDashboard() {
                 >
                   🎮 I want to take a break!
                 </button>
+                {/* Theme Picker */}
+                <div className="mt-3 pt-3 border-t border-gray-200">
+                  <p className="text-xs font-bold text-gray-500 mb-2">🎨 Pick Your Colors!</p>
+                  <div className="flex flex-wrap gap-1.5 justify-center">
+                    {colorThemes.map(ct => (
+                      <button
+                        key={ct.id}
+                        onClick={() => handleColorThemeChange(ct.id)}
+                        className={`px-2 py-1 rounded-lg text-xs font-medium transition-all ${selectedColorTheme === ct.id ? 'ring-2 ring-offset-1 ring-blue-400 bg-blue-50 font-bold' : 'bg-gray-100 hover:bg-gray-200'}`}
+                      >
+                        {ct.emoji} {ct.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
