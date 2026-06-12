@@ -9,6 +9,7 @@ import { LoadingSpinner } from './components/common'
 
 // Lazy-loaded pages — each downloads only when visited
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'))
+const DemoLogin = lazy(() => import('./pages/auth/DemoLogin'))
 const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword'))
 const ResetPassword = lazy(() => import('./pages/auth/ResetPassword'))
 const RegisterPage = lazy(() => import('./pages/auth/RegisterPage'))
@@ -121,6 +122,7 @@ export default function App() {
     <Routes>
       {/* Public auth routes */}
       <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
+      <Route path="/demo" element={<DemoLogin />} />
       <Route path="/register" element={<GuestRoute><RegisterPage /></GuestRoute>} />
       <Route path="/forgot-password" element={<GuestRoute><ForgotPassword /></GuestRoute>} />
       <Route path="/reset-password" element={<ResetPassword />} />
