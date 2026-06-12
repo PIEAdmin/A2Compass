@@ -10,6 +10,7 @@ import {
   DomainIllustration,
   EmptyState,
 } from '../../components/shared/Illustrations';
+import { ReadAloud } from '../../components/shared/ReadAloud';
 
 const DOMAIN_ICONS: Record<string, string> = {
   NUM: '🔢', ALG: '📐', GEO: '📏', MSR: '📊', DAT: '📈',
@@ -112,8 +113,10 @@ export default function StudentProgress() {
             <GrowthPlant size={70} />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">🌟 My Growth Garden</h1>
-            <p className="text-white/80 mt-1">Look at your amazing growth, {firstName}! 🌱</p>
+            <ReadAloud text={"Welcome to your Growth Garden, " + firstName + "! Let's see how much you've grown!"} showIcon={false}>
+              <h1 className="text-2xl font-bold">🌟 My Growth Garden</h1>
+              <p className="text-white/80 mt-1">Look at your amazing growth, {firstName}! 🌱</p>
+            </ReadAloud>
           </div>
         </div>
       </div>
@@ -125,21 +128,21 @@ export default function StudentProgress() {
             <span className="text-2xl">🧠</span>
           </div>
           <p className="text-2xl font-bold text-indigo-600">{totalMastered}</p>
-          <p className="text-xs text-gray-500 mt-0.5">⭐ Skills Learned!</p>
+          <ReadAloud text={totalMastered + " skills learned"} showIcon={false}><p className="text-xs text-gray-500 mt-0.5">⭐ Skills Learned!</p></ReadAloud>
         </div>
         <div className="bg-white rounded-2xl shadow-sm border p-4 text-center illust-card-hover">
           <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-orange-100 flex items-center justify-center">
             <span className="text-2xl">🔥</span>
           </div>
           <p className="text-2xl font-bold text-orange-500">{streak}</p>
-          <p className="text-xs text-gray-500 mt-0.5">🔥 Days in a Row!</p>
+          <ReadAloud text={streak + " days in a row"} showIcon={false}><p className="text-xs text-gray-500 mt-0.5">🔥 Days in a Row!</p></ReadAloud>
         </div>
         <div className="bg-white rounded-2xl shadow-sm border p-4 text-center illust-card-hover">
           <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-green-100 flex items-center justify-center">
             <span className="text-2xl">📈</span>
           </div>
           <p className="text-2xl font-bold text-green-600">{overallPercent}%</p>
-          <p className="text-xs text-gray-500 mt-0.5">📈 My Level!</p>
+          <ReadAloud text={overallPercent + " percent complete"} showIcon={false}><p className="text-xs text-gray-500 mt-0.5">📈 My Level!</p></ReadAloud>
         </div>
       </div>
 
@@ -171,10 +174,32 @@ export default function StudentProgress() {
           <p className="text-sm text-gray-600 mt-1">
             {totalMastered} out of {totalSkills} skills mastered
           </p>
-          {overallPercent >= 50 ? (
-            <p className="text-sm text-green-600 mt-2 font-medium bg-green-50 px-3 py-1 rounded-lg inline-block">🌟 You're past halfway — amazing!</p>
+          {overallPercent >= 80 ? (
+            <div className="mt-2">
+              <p className="text-sm text-green-600 font-bold bg-green-50 px-3 py-2 rounded-lg inline-block">
+                👑 SUPERSTAR! You&apos;re almost done — WOW!
+              </p>
+              <div className="flex gap-1 mt-1 justify-center">
+                {'⭐'.repeat(5).split('').map((s, i) => <span key={i} className="text-xl animate-bounce" style={{ animationDelay: i * 0.1 + 's' }}>{s}</span>)}
+              </div>
+            </div>
+          ) : overallPercent >= 50 ? (
+            <div className="mt-2">
+              <p className="text-sm text-green-600 font-bold bg-green-50 px-3 py-2 rounded-lg inline-block">
+                🌟 Past halfway — you&apos;re a Learning Legend!
+              </p>
+              <div className="flex gap-1 mt-1">
+                {'🌟🌟🌟'.split('').filter(c => c !== '').map((s, i) => <span key={i} className="text-lg">{s}</span>)}
+              </div>
+            </div>
+          ) : overallPercent >= 25 ? (
+            <p className="text-sm text-blue-600 font-bold mt-2 bg-blue-50 px-3 py-2 rounded-lg inline-block">
+              🚀 Quarter of the way! Your garden is growing fast!
+            </p>
           ) : overallPercent > 0 ? (
-            <p className="text-sm text-blue-600 mt-2 font-medium bg-blue-50 px-3 py-1 rounded-lg inline-block">🚀 Keep going, you're doing great!</p>
+            <p className="text-sm text-purple-600 font-bold mt-2 bg-purple-50 px-3 py-2 rounded-lg inline-block">
+              🌱 You planted your first seeds! Keep watering them!
+            </p>
           ) : null}
         </div>
       </div>
@@ -262,7 +287,7 @@ export default function StudentProgress() {
                   <p className="text-sm font-medium text-gray-800 truncate">{skill.name}</p>
                   <p className="text-xs text-gray-400">{skill.domain}</p>
                 </div>
-                <span className="text-green-500 text-lg flex-shrink-0">⭐</span>
+                <span className="text-green-500 text-lg flex-shrink-0 animate-pulse">⭐</span>
               </div>
             ))}
           </div>
@@ -278,16 +303,26 @@ export default function StudentProgress() {
         />
       )}
 
-      {/* Fun footer */}
-      {totalMastered > 0 && (
-        <div className="text-center py-2">
-          <p className="text-sm text-gray-400 flex items-center justify-center gap-1">
-            <span className="illust-float inline-block">💪</span>
-            Every skill you master makes you stronger!
-            <span className="illust-float inline-block" style={{ animationDelay: '0.5s' }}>✨</span>
+      {/* Fun encouragement with Pepper */}
+      <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border border-amber-200 p-5 text-center">
+        <PepperPenguin size={70} mood="waving" className="mx-auto" />
+        <ReadAloud text={totalMastered > 10 ? "Wow, " + firstName + "! You are a learning superstar!" : totalMastered > 0 ? "Great job, " + firstName + "! Keep growing your garden!" : "Start some activities and watch your garden bloom!"} showIcon={false}>
+          <p className="text-sm font-bold mt-2 text-amber-800">
+            {totalMastered > 10 ? (
+              <>🏆 Wow, {firstName}! You are a LEARNING SUPERSTAR! 🌟</>
+            ) : totalMastered > 0 ? (
+              <>🌱 Great job, {firstName}! Keep growing your garden! 🌻</>
+            ) : (
+              <>🌱 Start some activities and watch your garden bloom! 🌻</>
+            )}
           </p>
-        </div>
-      )}
+        </ReadAloud>
+        {totalMastered > 0 && (
+          <p className="text-xs text-amber-600 mt-1">
+            Every skill you master makes you stronger! 💪✨
+          </p>
+        )}
+      </div>
     </div>
   );
 }
