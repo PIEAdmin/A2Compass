@@ -69,6 +69,7 @@ const navItems: Record<string, NavItem[]> = {
   student: [
     { path: '/student', label: 'Home', icon: '🏠' },
     { path: '/student/spanish-village', label: 'Spanish Village', icon: '🇪🇸' },
+    { path: '/student/free-play', label: 'Free Play', icon: '🎨' },
     { path: '/student/play', label: 'Play Games', icon: '🎮' },
     { path: '/student/learning-path', label: 'World Map', icon: '🗺️' },
     { path: '/student/flight-plan', label: 'Flight Plan', icon: '🛫' },

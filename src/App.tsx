@@ -7,7 +7,7 @@ import { useAuth } from './hooks'
 import { DashboardLayout } from './components/layout'
 import { LoadingSpinner } from './components/common'
 
-// Lazy-loaded pages — each downloads only when visited
+// Lazy-loaded pages
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'))
 const DemoLogin = lazy(() => import('./pages/auth/DemoLogin'))
 const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword'))
@@ -71,6 +71,7 @@ const Inbox = lazy(() => import('./pages/shared/Inbox'))
 const OrganizationIntake = lazy(() => import('./pages/admin/OrganizationIntake'))
 const MyLocker = lazy(() => import('./pages/student/MyLocker'))
 const PlayMode = lazy(() => import('./pages/student/PlayMode'))
+const FreePlay = lazy(() => import('./pages/student/FreePlay'))
 const VideoLibrary = lazy(() => import('./pages/student/VideoLibrary'))
 const InteractiveStory = lazy(() => import('./pages/student/InteractiveStory'))
 const BalloonPopDemo = lazy(() => import('./pages/student/games/BalloonPopDemo'))
@@ -80,13 +81,7 @@ const AdminBulletinBoard = lazy(() => import('./pages/admin/AdminBulletinBoard')
 const KudosManager = lazy(() => import('./pages/admin/KudosManager'))
 const ParentBulletinBoard = lazy(() => import('./pages/parent/ParentBulletinBoard'))
 const ParentKudosPage = lazy(() => import('./pages/parent/KudosPage'))
-
-
-
-
-
-
-
+const RoleGuard = lazy(() => import('./components/shared/RoleGuard'))
 
 function GuestRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, loading } = useAuth()
@@ -138,91 +133,92 @@ export default function App() {
       }>
         <Route index element={<RoleRedirect />} />
 
-        {/* Admin Routes */}
-        <Route path="admin" element={<AdminDashboard />} />
-        <Route path="admin/students" element={<AdminStudents />} />
-        <Route path="admin/enrollment" element={<AdminEnrollment />} />
-        <Route path="admin/billing" element={<AdminBillingPage />} />
-        <Route path="admin/subjects" element={<SubjectManager />} />
-        <Route path="admin/reports" element={<AdminReports />} />
-        <Route path="admin/api-settings" element={<ApiSettings />} />
-        <Route path="admin/report-card" element={<UnifiedReportCard />} />
-        <Route path="admin/organizations" element={<OrganizationIntake />} />
-        <Route path="admin/messages" element={<Inbox />} />
-        <Route path="admin/bulletin-board" element={<AdminBulletinBoard />} />
-        <Route path="admin/kudos" element={<KudosManager />} />
-        <Route path="admin/live-monitor" element={<LiveMonitor />} />
+        {/* ═══ Admin Routes (admin only) ═══ */}
+        <Route path="admin" element={<RoleGuard allowed={['admin']}><AdminDashboard /></RoleGuard>} />
+        <Route path="admin/students" element={<RoleGuard allowed={['admin']}><AdminStudents /></RoleGuard>} />
+        <Route path="admin/enrollment" element={<RoleGuard allowed={['admin']}><AdminEnrollment /></RoleGuard>} />
+        <Route path="admin/billing" element={<RoleGuard allowed={['admin']}><AdminBillingPage /></RoleGuard>} />
+        <Route path="admin/subjects" element={<RoleGuard allowed={['admin']}><SubjectManager /></RoleGuard>} />
+        <Route path="admin/reports" element={<RoleGuard allowed={['admin']}><AdminReports /></RoleGuard>} />
+        <Route path="admin/api-settings" element={<RoleGuard allowed={['admin']}><ApiSettings /></RoleGuard>} />
+        <Route path="admin/report-card" element={<RoleGuard allowed={['admin']}><UnifiedReportCard /></RoleGuard>} />
+        <Route path="admin/organizations" element={<RoleGuard allowed={['admin']}><OrganizationIntake /></RoleGuard>} />
+        <Route path="admin/messages" element={<RoleGuard allowed={['admin']}><Inbox /></RoleGuard>} />
+        <Route path="admin/bulletin-board" element={<RoleGuard allowed={['admin']}><AdminBulletinBoard /></RoleGuard>} />
+        <Route path="admin/kudos" element={<RoleGuard allowed={['admin']}><KudosManager /></RoleGuard>} />
+        <Route path="admin/live-monitor" element={<RoleGuard allowed={['admin']}><LiveMonitor /></RoleGuard>} />
 
-        {/* Teacher Routes */}
-        <Route path="teacher" element={<TeacherDashboard />} />
-        <Route path="teacher/mission-control" element={<MissionControl />} />
-        <Route path="teacher/students" element={<ComingSoon title="My Students" description="Student management coming soon." />} />
-        <Route path="teacher/schedule" element={<ComingSoon title="Schedule" description="Class scheduling coming soon." />} />
-        <Route path="teacher/mastery" element={<ComingSoon title="Mastery Tracker" description="Mastery tracking coming soon." />} />
-        <Route path="teacher/skill-map" element={<SkillMap />} />
-        <Route path="teacher/assessments" element={<AssessmentDashboard />} />
-        <Route path="teacher/live-monitor" element={<LiveMonitor />} />
-        <Route path="teacher/item-bank" element={<ItemBankReview />} />
-        <Route path="teacher/discovery-results" element={<DiscoveryGamesResults />} />
-        <Route path="teacher/lessons" element={<LessonsList />} />
-        <Route path="teacher/lessons/new" element={<LessonBuilder />} />
-        <Route path="teacher/lessons/:id" element={<LessonBuilder />} />
-        <Route path="teacher/activities" element={<ActivitiesList />} />
-        <Route path="teacher/activities/new" element={<ActivityCreator />} />
-        <Route path="teacher/activities/:id" element={<ActivityCreator />} />
-        <Route path="teacher/library" element={<ContentLibrary />} />
-        <Route path="teacher/curriculum" element={<CurriculumPlanner />} />
-        <Route path="teacher/assignments" element={<AssignmentTool />} />
-        <Route path="teacher/curriculum-browser" element={<CurriculumBrowser />} />
-        <Route path="teacher/report-cards" element={<ReportCardBuilder />} />
-        <Route path="teacher/discovery-profile/:studentId" element={<StudentDiscoveryProfile />} />
-        <Route path="teacher/pacing-guide" element={<PacingGuidePage />} />
-        <Route path="teacher/resources" element={<TeacherResources />} />
-        <Route path="teacher/subjects" element={<SubjectManager />} />
-        <Route path="teacher/messages" element={<Inbox />} />
-        <Route path="teacher/activity" element={<ActivityFeed />} />
+        {/* ═══ Teacher Routes (admin + teacher) ═══ */}
+        <Route path="teacher" element={<RoleGuard allowed={['admin', 'teacher']}><TeacherDashboard /></RoleGuard>} />
+        <Route path="teacher/mission-control" element={<RoleGuard allowed={['admin', 'teacher']}><MissionControl /></RoleGuard>} />
+        <Route path="teacher/students" element={<RoleGuard allowed={['admin', 'teacher']}><ComingSoon title="My Students" description="Student management coming soon." /></RoleGuard>} />
+        <Route path="teacher/schedule" element={<RoleGuard allowed={['admin', 'teacher']}><ComingSoon title="Schedule" description="Class scheduling coming soon." /></RoleGuard>} />
+        <Route path="teacher/mastery" element={<RoleGuard allowed={['admin', 'teacher']}><ComingSoon title="Mastery Tracker" description="Mastery tracking coming soon." /></RoleGuard>} />
+        <Route path="teacher/skill-map" element={<RoleGuard allowed={['admin', 'teacher']}><SkillMap /></RoleGuard>} />
+        <Route path="teacher/assessments" element={<RoleGuard allowed={['admin', 'teacher']}><AssessmentDashboard /></RoleGuard>} />
+        <Route path="teacher/live-monitor" element={<RoleGuard allowed={['admin', 'teacher']}><LiveMonitor /></RoleGuard>} />
+        <Route path="teacher/item-bank" element={<RoleGuard allowed={['admin', 'teacher']}><ItemBankReview /></RoleGuard>} />
+        <Route path="teacher/discovery-results" element={<RoleGuard allowed={['admin', 'teacher']}><DiscoveryGamesResults /></RoleGuard>} />
+        <Route path="teacher/lessons" element={<RoleGuard allowed={['admin', 'teacher']}><LessonsList /></RoleGuard>} />
+        <Route path="teacher/lessons/new" element={<RoleGuard allowed={['admin', 'teacher']}><LessonBuilder /></RoleGuard>} />
+        <Route path="teacher/lessons/:id" element={<RoleGuard allowed={['admin', 'teacher']}><LessonBuilder /></RoleGuard>} />
+        <Route path="teacher/activities" element={<RoleGuard allowed={['admin', 'teacher']}><ActivitiesList /></RoleGuard>} />
+        <Route path="teacher/activities/new" element={<RoleGuard allowed={['admin', 'teacher']}><ActivityCreator /></RoleGuard>} />
+        <Route path="teacher/activities/:id" element={<RoleGuard allowed={['admin', 'teacher']}><ActivityCreator /></RoleGuard>} />
+        <Route path="teacher/library" element={<RoleGuard allowed={['admin', 'teacher']}><ContentLibrary /></RoleGuard>} />
+        <Route path="teacher/curriculum" element={<RoleGuard allowed={['admin', 'teacher']}><CurriculumPlanner /></RoleGuard>} />
+        <Route path="teacher/assignments" element={<RoleGuard allowed={['admin', 'teacher']}><AssignmentTool /></RoleGuard>} />
+        <Route path="teacher/curriculum-browser" element={<RoleGuard allowed={['admin', 'teacher']}><CurriculumBrowser /></RoleGuard>} />
+        <Route path="teacher/report-cards" element={<RoleGuard allowed={['admin', 'teacher']}><ReportCardBuilder /></RoleGuard>} />
+        <Route path="teacher/discovery-profile/:studentId" element={<RoleGuard allowed={['admin', 'teacher']}><StudentDiscoveryProfile /></RoleGuard>} />
+        <Route path="teacher/pacing-guide" element={<RoleGuard allowed={['admin', 'teacher']}><PacingGuidePage /></RoleGuard>} />
+        <Route path="teacher/resources" element={<RoleGuard allowed={['admin', 'teacher']}><TeacherResources /></RoleGuard>} />
+        <Route path="teacher/subjects" element={<RoleGuard allowed={['admin', 'teacher']}><SubjectManager /></RoleGuard>} />
+        <Route path="teacher/messages" element={<RoleGuard allowed={['admin', 'teacher']}><Inbox /></RoleGuard>} />
+        <Route path="teacher/activity" element={<RoleGuard allowed={['admin', 'teacher']}><ActivityFeed /></RoleGuard>} />
 
-        {/* Parent Routes */}
-        <Route path="parent" element={<ParentDashboard />} />
-        <Route path="parent/orientation" element={<ParentOrientation />} />
-        <Route path="parent/progress" element={<ComingSoon title="Progress" description="Detailed progress view coming soon." />} />
-        <Route path="parent/growth" element={<GrowthTimeline />} />
-        <Route path="parent/assessments" element={<AssessmentSummary />} />
-        <Route path="parent/curriculum" element={<ParentCurriculum />} />
-        <Route path="parent/milestones" element={<ComingSoon title="Milestones" description="Milestone tracking coming soon." />} />
-        <Route path="parent/certificates" element={<ComingSoon title="Certificates" description="Certificate gallery coming soon." />} />
-        <Route path="parent/billing" element={<ParentBillingPage />} />
-        <Route path="parent/enroll" element={<EnrollPage />} />
-        <Route path="parent/letters" element={<ParentLetters />} />
-        <Route path="parent/bulletin-board" element={<ParentBulletinBoard />} />
-        <Route path="parent/kudos" element={<ParentKudosPage />} />
-        <Route path="parent/report-card" element={<UnifiedReportCard />} />
-        <Route path="parent/messages" element={<Inbox />} />
+        {/* ═══ Parent Routes (admin + parent) ═══ */}
+        <Route path="parent" element={<RoleGuard allowed={['admin', 'parent']}><ParentDashboard /></RoleGuard>} />
+        <Route path="parent/orientation" element={<RoleGuard allowed={['admin', 'parent']}><ParentOrientation /></RoleGuard>} />
+        <Route path="parent/progress" element={<RoleGuard allowed={['admin', 'parent']}><ComingSoon title="Progress" description="Detailed progress view coming soon." /></RoleGuard>} />
+        <Route path="parent/growth" element={<RoleGuard allowed={['admin', 'parent']}><GrowthTimeline /></RoleGuard>} />
+        <Route path="parent/assessments" element={<RoleGuard allowed={['admin', 'parent']}><AssessmentSummary /></RoleGuard>} />
+        <Route path="parent/curriculum" element={<RoleGuard allowed={['admin', 'parent']}><ParentCurriculum /></RoleGuard>} />
+        <Route path="parent/milestones" element={<RoleGuard allowed={['admin', 'parent']}><ComingSoon title="Milestones" description="Milestone tracking coming soon." /></RoleGuard>} />
+        <Route path="parent/certificates" element={<RoleGuard allowed={['admin', 'parent']}><ComingSoon title="Certificates" description="Certificate gallery coming soon." /></RoleGuard>} />
+        <Route path="parent/billing" element={<RoleGuard allowed={['admin', 'parent']}><ParentBillingPage /></RoleGuard>} />
+        <Route path="parent/enroll" element={<RoleGuard allowed={['admin', 'parent']}><EnrollPage /></RoleGuard>} />
+        <Route path="parent/letters" element={<RoleGuard allowed={['admin', 'parent']}><ParentLetters /></RoleGuard>} />
+        <Route path="parent/bulletin-board" element={<RoleGuard allowed={['admin', 'parent']}><ParentBulletinBoard /></RoleGuard>} />
+        <Route path="parent/kudos" element={<RoleGuard allowed={['admin', 'parent']}><ParentKudosPage /></RoleGuard>} />
+        <Route path="parent/report-card" element={<RoleGuard allowed={['admin', 'parent']}><UnifiedReportCard /></RoleGuard>} />
+        <Route path="parent/messages" element={<RoleGuard allowed={['admin', 'parent']}><Inbox /></RoleGuard>} />
 
-        {/* Student Routes */}
-        <Route path="student" element={<StudentDashboard />} />
-        <Route path="student/flight-plan" element={<FlightPlan />} />
-        <Route path="student/welcome" element={<StudentWelcome />} />
-        <Route path="student/orientation" element={<OrientationWizard />} />
-        <Route path="student/activities" element={<WarmActivities />} />
-        <Route path="student/assessment" element={<AssessmentPlayer />} />
-        <Route path="student/activity/:id" element={<ActivityPlayer />} />
-        <Route path="student/practice/:playlistItemId" element={<SkillPractice />} />
-        <Route path="student/subjects" element={<StudentSubjects />} />
-        <Route path="student/progress" element={<StudentProgress />} />
-        <Route path="student/achievements" element={<StudentAchievements />} />
-        <Route path="student/library" element={<StudentLibrary />} />
-        <Route path="student/reward-shop" element={<RewardShop />} />
-        <Route path="student/locker" element={<MyLocker />} />
-        <Route path="student/messages" element={<Inbox />} />
-        <Route path="student/learning-path" element={<LearningPathPage />} />
-        <Route path="student/game/:gameType" element={<GameLauncher />} />
-        <Route path="student/data-explorer" element={<DataExplorerPage />} />
-        <Route path="student/play" element={<PlayMode />} />
-        <Route path="student/videos" element={<VideoLibrary />} />
-        <Route path="student/story" element={<InteractiveStory />} />
-        <Route path="student/game/balloon-pop-demo" element={<BalloonPopDemo />} />
-        <Route path="student/spanish-village" element={<SpanishVillage />} />
+        {/* ═══ Student Routes (student only — admin can view teacher/parent but not student) ═══ */}
+        <Route path="student" element={<RoleGuard allowed={['student']}><StudentDashboard /></RoleGuard>} />
+        <Route path="student/flight-plan" element={<RoleGuard allowed={['student']}><FlightPlan /></RoleGuard>} />
+        <Route path="student/welcome" element={<RoleGuard allowed={['student']}><StudentWelcome /></RoleGuard>} />
+        <Route path="student/orientation" element={<RoleGuard allowed={['student']}><OrientationWizard /></RoleGuard>} />
+        <Route path="student/activities" element={<RoleGuard allowed={['student']}><WarmActivities /></RoleGuard>} />
+        <Route path="student/assessment" element={<RoleGuard allowed={['student']}><AssessmentPlayer /></RoleGuard>} />
+        <Route path="student/activity/:id" element={<RoleGuard allowed={['student']}><ActivityPlayer /></RoleGuard>} />
+        <Route path="student/practice/:playlistItemId" element={<RoleGuard allowed={['student']}><SkillPractice /></RoleGuard>} />
+        <Route path="student/subjects" element={<RoleGuard allowed={['student']}><StudentSubjects /></RoleGuard>} />
+        <Route path="student/progress" element={<RoleGuard allowed={['student']}><StudentProgress /></RoleGuard>} />
+        <Route path="student/achievements" element={<RoleGuard allowed={['student']}><StudentAchievements /></RoleGuard>} />
+        <Route path="student/library" element={<RoleGuard allowed={['student']}><StudentLibrary /></RoleGuard>} />
+        <Route path="student/reward-shop" element={<RoleGuard allowed={['student']}><RewardShop /></RoleGuard>} />
+        <Route path="student/locker" element={<RoleGuard allowed={['student']}><MyLocker /></RoleGuard>} />
+        <Route path="student/messages" element={<RoleGuard allowed={['student']}><Inbox /></RoleGuard>} />
+        <Route path="student/learning-path" element={<RoleGuard allowed={['student']}><LearningPathPage /></RoleGuard>} />
+        <Route path="student/game/:gameType" element={<RoleGuard allowed={['student']}><GameLauncher /></RoleGuard>} />
+        <Route path="student/data-explorer" element={<RoleGuard allowed={['student']}><DataExplorerPage /></RoleGuard>} />
+        <Route path="student/play" element={<RoleGuard allowed={['student']}><PlayMode /></RoleGuard>} />
+        <Route path="student/free-play" element={<RoleGuard allowed={['student']}><FreePlay /></RoleGuard>} />
+        <Route path="student/videos" element={<RoleGuard allowed={['student']}><VideoLibrary /></RoleGuard>} />
+        <Route path="student/story" element={<RoleGuard allowed={['student']}><InteractiveStory /></RoleGuard>} />
+        <Route path="student/game/balloon-pop-demo" element={<RoleGuard allowed={['student']}><BalloonPopDemo /></RoleGuard>} />
+        <Route path="student/spanish-village" element={<RoleGuard allowed={['student']}><SpanishVillage /></RoleGuard>} />
 
         {/* Settings */}
         <Route path="settings/delete-account" element={<DeleteAccount />} />
