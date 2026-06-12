@@ -76,6 +76,10 @@ const InteractiveStory = lazy(() => import('./pages/student/InteractiveStory'))
 const BalloonPopDemo = lazy(() => import('./pages/student/games/BalloonPopDemo'))
 const SpanishVillage = lazy(() => import('./pages/student/SpanishVillage'))
 const SessionTimeout = lazy(() => import('./components/shared/SessionTimeout'))
+const AdminBulletinBoard = lazy(() => import('./pages/admin/AdminBulletinBoard'))
+const KudosManager = lazy(() => import('./pages/admin/KudosManager'))
+const ParentBulletinBoard = lazy(() => import('./pages/parent/ParentBulletinBoard'))
+const ParentKudosPage = lazy(() => import('./pages/parent/KudosPage'))
 
 
 
@@ -145,6 +149,8 @@ export default function App() {
         <Route path="admin/report-card" element={<UnifiedReportCard />} />
         <Route path="admin/organizations" element={<OrganizationIntake />} />
         <Route path="admin/messages" element={<Inbox />} />
+        <Route path="admin/bulletin-board" element={<AdminBulletinBoard />} />
+        <Route path="admin/kudos" element={<KudosManager />} />
         <Route path="admin/live-monitor" element={<LiveMonitor />} />
 
         {/* Teacher Routes */}
@@ -188,6 +194,8 @@ export default function App() {
         <Route path="parent/billing" element={<ParentBillingPage />} />
         <Route path="parent/enroll" element={<EnrollPage />} />
         <Route path="parent/letters" element={<ParentLetters />} />
+        <Route path="parent/bulletin-board" element={<ParentBulletinBoard />} />
+        <Route path="parent/kudos" element={<ParentKudosPage />} />
         <Route path="parent/report-card" element={<UnifiedReportCard />} />
         <Route path="parent/messages" element={<Inbox />} />
 

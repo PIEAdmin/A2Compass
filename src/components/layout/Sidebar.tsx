@@ -26,6 +26,8 @@ const navItems: Record<string, NavItem[]> = {
     { path: '/admin/report-card', label: 'Report Card', icon: '📊' },
     { path: '/admin/organizations', label: 'Organizations', icon: '🏢' },
     { path: '/admin/messages', label: 'Messages', icon: '💬' },
+    { path: '/admin/bulletin-board', label: 'Bulletin Board', icon: '📋' },
+    { path: '/admin/kudos', label: 'Kudos Manager', icon: '🌟' },
     { path: '/admin/api-settings', label: 'API Settings', icon: '🔌' },
   ],
   teacher: [
@@ -50,6 +52,8 @@ const navItems: Record<string, NavItem[]> = {
   ],
   parent: [
     { path: '/parent', label: 'Family Hub', icon: '🏠' },
+    { path: '/parent/bulletin-board', label: 'Bulletin Board', icon: '📋' },
+    { path: '/parent/kudos', label: 'Kudos', icon: '🌟' },
     { path: '/parent/progress', label: 'Progress', icon: '📈' },
     { path: '/parent/growth', label: 'Growth Timeline', icon: '🌱' },
     { path: '/parent/assessments', label: 'Assessments', icon: '📋' },

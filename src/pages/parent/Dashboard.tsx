@@ -1,3 +1,5 @@
+import BulletinBoard from '../../components/shared/BulletinBoard'
+import KudosTrends from '../../components/parent/KudosTrends'
 import { useState, useEffect } from 'react'
 import { Header } from '../../components/layout'
 import { LoadingSpinner } from '../../components/common'
@@ -70,6 +72,9 @@ export default function ParentDashboard() {
             <p className="text-gray-500 text-sm">Contact your teacher to add your children to A² Compass</p>
           </div>
         ) : (
+          <>
+          {/* Bulletin Board */}
+          <BulletinBoard role="parent" studentProfileId={children[0]?.student?.id} />
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
               {children.map((child) => (
@@ -84,8 +89,20 @@ export default function ParentDashboard() {
             </div>
             <div>
               <BillingSummary enrollments={allEnrollments} />
+              {children.map((child) => {
+                const profile = child.student.profile || (child.student as any).profiles;
+                const name = profile ? `${profile.first_name} ${profile.last_name}` : "Student";
+                return (
+                  <KudosTrends
+                    key={"kudos-" + child.student.id}
+                    studentProfileId={child.student.id}
+                    studentName={name}
+                  />
+                );
+              })}
             </div>
           </div>
+          </>
         )}
       </div>
     </div>
