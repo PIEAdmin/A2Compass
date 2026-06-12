@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../services/supabase'
 import { useAuth } from '../../hooks'
 import DiscoverOER from '../../components/student/DiscoverOER'
@@ -125,6 +126,17 @@ function Pill({
 
 /* ── Main component ───────────────────────────────────── */
 
+
+// Route to the right place based on content type
+function getContentRoute(item: ContentItem): string {
+  const t = item.activity_type?.toLowerCase() || '';
+  if (t.includes('video')) return '/student/videos';
+  if (t.includes('game') || t.includes('play')) return '/student/play';
+  if (t.includes('assess') || t.includes('quiz') || t.includes('test')) return '/student/assessment';
+  if (t.includes('lesson') || t.includes('read')) return '/student/practice';
+  return '/student/practice';
+}
+
 export default function StudentLibrary() {
   const { user } = useAuth()
   const userId = user?.id
@@ -132,6 +144,7 @@ export default function StudentLibrary() {
   /* Data */
   const [items, setItems] = useState<ContentItem[]>([])
   const [domains, setDomains] = useState<SkillDomain[]>([])
+  const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -443,7 +456,7 @@ export default function StudentLibrary() {
                   <button
                     key={item.path}
                     type="button"
-                    onClick={() => window.location.href = item.path}
+                    onClick={() => navigate(item.path)}
                     className="flex flex-col items-center gap-1 p-4 bg-white rounded-xl border border-gray-200 hover:border-indigo-300 hover:shadow-md transition-all"
                   >
                     <span className="text-3xl">{item.emoji}</span>
@@ -474,7 +487,7 @@ export default function StudentLibrary() {
                   <button
                     key={item.id}
                     type="button"
-                    onClick={() => alert(`Opening "${item.title}"…`)}
+                    onClick={() => navigate(getContentRoute(item))}
                     className="group relative flex flex-col rounded-2xl bg-white p-5 shadow-sm border border-gray-100 text-left transition-all duration-200 hover:shadow-lg hover:scale-[1.02] hover:border-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-300"
                   >
                     {/* Top row: type badge + favorite */}

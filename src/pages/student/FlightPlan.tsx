@@ -237,7 +237,7 @@ export default function FlightPlan() {
         <div className="flex items-end gap-3">
           <PepperPenguin size={50} mood="happy" />
           <SpeechBubble
-            message={`Ready to learn, ${studentName}? Let's crush today's Flight Plan! 🚀`}
+            message={`Ready to learn, ${studentName}? Let's crush today's Lesson Plan! 🚀`}
             mood="excited"
             position="left"
             animate

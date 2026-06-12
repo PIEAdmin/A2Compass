@@ -85,7 +85,7 @@ export default function StudentProgress() {
       <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-green-50 to-emerald-50">
         <GrowthPlant size={80} className="mb-4" />
         <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-green-600" />
-        <p className="text-green-600 mt-3 text-sm font-medium">Growing your progress report...</p>
+        <p className="text-green-600 mt-3 text-sm font-medium">Growing your garden... 🌻</p>
       </div>
     );
   }
@@ -112,8 +112,8 @@ export default function StudentProgress() {
             <GrowthPlant size={70} />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">🎯 My Progress</h1>
-            <p className="text-white/80 mt-1">Look how far you've come, {firstName}!</p>
+            <h1 className="text-2xl font-bold">🌟 My Growth Garden</h1>
+            <p className="text-white/80 mt-1">Look at your amazing growth, {firstName}! 🌱</p>
           </div>
         </div>
       </div>
@@ -125,21 +125,21 @@ export default function StudentProgress() {
             <span className="text-2xl">🧠</span>
           </div>
           <p className="text-2xl font-bold text-indigo-600">{totalMastered}</p>
-          <p className="text-xs text-gray-500 mt-0.5">Skills Mastered</p>
+          <p className="text-xs text-gray-500 mt-0.5">⭐ Skills Learned!</p>
         </div>
         <div className="bg-white rounded-2xl shadow-sm border p-4 text-center illust-card-hover">
           <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-orange-100 flex items-center justify-center">
             <span className="text-2xl">🔥</span>
           </div>
           <p className="text-2xl font-bold text-orange-500">{streak}</p>
-          <p className="text-xs text-gray-500 mt-0.5">Day Streak</p>
+          <p className="text-xs text-gray-500 mt-0.5">🔥 Days in a Row!</p>
         </div>
         <div className="bg-white rounded-2xl shadow-sm border p-4 text-center illust-card-hover">
           <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-green-100 flex items-center justify-center">
             <span className="text-2xl">📈</span>
           </div>
           <p className="text-2xl font-bold text-green-600">{overallPercent}%</p>
-          <p className="text-xs text-gray-500 mt-0.5">Overall</p>
+          <p className="text-xs text-gray-500 mt-0.5">📈 My Level!</p>
         </div>
       </div>
 

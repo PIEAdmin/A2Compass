@@ -11,14 +11,27 @@ import {
 import { supabase } from '../../services/supabase';
 
 const CATEGORIES = [
-  { key: 'all', label: 'All Items', emoji: '🎁' },
+  { key: 'all', label: 'All Rewards', emoji: '🎁' },
+  { key: 'fun', label: 'Fun Time', emoji: '🎮' },
   { key: 'hat', label: 'Hats', emoji: '🧢' },
   { key: 'glasses', label: 'Glasses', emoji: '👓' },
   { key: 'scarf', label: 'Scarves', emoji: '🧣' },
   { key: 'wings', label: 'Wings & Jets', emoji: '🦋' },
   { key: 'background', label: 'Backgrounds', emoji: '🖼️' },
   { key: 'sticker', label: 'Stickers', emoji: '⭐' },
-  { key: 'special', label: 'Special Items', emoji: '🎁' },
+  { key: 'special', label: 'Special', emoji: '🎁' },
+];
+
+// Built-in fun rewards (game time, activities) — always available
+const FUN_REWARDS: RewardItem[] = [
+  { id: 'fun-game-10', name: '10 Min Game Time', description: 'Earn 10 minutes of free game time!', emoji: '🎮', cost: 50, category: 'fun', rarity: 'common' },
+  { id: 'fun-game-20', name: '20 Min Game Time', description: '20 minutes of games — you earned it!', emoji: '🕹️', cost: 100, category: 'fun', rarity: 'uncommon' },
+  { id: 'fun-story', name: 'Story Time', description: 'Pick any interactive story to enjoy!', emoji: '📖', cost: 75, category: 'fun', rarity: 'common' },
+  { id: 'fun-video', name: 'Video Pick', description: 'Choose any video from the Video Library!', emoji: '📺', cost: 60, category: 'fun', rarity: 'common' },
+  { id: 'fun-art', name: 'Art Break', description: '15 minutes of creative drawing time!', emoji: '🎨', cost: 80, category: 'fun', rarity: 'uncommon' },
+  { id: 'fun-dance', name: 'Dance Break', description: 'A 5-minute dance party! 💃🕺', emoji: '💃', cost: 30, category: 'fun', rarity: 'common' },
+  { id: 'fun-explore', name: 'Free Explore', description: '15 min to explore any subject you want!', emoji: '🔭', cost: 90, category: 'fun', rarity: 'uncommon' },
+  { id: 'fun-music', name: 'Music Time', description: '10 minutes of music and rhythm games!', emoji: '🎵', cost: 70, category: 'fun', rarity: 'common' },
 ];
 
 const RARITY_GLOW: Record<string, string> = {
@@ -44,7 +57,7 @@ export default function RewardShop() {
       getRewardCatalog(),
       getStudentInventory(),
     ]);
-    setCatalog(items);
+    setCatalog([...FUN_REWARDS, ...items]);
     setOwnedIds(new Set(inventory.map(i => i.item_id)));
 
     // Get balance
@@ -123,6 +136,7 @@ export default function RewardShop() {
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold">
                 <ReadAloud text="Reward Shop">🛍️ Reward Shop</ReadAloud>
+                <p className="text-sm text-gray-500 mt-1">Spend your Spark Points on game time, activities, and cool gear!</p>
               </h1>
               <p className="text-amber-100">
                 <ReadAloud text="Spend your Spark Points on cool accessories for Pepper!">
