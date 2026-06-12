@@ -463,6 +463,15 @@ export default function AssessmentPlayer() {
           const inserted = data.filter((d: any) => d.inserted);
           console.log(`📋 Flight Plan updated: ${inserted.length} improvement skills added from assessment errors`);
         }
+
+        // Also regenerate the daily playlist so dashboard auto-populates with mastery-based activities
+        try {
+          const { generatePlaylist } = await import('../../services/skills.service');
+          await generatePlaylist(studentId);
+          console.log('📋 Daily playlist auto-regenerated after assessment completion');
+        } catch (playlistErr) {
+          console.error('Auto-playlist generation error (non-blocking):', playlistErr);
+        }
       } catch (e) { console.error('Improvement playlist error:', e); }
     })();
   }, [isComplete, studentId]);
